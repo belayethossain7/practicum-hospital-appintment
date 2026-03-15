@@ -1,0 +1,108 @@
+{% load static %}
+
+<footer class="footer hs-footer" id="contact">
+  <!-- Footer Top -->
+  <div class="footer-top">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+          <div class="footer-widget footer-about">
+            <div class="footer-logo hs-footer-logo">
+              <img
+                src="{% static 'HealthStack-System/images/Normal/footer_logo.png' %}"
+                alt="HealthStack"
+              />
+            </div>
+            <div class="footer-about-content">
+              <p class="mb-3">
+                HealthStack is a multi-hospital appointment booking platform built to help patients find doctors, compare hospitals, and confirm verified slots quickly.
+              </p>
+              <div class="social-icon hs-social">
+                <ul>
+                  <li>
+                    <a href="#" target="_blank" rel="noopener" aria-label="Facebook">
+                      <i class="fab fa-facebook-f"></i>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" target="_blank" rel="noopener" aria-label="LinkedIn">
+                      <i class="fab fa-linkedin-in"></i>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" target="_blank" rel="noopener" aria-label="Twitter">
+                      <i class="fab fa-twitter"></i>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-2 col-md-6 mb-4 mb-lg-0">
+          <div class="footer-widget">
+            <h2 class="footer-title">Quick Links</h2>
+            <ul class="hs-footer-links">
+              <li><a href="{% url 'hospital_home' %}">Home</a></li>
+              <li><a href="{% url 'multiple-hospital' %}">Hospitals</a></li>
+              <li><a href="{% url 'search' %}">Doctors</a></li>
+              <li><a href="{% url 'hospital_home' %}#appointment">Appointment</a></li>
+              <li><a href="{% url 'about-us' %}">About</a></li>
+              <li><a href="{% url 'privacy-policy' %}">Privacy Policy</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+          <div class="footer-widget">
+            <h2 class="footer-title">Hospital Services</h2>
+            <ul class="hs-footer-links">
+              <li><a href="{% url 'multiple-hospital' %}">Hospital Information</a></li>
+              <li><a href="{% url 'search' %}">Specialist Consultation</a></li>
+              <li><a href="{% url 'hospital_home' %}#appointment">Appointment Scheduling</a></li>
+              <li><a href="{% url 'pharmacy_shop' %}">Pharmacy & Medical Shop</a></li>
+              <li><a href="{% url 'hospital_home' %}">Branch Doctors</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+          <div class="footer-widget footer-contact">
+            <h2 class="footer-title">Contact Information</h2>
+            <div class="footer-contact-info">
+              <div class="footer-address">
+                <span><i class="fas fa-map-marker-alt"></i></span>
+                <p class="mb-2">
+                  Dhanmondi,<br />
+                  Dhaka, Bangladesh
+                </p>
+              </div>
+              <p class="mb-2">
+                <i class="fas fa-phone-alt"></i>
+                +880 1234 567890
+              </p>
+              <p class="mb-0">
+                <i class="fas fa-envelope"></i>
+                support@healthstack.com
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /Footer Top -->
+
+  <!-- Footer Bottom -->
+  <div class="footer-bottom hs-footer-bottom">
+    <div class="container">
+      <div class="copyright">
+        <div class="copyright-text">
+          <p class="mb-0">© {% now "Y" %} HealthStack. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /Footer Bottom -->
+</footer>

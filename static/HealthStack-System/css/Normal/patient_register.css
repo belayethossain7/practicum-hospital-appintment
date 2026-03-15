@@ -1,0 +1,219 @@
+/* Patient Register page-only styling
+   Scope: body.hs-patient-register + #patient-register-page
+   Goal: premium look without affecting other pages.
+*/
+
+body.hs-patient-register {
+  background:
+    radial-gradient(900px 520px at 12% 6%, rgba(255, 255, 255, 0.08), transparent 60%),
+    radial-gradient(760px 420px at 92% 10%, rgba(255, 255, 255, 0.06), transparent 55%),
+    linear-gradient(135deg, #061a33 0%, #0b3b74 55%, #1456a8 100%) !important;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+body.hs-patient-register .hs-pr__content {
+  padding: 64px 0;
+}
+
+body.hs-patient-register #patient-register-page .login-left img {
+  border-radius: 18px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+}
+
+body.hs-patient-register #patient-register-page .login-right {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 18px;
+  box-shadow: 0 14px 30px rgba(31, 43, 61, 0.16);
+  padding: 28px;
+  color: #1f2b3d;
+}
+
+body.hs-patient-register #patient-register-page .login-header h3 {
+  font-weight: 900;
+  letter-spacing: -0.2px;
+}
+
+body.hs-patient-register #patient-register-page .login-header h3 span {
+  color: #5e6b7a;
+}
+
+/* Inputs */
+body.hs-patient-register #patient-register-page .form-control {
+  border-radius: 12px;
+}
+
+body.hs-patient-register #patient-register-page .form-control:focus {
+  border-color: rgba(11, 59, 116, 0.55);
+  box-shadow: 0 0 0 0.2rem rgba(11, 59, 116, 0.18);
+}
+
+body.hs-patient-register #patient-register-page .focus-label {
+  color: #5e6b7a;
+}
+
+/* Primary submit */
+body.hs-patient-register #patient-register-page .login-btn.btn-primary,
+body.hs-patient-register #patient-register-page .btn.btn-primary {
+  background: linear-gradient(135deg, #0b3b74 0%, #1456a8 100%);
+  border: 0;
+  border-radius: 12px;
+  font-weight: 800;
+  box-shadow: 0 12px 22px rgba(11, 59, 116, 0.20);
+}
+
+body.hs-patient-register #patient-register-page .login-btn.btn-primary:hover,
+body.hs-patient-register #patient-register-page .btn.btn-primary:hover {
+  filter: brightness(1.03);
+  transform: translateY(-1px);
+}
+
+/* Links */
+body.hs-patient-register #patient-register-page .forgot-link {
+  color: #1456a8;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+body.hs-patient-register #patient-register-page .forgot-link:hover {
+  color: #0b3b74;
+  text-decoration: underline;
+}
+
+/* Divider */
+body.hs-patient-register #patient-register-page .login-or {
+  color: rgba(31, 43, 61, 0.35);
+}
+
+body.hs-patient-register #patient-register-page .or-line {
+  background-color: rgba(31, 43, 61, 0.14);
+}
+
+body.hs-patient-register #patient-register-page .span-or {
+  background-color: rgba(255, 255, 255, 0.96);
+  color: rgba(31, 43, 61, 0.60);
+  border-radius: 999px;
+  padding: 0 10px;
+}
+
+/* Social buttons (keep existing structure, just premium look) */
+body.hs-patient-register #patient-register-page .social-login a.btn {
+  border-radius: 12px;
+  font-weight: 800;
+  padding: 10px 14px;
+  border: 1px solid rgba(11, 59, 116, 0.22);
+  background: rgba(11, 59, 116, 0.06);
+  color: #0b3b74 !important;
+  box-shadow: 0 10px 18px rgba(31, 43, 61, 0.10);
+  transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+
+body.hs-patient-register #patient-register-page .social-login a.btn:hover,
+body.hs-patient-register #patient-register-page .social-login a.btn:focus {
+  background: rgba(11, 59, 116, 0.10);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 26px rgba(31, 43, 61, 0.14);
+}
+
+/* Make sure navbar/footer spacing looks consistent on this page */
+body.hs-patient-register #patient-register-page .hs-pr__header {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+/* Navbar (page-only hard override)
+   Some legacy rules set `.header-nav { background-color:#fff; }`.
+   This ensures the premium navbar always shows on this page. */
+body.hs-patient-register #patient-register-page nav.hs-navbar.header-nav {
+  background:
+    radial-gradient(900px 420px at 10% 0%, rgba(255, 255, 255, 0.10), transparent 60%),
+    radial-gradient(760px 380px at 92% 14%, rgba(255, 255, 255, 0.08), transparent 55%),
+    linear-gradient(135deg, #061a33 0%, #0b3b74 55%, #1456a8 100%) !important;
+  background-color: #061a33 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 0 12px 28px rgba(31, 43, 61, 0.10) !important;
+  height: auto !important;
+  min-height: 74px !important;
+  padding: 12px 0 !important;
+}
+
+body.hs-patient-register #patient-register-page nav.hs-navbar .navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.92) !important;
+  font-weight: 800;
+  border-radius: 12px;
+  padding: 10px 14px;
+  text-decoration: none !important;
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+
+body.hs-patient-register #patient-register-page nav.hs-navbar .navbar-nav .nav-link:hover,
+body.hs-patient-register #patient-register-page nav.hs-navbar .navbar-nav .nav-link:focus {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+body.hs-patient-register #patient-register-page nav.hs-navbar .navbar-toggler {
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border-radius: 12px;
+  padding: 8px 10px;
+}
+
+body.hs-patient-register #patient-register-page nav.hs-navbar .navbar-toggler:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.14) !important;
+}
+
+body.hs-patient-register #patient-register-page nav.hs-navbar .navbar-toggler-icon {
+  width: 1.3em;
+  height: 1.3em;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.95)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+
+/* Navbar action buttons on this page */
+body.hs-patient-register #patient-register-page nav.hs-navbar .hs-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+body.hs-patient-register #patient-register-page nav.hs-navbar .hs-nav-actions a.btn {
+  text-decoration: none !important;
+  border-radius: 999px !important;
+  font-weight: 800 !important;
+  line-height: 1.15;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  padding: 10px 14px !important;
+}
+
+body.hs-patient-register #patient-register-page nav.hs-navbar .hs-nav-actions a.btn.hs-btn-cta {
+  background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.90) 100%) !important;
+  color: #061a33 !important;
+  border: 0 !important;
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.18) !important;
+}
+
+body.hs-patient-register #patient-register-page nav.hs-navbar .hs-nav-actions a.btn.hs-btn-ghost {
+  background: rgba(255, 255, 255, 0.10) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+}
+
+body.hs-patient-register #patient-register-page nav.hs-navbar .hs-nav-actions a.btn:hover,
+body.hs-patient-register #patient-register-page nav.hs-navbar .hs-nav-actions a.btn:focus {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 991px) {
+  body.hs-patient-register #patient-register-page nav.hs-navbar .hs-nav-actions {
+    width: 100%;
+  }
+  body.hs-patient-register #patient-register-page nav.hs-navbar .hs-nav-actions a.btn {
+    width: 100%;
+  }
+}

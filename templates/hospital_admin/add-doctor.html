@@ -1,0 +1,140 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+	<title>HealthStack</title>
+	<link rel="shortcut icon" type="image/x-icon" href="{% static 'HealthStack-System/images/Normal/favicon.png' %}"/>
+	<link rel="stylesheet" href="{% static 'HealthStack-System/css/admin/bootstrap.min.css'%}">
+	<link rel="stylesheet" href="{% static 'HealthStack-System/css/admin/font-awesome.min.css'%}">
+	<link rel="stylesheet" href="{% static 'HealthStack-System/admin_assets/css/feathericon.min.css'%}">
+	<link rel="stylesheet" href="{% static 'HealthStack-System/css/admin/style.css'%}">
+</head>
+<body>
+	<div class="main-wrapper">
+		<header class="header">{% include 'hospital_admin/hospital-admin-navbar.html' %}</header>
+		<aside class="sidebar" id="sidebar">{% include 'hospital_admin/hospital-admin-sidebar.html' %}</aside>
+
+		<div class="page-wrapper">
+			<div class="content container-fluid">
+				<div class="breadcrumb-bar">
+					<div class="container-fluid">
+						<div class="row align-items-center">
+							<div class="col-md-12 col-12">
+								<nav aria-label="breadcrumb" class="page-breadcrumb">
+									<ol class="breadcrumb">
+										<li class="breadcrumb-item"><a href="{% url 'admin-dashboard' %}">Home</a></li>
+										<li class="breadcrumb-item active" aria-current="page">Add Doctor</li>
+									</ol>
+								</nav>
+								<h2 class="breadcrumb-title">Create Doctor Account</h2>
+								{% include 'message.html' %}
+								{% if form.errors %}
+								<div class="alert alert-danger mt-2">
+									Please correct the errors below.
+									{{ form.errors }}
+								</div>
+								{% endif %}
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="content">
+					<div class="container-fluid">
+						<div class="row">
+							<div class="col-xl-12">
+								<div class="card">
+									<div class="card-body">
+										<form action="{% url 'admin-add-doctor' %}" method="POST" enctype="multipart/form-data">
+											{% csrf_token %}
+
+											<h4 class="mb-3">Account</h4>
+											<div class="row">
+												<div class="col-md-6">
+													<div class="form-group">
+														<label>Username</label>
+														{{ form.username }}
+													</div>
+												</div>
+												<div class="col-md-6">
+													<div class="form-group">
+														<label>Login Email</label>
+														{{ form.email }}
+													</div>
+												</div>
+												<div class="col-md-6">
+													<div class="form-group">
+														<label>Password</label>
+														{{ form.password1 }}
+														<small class="text-muted">{{ form.password1.help_text }}</small>
+													</div>
+												</div>
+												<div class="col-md-6">
+													<div class="form-group">
+														<label>Confirm Password</label>
+														{{ form.password2 }}
+														<small class="text-muted">{{ form.password2.help_text }}</small>
+													</div>
+												</div>
+											</div>
+
+											<hr/>
+											<h4 class="mb-3">Doctor Profile</h4>
+											<div class="row">
+												<div class="col-md-6"><div class="form-group"><label>Name</label>{{ form.name }}</div></div>
+												<div class="col-md-6"><div class="form-group"><label>Gender</label>{{ form.gender }}</div></div>
+												<div class="col-md-12"><div class="form-group"><label>Description</label>{{ form.description }}</div></div>
+
+												<div class="col-md-6"><div class="form-group"><label>Hospital (Appointed)</label>{{ form.hospital_name }}</div></div>
+												<div class="col-md-6"><div class="form-group"><label>Additional Hospitals (optional)</label>{{ form.additional_hospitals }}</div></div>
+												<div class="col-md-6"><div class="form-group"><label>Department (Type)</label>{{ form.department }}</div></div>
+												<div class="col-md-6"><div class="form-group"><label>Department Name</label>{{ form.department_name }}</div></div>
+												<div class="col-md-6"><div class="form-group"><label>Specialization</label>{{ form.specialization }}</div></div>
+
+												<div class="col-md-6"><div class="form-group"><label>Doctor Email (profile)</label>{{ form.email_profile }}</div></div>
+												<div class="col-md-6"><div class="form-group"><label>Phone</label>{{ form.phone_number }}</div></div>
+												<div class="col-md-6"><div class="form-group"><label>NID</label>{{ form.nid }}</div></div>
+												<div class="col-md-6"><div class="form-group"><label>Date of Birth</label>{{ form.dob }}</div></div>
+												<div class="col-md-6"><div class="form-group"><label>Visiting Hour</label>{{ form.visiting_hour }}</div></div>
+												<div class="col-md-3"><div class="form-group"><label>Consultation Fee</label>{{ form.consultation_fee }}</div></div>
+												<div class="col-md-3"><div class="form-group"><label>Report Fee</label>{{ form.report_fee }}</div></div>
+
+												<div class="col-md-6"><div class="form-group"><label>Featured Image</label>{{ form.featured_image }}</div></div>
+												<div class="col-md-6"><div class="form-group"><label>Certificate Image</label>{{ form.certificate_image }}</div></div>
+											</div>
+
+											<hr/>
+											<h4 class="mb-3">Education & Experience (optional)</h4>
+											<div class="row">
+												<div class="col-md-4"><div class="form-group"><label>Institute</label>{{ form.institute }}</div></div>
+												<div class="col-md-4"><div class="form-group"><label>Degree</label>{{ form.degree }}</div></div>
+												<div class="col-md-4"><div class="form-group"><label>Completion Year</label>{{ form.completion_year }}</div></div>
+												<div class="col-md-4"><div class="form-group"><label>Work Place</label>{{ form.work_place }}</div></div>
+												<div class="col-md-4"><div class="form-group"><label>Designation</label>{{ form.designation }}</div></div>
+												<div class="col-md-2"><div class="form-group"><label>Start Year</label>{{ form.start_year }}</div></div>
+												<div class="col-md-2"><div class="form-group"><label>End Year</label>{{ form.end_year }}</div></div>
+											</div>
+
+											<div class="submit-section">
+												<button type="submit" class="btn btn-primary submit-btn">Create Doctor</button>
+											</div>
+										</form>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<script src="{% static 'HealthStack-System/js/admin/jquery-3.2.1.min.js' %}"></script>
+	<script src="{% static 'HealthStack-System/js/admin/popper.min.js' %}"></script>
+	<script src="{% static 'HealthStack-System/js/admin/bootstrap.min.js' %}"></script>
+	<script src="{% static 'HealthStack-System/js/admin/script.js' %}"></script>
+</body>
+</html>

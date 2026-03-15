@@ -1,0 +1,1149 @@
+:root {
+  --hs-card-radius: 14px;
+  --hs-accent: #0b3b74;
+}
+
+.hs-muted {
+  color: #5e6b7a;
+}
+
+.hs-link {
+  color: var(--hs-accent);
+}
+
+/* Home-only polish (avoid impacting other pages) */
+.hs-home {
+  background:
+    radial-gradient(900px 420px at 8% 8%, rgba(11, 59, 116, 0.10), transparent 60%),
+    radial-gradient(700px 360px at 92% 18%, rgba(20, 86, 168, 0.08), transparent 55%),
+    linear-gradient(180deg, #f7faff 0%, #ffffff 45%, #f5f7ff 100%) !important;
+}
+
+.hs-home .main-wrapper {
+  background: transparent !important;
+}
+
+/* ======================================
+   Home page navbar (force dark theme)
+   Overrides legacy `.header-nav { background-color: #fff; }`
+   ====================================== */
+
+.hs-home nav.main-navbar.header-nav {
+  background:
+    radial-gradient(900px 420px at 10% 0%, rgba(255, 255, 255, 0.10), transparent 60%),
+    radial-gradient(760px 380px at 92% 14%, rgba(255, 255, 255, 0.08), transparent 55%),
+    linear-gradient(135deg, #061a33 0%, #0b3b74 55%, #1456a8 100%) !important;
+  background-color: #061a33 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 0 12px 28px rgba(31, 43, 61, 0.10) !important;
+  padding: 12px 0 !important;
+  height: auto !important;
+  min-height: 74px !important;
+}
+
+.hs-home nav.main-navbar .navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.92) !important;
+  font-weight: 700;
+}
+
+.hs-home nav.main-navbar .navbar-nav .nav-link:hover,
+.hs-home nav.main-navbar .navbar-nav .nav-link:focus {
+  color: #ffffff !important;
+}
+
+.hs-home nav.main-navbar .navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.20) !important;
+}
+
+.hs-home nav.main-navbar .navbar-toggler:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.16) !important;
+}
+
+/* ======================================
+   Home page navbar buttons
+   ====================================== */
+
+.hs-home nav.main-navbar .hs-nav-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.hs-home nav.main-navbar a.btn.nav-btn-primary,
+.hs-home nav.main-navbar a.btn.nav-btn-outline {
+  text-decoration: none !important;
+  border-radius: 999px !important;
+  padding: 10px 16px !important;
+  font-weight: 800 !important;
+  line-height: 1.15;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease, background-color 180ms ease, color 180ms ease;
+}
+
+.hs-home nav.main-navbar a.btn.nav-btn-primary {
+  background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.90) 100%) !important;
+  color: #061a33 !important;
+  border: 0 !important;
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.18) !important;
+}
+
+.hs-home nav.main-navbar a.btn.nav-btn-primary:hover,
+.hs-home nav.main-navbar a.btn.nav-btn-primary:focus {
+  transform: translateY(-1px);
+  filter: brightness(1.02);
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.22) !important;
+}
+
+.hs-home nav.main-navbar a.btn.nav-btn-outline {
+  background: rgba(255, 255, 255, 0.10) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+}
+
+.hs-home nav.main-navbar a.btn.nav-btn-outline:hover,
+.hs-home nav.main-navbar a.btn.nav-btn-outline:focus {
+  background: rgba(255, 255, 255, 0.16) !important;
+  transform: translateY(-1px);
+}
+
+/* Ensure current global button classes still render as buttons on Home
+   (Home CSS loads after global CSS, so keep this explicit + !important). */
+.hs-home nav.hs-navbar .hs-nav-actions a.btn.hs-btn-cta {
+  text-decoration: none !important;
+  border-radius: 999px !important;
+  padding: 10px 16px !important;
+  font-weight: 800 !important;
+  line-height: 1.15;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.90) 100%) !important;
+  color: #061a33 !important;
+  border: 0 !important;
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.18) !important;
+  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+
+.hs-home nav.hs-navbar .hs-nav-actions a.btn.hs-btn-cta:hover,
+.hs-home nav.hs-navbar .hs-nav-actions a.btn.hs-btn-cta:focus {
+  transform: translateY(-1px);
+  filter: brightness(1.02);
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.22) !important;
+}
+
+.hs-home nav.hs-navbar .hs-nav-actions a.btn.hs-btn-ghost {
+  text-decoration: none !important;
+  border-radius: 999px !important;
+  padding: 10px 14px !important;
+  font-weight: 800 !important;
+  line-height: 1.15;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.10) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+
+.hs-home nav.hs-navbar .hs-nav-actions a.btn.hs-btn-ghost:hover,
+.hs-home nav.hs-navbar .hs-nav-actions a.btn.hs-btn-ghost:focus {
+  background: rgba(255, 255, 255, 0.16) !important;
+  transform: translateY(-1px);
+}
+
+/* ======================================
+   Homepage navbar alignment helpers only
+   (navbar color/buttons are global).
+   ====================================== */
+
+/* Keep nav + buttons aligned on desktop */
+.hs-home .hs-navbar .navbar-collapse {
+  align-items: center;
+}
+
+.hs-home .hs-navbar .navbar-nav {
+  align-items: center;
+}
+
+/* Keep buttons from looking like plain links */
+.hs-home .hs-navbar .btn.hs-btn-cta,
+.hs-home .hs-navbar .btn.hs-btn-ghost {
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.hs-home .hs-navbar .btn.hs-btn-cta:hover,
+.hs-home .hs-navbar .btn.hs-btn-cta:focus,
+.hs-home .hs-navbar .btn.hs-btn-ghost:hover,
+.hs-home .hs-navbar .btn.hs-btn-ghost:focus {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 991px) {
+  .hs-home .hs-navbar .hs-nav-actions {
+    width: 100%;
+  }
+  .hs-home .hs-navbar .hs-nav-actions .btn {
+    width: 100%;
+  }
+}
+
+.hs-hero {
+  position: relative;
+  padding: 64px 0 42px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background:
+    radial-gradient(900px 420px at 12% 0%, rgba(11, 59, 116, 0.14), transparent 60%),
+    radial-gradient(760px 380px at 90% 10%, rgba(20, 86, 168, 0.10), transparent 55%),
+    linear-gradient(135deg, rgba(248, 251, 255, 1) 0%, rgba(255, 255, 255, 1) 52%, rgba(242, 247, 255, 1) 100%);
+}
+
+/* Subtle hero background image layer (home-only) */
+.hs-home #home-hero.hs-hero--photo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("../../images/Normal/search-bg.png");
+  background-size: cover;
+  background-position: center;
+  opacity: 0.18;
+  pointer-events: none;
+}
+
+.hs-home #home-hero.hs-hero--photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(900px 520px at 10% 0%, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.25) 55%, rgba(255, 255, 255, 0.00) 75%),
+    linear-gradient(135deg, rgba(248, 251, 255, 0.92) 0%, rgba(255, 255, 255, 0.82) 55%, rgba(242, 247, 255, 0.88) 100%);
+  pointer-events: none;
+}
+
+.hs-home #home-hero > .container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Hero typography + buttons (home-only, unique classes) */
+.hs-home #home-hero.home-hero {
+  padding: 78px 0 52px;
+}
+
+.hs-home #home-hero .home-hero__title {
+  font-weight: 900;
+  letter-spacing: -0.6px;
+  color: #0b1f3a;
+  line-height: 1.05;
+  font-size: clamp(2.1rem, 3.2vw, 3.25rem);
+  margin-bottom: 14px;
+}
+
+.hs-home #home-hero .home-hero__subtitle {
+  color: rgba(31, 43, 61, 0.78);
+  font-size: 1.08rem;
+  line-height: 1.7;
+  max-width: 38rem;
+}
+
+.hs-home #home-hero .home-hero__actions {
+  margin-top: 22px;
+  gap: 12px;
+}
+
+.hs-home #home-hero a.btn.home-hero__btn {
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-weight: 800;
+  letter-spacing: 0.1px;
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  text-decoration: none;
+  box-shadow: 0 14px 28px rgba(31, 43, 61, 0.10);
+  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease, background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+
+.hs-home #home-hero a.btn.home-hero__btn-primary {
+  background: linear-gradient(135deg, #0b3b74 0%, #1456a8 100%);
+  border: 0;
+  color: #ffffff;
+}
+
+.hs-home #home-hero a.btn.home-hero__btn-primary:hover,
+.hs-home #home-hero a.btn.home-hero__btn-primary:focus {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  box-shadow: 0 18px 34px rgba(11, 59, 116, 0.22);
+  color: #ffffff;
+}
+
+.hs-home #home-hero a.btn.home-hero__btn-secondary {
+  background: rgba(255, 255, 255, 0.72);
+  color: #0b3b74;
+  border: 1px solid rgba(11, 59, 116, 0.16);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.hs-home #home-hero a.btn.home-hero__btn-secondary:hover,
+.hs-home #home-hero a.btn.home-hero__btn-secondary:focus {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.86);
+  border-color: rgba(11, 59, 116, 0.22);
+  box-shadow: 0 18px 34px rgba(31, 43, 61, 0.12);
+  color: #0b3b74;
+}
+
+.hs-home .main-nav > li > a {
+  font-weight: 600;
+}
+
+.hs-home .main-nav > li > a:hover {
+  color: var(--hs-accent);
+}
+
+.hs-hero-title {
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: #1f2b3d;
+  margin-bottom: 10px;
+}
+
+.hs-hero-subtitle {
+  color: #526175;
+  font-size: 1.05rem;
+}
+
+.hs-hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.hs-hero-media {
+  display: flex;
+  justify-content: center;
+}
+
+.hs-hero-illustration {
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+  border-radius: var(--hs-card-radius);
+  box-shadow: 0 18px 44px rgba(31, 43, 61, 0.10);
+}
+
+.hs-hero-photo {
+  width: 100%;
+  max-width: 560px;
+  height: 420px;
+  object-fit: cover;
+  border-radius: var(--hs-card-radius);
+  box-shadow: 0 18px 44px rgba(31, 43, 61, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.hs-section {
+  padding: 42px 0;
+}
+
+.hs-section-alt {
+  background: #f8f9fa;
+}
+
+/* ======================================
+   Home Appointment Section (premium UI)
+   Scoped to home only via .hs-home + #appointment + data attribute
+   ====================================== */
+
+.hs-home section#appointment.home-appointment[data-home-appointment="1"].hs-section-alt {
+  background:
+    radial-gradient(900px 420px at 12% 0%, rgba(11, 59, 116, 0.08), transparent 60%),
+    radial-gradient(760px 380px at 92% 12%, rgba(20, 86, 168, 0.06), transparent 55%),
+    linear-gradient(180deg, #f7faff 0%, #ffffff 55%, #f5f7ff 100%) !important;
+  border-top: 1px solid rgba(31, 43, 61, 0.06);
+  border-bottom: 1px solid rgba(31, 43, 61, 0.06);
+}
+
+.hs-home #appointment.home-appointment .home-appointment__title {
+  font-weight: 900;
+  letter-spacing: -0.3px;
+}
+
+.hs-home #appointment.home-appointment .home-appointment__subtitle {
+  margin-top: 6px;
+  max-width: 30rem;
+}
+
+.hs-home #appointment.home-appointment .home-appointment__steps {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hs-home #appointment.home-appointment .home-appointment__step {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(11, 59, 116, 0.08);
+  color: rgba(11, 59, 116, 0.92);
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+}
+
+.hs-home #appointment.home-appointment .home-appointment__card {
+  border: 1px solid rgba(31, 43, 61, 0.10) !important;
+  box-shadow: 0 18px 44px rgba(31, 43, 61, 0.10) !important;
+  overflow: hidden;
+}
+
+.hs-home #appointment.home-appointment .home-appointment__card .card-body {
+  padding: 22px;
+}
+
+.hs-home #appointment.home-appointment .home-appointment__label {
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 800;
+  color: rgba(31, 43, 61, 0.66);
+}
+
+.hs-home #appointment.home-appointment .home-appointment__control {
+  border-radius: 12px;
+  border-color: rgba(31, 43, 61, 0.16) !important;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 22px rgba(31, 43, 61, 0.06);
+}
+
+.hs-home #appointment.home-appointment .home-appointment__control:focus {
+  border-color: rgba(11, 59, 116, 0.55) !important;
+  box-shadow: 0 0 0 0.2rem rgba(11, 59, 116, 0.12), 0 14px 28px rgba(31, 43, 61, 0.10) !important;
+}
+
+.hs-home #appointment.home-appointment .home-appointment__hint {
+  display: block;
+  margin-top: 6px;
+}
+
+.hs-home #appointment.home-appointment button.home-appointment__submit {
+  border-radius: 12px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #0b3b74 0%, #1456a8 100%) !important;
+  border: 0 !important;
+  box-shadow: 0 16px 30px rgba(11, 59, 116, 0.22);
+  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+
+.hs-home #appointment.home-appointment button.home-appointment__submit:hover,
+.hs-home #appointment.home-appointment button.home-appointment__submit:focus {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  box-shadow: 0 20px 38px rgba(11, 59, 116, 0.26);
+}
+
+.hs-home #appointment.home-appointment button.home-appointment__submit:disabled {
+  filter: grayscale(0.15);
+  opacity: 0.72;
+  box-shadow: none;
+}
+
+/* ======================================
+   Home: Quick Appointment Booking (slots)
+   ====================================== */
+
+.hs-home section#home-slots.home-slots[data-home-slots="1"].hs-section-alt {
+  background:
+    radial-gradient(900px 420px at 10% 0%, rgba(11, 59, 116, 0.08), transparent 60%),
+    radial-gradient(760px 380px at 92% 12%, rgba(20, 86, 168, 0.06), transparent 55%),
+    linear-gradient(180deg, #f7faff 0%, #ffffff 58%, #f5f7ff 100%) !important;
+}
+
+.hs-home #home-slots .home-slots__title {
+  font-weight: 900;
+  letter-spacing: -0.25px;
+}
+
+.hs-home #home-slots .home-slots__subtitle {
+  margin-top: 6px;
+  max-width: 34rem;
+}
+
+.hs-home #home-slots .home-slots__control {
+  border-radius: 12px;
+  border-color: rgba(11, 59, 116, 0.22) !important;
+  background: rgba(255, 255, 255, 0.70);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 12px 22px rgba(31, 43, 61, 0.10);
+}
+
+.hs-home #home-slots .home-slots__control:hover,
+.hs-home #home-slots .home-slots__control:focus {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.86);
+  border-color: rgba(11, 59, 116, 0.30) !important;
+  box-shadow: 0 16px 28px rgba(31, 43, 61, 0.14);
+}
+
+.hs-home #home-slots .home-slots__card {
+  border: 1px solid rgba(31, 43, 61, 0.10);
+}
+
+.hs-home #home-slots .home-slots__eyebrow {
+  letter-spacing: 0.8px;
+  font-weight: 800;
+}
+
+.hs-home #home-slots .home-slots__hospital {
+  font-weight: 900;
+  letter-spacing: -0.15px;
+}
+
+.hs-home #home-slots .home-slots__location i {
+  color: rgba(11, 59, 116, 0.85);
+}
+
+.hs-home #home-slots .home-slots__badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-left: 10px;
+}
+
+.hs-home #home-slots .home-slots__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(31, 43, 61, 0.06);
+  color: rgba(31, 43, 61, 0.70);
+  border: 1px solid rgba(31, 43, 61, 0.10);
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.hs-home #home-slots .home-slots__badge--today {
+  background: rgba(11, 59, 116, 0.10);
+  color: rgba(11, 59, 116, 0.92);
+  border-color: rgba(11, 59, 116, 0.16);
+}
+
+.hs-home #home-slots .home-slots__doctor {
+  font-weight: 900;
+  letter-spacing: -0.1px;
+  color: #0b1f3a;
+}
+
+.hs-home #home-slots .home-slots__doctor-info {
+  margin-top: 2px;
+  opacity: 0.9;
+}
+
+.hs-home #home-slots .hs-btn {
+  border-radius: 12px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #0b3b74 0%, #1456a8 100%) !important;
+  border: 0 !important;
+  box-shadow: 0 14px 26px rgba(11, 59, 116, 0.18);
+}
+
+.hs-home #home-slots .hs-btn:hover,
+.hs-home #home-slots .hs-btn:focus {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  box-shadow: 0 18px 34px rgba(11, 59, 116, 0.22);
+}
+
+/* ======================================
+   Home: Featured Hospitals (premium UI)
+   ====================================== */
+
+.hs-home section#home-featured.home-featured[data-home-featured="1"] {
+  position: relative;
+}
+
+.hs-home #home-featured .home-featured__title {
+  font-weight: 900;
+  letter-spacing: -0.25px;
+}
+
+.hs-home #home-featured .home-featured__subtitle {
+  margin-top: 6px;
+  max-width: 34rem;
+}
+
+.hs-home #home-featured .home-featured__link {
+  font-weight: 900;
+  letter-spacing: 0.1px;
+  text-decoration: none;
+}
+
+.hs-home #home-featured .home-featured__link:hover {
+  text-decoration: underline;
+}
+
+.hs-home #home-featured .home-featured__card {
+  border: 1px solid rgba(31, 43, 61, 0.10);
+  overflow: hidden;
+}
+
+.hs-home #home-featured .home-featured__img {
+  height: 190px;
+  position: relative;
+}
+
+.hs-home #home-featured .home-featured__img::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.00) 35%, rgba(0, 0, 0, 0.22) 100%);
+  pointer-events: none;
+}
+
+.hs-home #home-featured .home-featured__name {
+  font-weight: 900;
+  letter-spacing: -0.15px;
+  color: #0b1f3a;
+}
+
+.hs-home #home-featured .home-featured__address i {
+  color: rgba(11, 59, 116, 0.85);
+}
+
+.hs-home #home-featured .home-featured__cta {
+  border-radius: 12px;
+  font-weight: 900;
+  background: rgba(11, 59, 116, 0.06);
+  border-color: rgba(11, 59, 116, 0.22) !important;
+}
+
+.hs-home #home-featured .home-featured__cta:hover,
+.hs-home #home-featured .home-featured__cta:focus {
+  transform: translateY(-1px);
+  background: rgba(11, 59, 116, 0.10);
+  border-color: rgba(11, 59, 116, 0.28) !important;
+  box-shadow: 0 14px 26px rgba(31, 43, 61, 0.12);
+}
+
+.hs-section-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1f2b3d;
+}
+
+.hs-card {
+  border: 0;
+  border-radius: var(--hs-card-radius);
+  box-shadow: 0 10px 24px rgba(31, 43, 61, 0.08);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.hs-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(31, 43, 61, 0.12);
+}
+
+.hs-filter-card {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.hs-btn {
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.hs-btn-outline {
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.hs-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex: 0 0 auto;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.hs-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hs-card-img {
+  height: 160px;
+  overflow: hidden;
+  border-top-left-radius: var(--hs-card-radius);
+  border-top-right-radius: var(--hs-card-radius);
+}
+
+.hs-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ======================================
+   Home Hospitals Section (premium UI)
+   Home-only via .hs-home + #home-hospitals
+   ====================================== */
+
+.hs-home section#home-hospitals.home-hospitals[data-home-hospitals="1"] {
+  position: relative;
+}
+
+.hs-home #home-hospitals .home-hospitals__title {
+  font-weight: 900;
+  letter-spacing: -0.25px;
+}
+
+.hs-home #home-hospitals .home-hospitals__subtitle {
+  margin-top: 6px;
+  max-width: 32rem;
+}
+
+.hs-home #home-hospitals .home-hospitals__control {
+  border-radius: 12px;
+  border-color: rgba(11, 59, 116, 0.22) !important;
+  background: rgba(255, 255, 255, 0.70);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 12px 22px rgba(31, 43, 61, 0.10);
+}
+
+.hs-home #home-hospitals .home-hospitals__control:hover,
+.hs-home #home-hospitals .home-hospitals__control:focus {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.86);
+  border-color: rgba(11, 59, 116, 0.30) !important;
+  box-shadow: 0 16px 28px rgba(31, 43, 61, 0.14);
+}
+
+.hs-home #home-hospitals .home-hospitals__carousel {
+  padding-top: 10px;
+  padding-bottom: 16px;
+}
+
+.hs-home #home-hospitals .home-hospitals__card {
+  border: 1px solid rgba(31, 43, 61, 0.10);
+  overflow: hidden;
+}
+
+.hs-home #home-hospitals .home-hospitals__img {
+  height: 178px;
+  position: relative;
+}
+
+.hs-home #home-hospitals .home-hospitals__img::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.00) 40%, rgba(0, 0, 0, 0.20) 100%);
+  pointer-events: none;
+}
+
+.hs-home #home-hospitals .home-hospitals__card h5 {
+  font-weight: 900;
+  letter-spacing: -0.15px;
+}
+
+.hs-home #home-hospitals .home-hospitals__cta {
+  border-radius: 12px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #0b3b74 0%, #1456a8 100%) !important;
+  border: 0 !important;
+  box-shadow: 0 14px 26px rgba(11, 59, 116, 0.18);
+}
+
+.hs-home #home-hospitals .home-hospitals__cta:hover,
+.hs-home #home-hospitals .home-hospitals__cta:focus {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  box-shadow: 0 18px 34px rgba(11, 59, 116, 0.22);
+}
+
+/* ======================================
+   Home: How Booking Works (premium UI)
+   ====================================== */
+
+.hs-home section#home-how.home-how[data-home-how="1"] {
+  position: relative;
+}
+
+.hs-home #home-how .home-how__title {
+  font-weight: 900;
+  letter-spacing: -0.25px;
+}
+
+.hs-home #home-how .home-how__subtitle {
+  margin-top: 6px;
+  max-width: 34rem;
+}
+
+.hs-home #home-how .home-how__card {
+  border: 1px solid rgba(31, 43, 61, 0.10);
+  background:
+    radial-gradient(420px 180px at 18% 18%, rgba(11, 59, 116, 0.06), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.92) 100%);
+}
+
+.hs-home #home-how .home-how__card .card-body {
+  padding: 22px;
+}
+
+.hs-home #home-how .home-how__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.hs-home #home-how .home-how__icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #0b3b74;
+  background: rgba(11, 59, 116, 0.10);
+  border: 1px solid rgba(11, 59, 116, 0.14);
+  box-shadow: 0 12px 22px rgba(31, 43, 61, 0.08);
+}
+
+.hs-home #home-how .home-how__icon i {
+  font-size: 18px;
+}
+
+.hs-home #home-how .home-how__step {
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  font-size: 12px;
+  color: rgba(31, 43, 61, 0.55);
+  background: rgba(31, 43, 61, 0.06);
+  border: 1px solid rgba(31, 43, 61, 0.10);
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.hs-home #home-how .home-how__card-title {
+  font-weight: 900;
+  letter-spacing: -0.15px;
+  color: #0b1f3a;
+}
+
+.hs-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.hs-date-invalid {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.12);
+}
+
+.hs-slot-meta {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 6px;
+  color: #1f2b3d;
+}
+
+.hs-slot-meta i {
+  margin-right: 8px;
+  color: var(--hs-accent);
+}
+
+.hs-empty {
+  padding: 22px;
+  border-radius: var(--hs-card-radius);
+  background: #ffffff;
+  border: 1px dashed rgba(0, 0, 0, 0.18);
+}
+
+.hs-empty-title {
+  font-weight: 700;
+  color: #1f2b3d;
+  margin-bottom: 4px;
+}
+
+.hs-empty-sub {
+  color: #6c757d;
+}
+
+.hs-stat-card .hs-stat-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--hs-accent);
+  line-height: 1.1;
+  margin-top: 6px;
+}
+
+.hs-carousel {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 6px 2px 12px;
+  scroll-snap-type: x mandatory;
+}
+
+.hs-carousel::-webkit-scrollbar {
+  height: 10px;
+}
+
+.hs-carousel-item {
+  flex: 0 0 auto;
+  width: 280px;
+  scroll-snap-align: start;
+}
+
+.hs-carousel-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.hs-slot-carousel {
+  padding-top: 2px;
+}
+
+.hs-slot-carousel-item {
+  width: 360px;
+}
+
+.hs-hospital-carousel-item {
+  width: 340px;
+}
+
+/* Service carousel (static cards) */
+.hs-service-carousel-item {
+  width: 340px;
+}
+
+.hs-service-img {
+  height: 180px;
+}
+
+/* ======================================
+   Home: Hospital Services (premium UI)
+   ====================================== */
+
+.hs-home section#home-services.home-services[data-home-services="1"].hs-section-alt {
+  background:
+    radial-gradient(900px 420px at 10% 0%, rgba(11, 59, 116, 0.08), transparent 60%),
+    radial-gradient(760px 380px at 92% 12%, rgba(20, 86, 168, 0.06), transparent 55%),
+    linear-gradient(180deg, #f7faff 0%, #ffffff 58%, #f5f7ff 100%) !important;
+}
+
+.hs-home #home-services .home-services__title {
+  font-weight: 900;
+  letter-spacing: -0.25px;
+}
+
+.hs-home #home-services .home-services__subtitle {
+  margin-top: 6px;
+  max-width: 34rem;
+}
+
+.hs-home #home-services .home-services__carousel {
+  padding-top: 10px;
+  padding-bottom: 16px;
+}
+
+.hs-home #home-services .home-services__card {
+  border: 1px solid rgba(31, 43, 61, 0.10);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.hs-home #home-services .home-services__img {
+  position: relative;
+}
+
+.hs-home #home-services .home-services__img::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.00) 35%, rgba(0, 0, 0, 0.20) 100%);
+  pointer-events: none;
+}
+
+.hs-home #home-services .home-services__kicker {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(11, 59, 116, 0.08);
+  color: rgba(11, 59, 116, 0.92);
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.hs-home #home-services .home-services__card-title {
+  font-weight: 900;
+  letter-spacing: -0.15px;
+  color: #0b1f3a;
+}
+
+.hs-home #home-services .home-services__text {
+  line-height: 1.7;
+}
+
+/* ======================================
+   Home: Patient Testimonials (premium UI)
+   ====================================== */
+
+.hs-home section#home-testimonials.home-testimonials[data-home-testimonials="1"] {
+  position: relative;
+}
+
+.hs-home #home-testimonials .home-testimonials__title {
+  font-weight: 900;
+  letter-spacing: -0.25px;
+}
+
+.hs-home #home-testimonials .home-testimonials__subtitle {
+  margin-top: 6px;
+  max-width: 34rem;
+}
+
+.hs-home #home-testimonials .home-testimonials__card {
+  border: 1px solid rgba(31, 43, 61, 0.10);
+  background:
+    radial-gradient(520px 220px at 12% 18%, rgba(11, 59, 116, 0.06), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.92) 100%);
+}
+
+.hs-home #home-testimonials .home-testimonials__card .card-body {
+  padding: 22px;
+}
+
+.hs-home #home-testimonials .home-testimonials__avatar {
+  border-radius: 14px;
+  border: 2px solid rgba(11, 59, 116, 0.16);
+  box-shadow: 0 14px 28px rgba(31, 43, 61, 0.12);
+}
+
+.hs-home #home-testimonials .home-testimonials__name {
+  font-weight: 900;
+  letter-spacing: -0.1px;
+  color: #0b1f3a;
+}
+
+.hs-home #home-testimonials .home-testimonials__headline {
+  font-weight: 900;
+  letter-spacing: -0.15px;
+  color: #0b3b74;
+}
+
+.hs-home #home-testimonials .home-testimonials__quote {
+  position: relative;
+  line-height: 1.75;
+  color: rgba(31, 43, 61, 0.78);
+}
+
+.hs-home #home-testimonials .home-testimonials__quote::before {
+  content: "\201C";
+  position: absolute;
+  left: -10px;
+  top: -14px;
+  font-size: 44px;
+  line-height: 1;
+  color: rgba(11, 59, 116, 0.18);
+}
+
+@media (max-width: 575px) {
+  .hs-slot-carousel-item {
+    width: 300px;
+  }
+
+  .hs-hospital-carousel-item {
+    width: 280px;
+  }
+}
+
+/* Footer (home-only force dark, readable) */
+.hs-home footer.footer.hs-footer {
+  background: linear-gradient(135deg, #061a33 0%, #0b3b74 60%, #1456a8 100%) !important;
+  color: rgba(255, 255, 255, 0.88) !important;
+}
+
+.hs-home footer.footer.hs-footer .footer-title {
+  color: #ffffff !important;
+}
+
+.hs-home footer.footer.hs-footer a {
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+.hs-home footer.footer.hs-footer a:hover {
+  color: #ffffff !important;
+}
+
+.hs-home footer.footer.hs-footer .footer-about-content p {
+  color: rgba(255, 255, 255, 0.76) !important;
+}
+
+.hs-home footer.footer.hs-footer .hs-social a {
+  background: rgba(255, 255, 255, 0.10) !important;
+  color: #ffffff !important;
+}
+
+.hs-home footer.footer.hs-footer .hs-social a:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+}
+
+.hs-home footer.footer.hs-footer .hs-footer-bottom {
+  background: rgba(0, 0, 0, 0.16) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+@media (max-width: 575px) {
+  .hs-carousel-item {
+    width: 240px;
+  }
+}
+
+@media (max-width: 991px) {
+  .hs-hero {
+    padding: 52px 0 32px;
+  }
+
+  .hs-home #home-hero.home-hero {
+    padding: 58px 0 38px;
+  }
+}

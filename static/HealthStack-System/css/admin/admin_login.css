@@ -1,0 +1,92 @@
+/* Hospital Admin Login page-only styling
+   Scope: body.hs-admin-login + #admin-login-page
+   Goal: premium look without affecting other admin pages.
+*/
+
+body.hs-admin-login {
+  background:
+    radial-gradient(900px 520px at 12% 6%, rgba(255, 255, 255, 0.08), transparent 60%),
+    radial-gradient(760px 420px at 92% 10%, rgba(255, 255, 255, 0.06), transparent 55%),
+    linear-gradient(135deg, #061a33 0%, #0b3b74 55%, #1456a8 100%);
+}
+
+body.hs-admin-login #admin-login-page.login-body {
+  background: transparent;
+}
+
+body.hs-admin-login #admin-login-page .login-wrapper .loginbox {
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+body.hs-admin-login #admin-login-page .login-wrapper .loginbox .login-left {
+  background:
+    radial-gradient(700px 360px at 20% 15%, rgba(255, 255, 255, 0.14), transparent 60%),
+    linear-gradient(135deg, #061a33 0%, #0b3b74 55%, #1456a8 100%) !important;
+}
+
+body.hs-admin-login #admin-login-page .login-wrapper .loginbox .login-right {
+  background: rgba(255, 255, 255, 0.96);
+}
+
+body.hs-admin-login #admin-login-page .login-wrapper .loginbox .login-right h1 {
+  font-weight: 900;
+  letter-spacing: -0.2px;
+}
+
+body.hs-admin-login #admin-login-page .account-subtitle {
+  color: #5e6b7a;
+  font-weight: 600;
+}
+
+body.hs-admin-login #admin-login-page .form-control {
+  border-radius: 12px;
+}
+
+body.hs-admin-login #admin-login-page .form-control:focus {
+  border-color: rgba(11, 59, 116, 0.55);
+  box-shadow: 0 0 0 0.2rem rgba(11, 59, 116, 0.18);
+}
+
+body.hs-admin-login #admin-login-page .btn.btn-primary {
+  background: linear-gradient(135deg, #0b3b74 0%, #1456a8 100%);
+  border: 0;
+  border-radius: 12px;
+  font-weight: 900;
+  box-shadow: 0 12px 22px rgba(11, 59, 116, 0.20);
+  transition: transform 180ms ease, filter 180ms ease, box-shadow 180ms ease;
+}
+
+body.hs-admin-login #admin-login-page .btn.btn-primary:hover,
+body.hs-admin-login #admin-login-page .btn.btn-primary:focus {
+  filter: brightness(1.03);
+  transform: translateY(-1px);
+  box-shadow: 0 16px 28px rgba(11, 59, 116, 0.26);
+}
+
+body.hs-admin-login #admin-login-page .dont-have,
+body.hs-admin-login #admin-login-page .dont-have a,
+body.hs-admin-login #admin-login-page .forgotpass a {
+  color: #1456a8;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+body.hs-admin-login #admin-login-page .dont-have a:hover,
+body.hs-admin-login #admin-login-page .forgotpass a:hover {
+  color: #0b3b74;
+  text-decoration: underline;
+}
+
+body.hs-admin-login #admin-login-page .login-or .or-line {
+  background: rgba(31, 43, 61, 0.14);
+}
+
+body.hs-admin-login #admin-login-page .login-or .span-or {
+  background: rgba(255, 255, 255, 0.96);
+  color: rgba(31, 43, 61, 0.62);
+  border-radius: 999px;
+  padding: 0 10px;
+}

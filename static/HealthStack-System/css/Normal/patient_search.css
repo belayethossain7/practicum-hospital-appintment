@@ -1,0 +1,171 @@
+/* Patient Search (Search Doctor) — page-only UI redesign
+   Scope: body.hs-patient-search #patient-search-page
+   Wrappers:
+   - Navbar: #patient-search-navbar.patient-search-navbar
+   - Sidebar: #patient-search-sidebar.patient-search-sidebar
+   - Footer: #patient-search-footer.patient-search-footer
+*/
+
+body.hs-patient-search {
+  background: #f4f7fb;
+  min-height: 100vh;
+}
+
+body.hs-patient-search #patient-search-page {
+  background: transparent;
+}
+
+/* =========================
+   Navbar (page-only)
+   ========================= */
+
+body.hs-patient-search #patient-search-page #patient-search-navbar.patient-search-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+/* Force the premium gradient even if legacy `.header-nav` is white */
+body.hs-patient-search #patient-search-page #patient-search-navbar.patient-search-navbar .header-nav,
+body.hs-patient-search #patient-search-page #patient-search-navbar.patient-search-navbar .header-nav.hs-navbar,
+body.hs-patient-search #patient-search-page #patient-search-navbar.patient-search-navbar .hs-navbar.header-nav {
+  background:
+    radial-gradient(900px 420px at 10% 0%, rgba(255, 255, 255, 0.10), transparent 60%),
+    radial-gradient(760px 380px at 92% 14%, rgba(255, 255, 255, 0.08), transparent 55%),
+    linear-gradient(135deg, #061a33 0%, var(--hs-primary, #0b3b74) 55%, var(--hs-primary-600, #1456a8) 100%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 0 10px 24px rgba(10, 31, 68, 0.18);
+}
+
+body.hs-patient-search #patient-search-page #patient-search-navbar.patient-search-navbar .header-nav .main-nav > li > a,
+body.hs-patient-search #patient-search-page #patient-search-navbar.patient-search-navbar .header-nav .navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.92) !important;
+  transition: color 180ms ease, opacity 180ms ease;
+}
+
+body.hs-patient-search #patient-search-page #patient-search-navbar.patient-search-navbar .header-nav .main-nav > li > a:hover,
+body.hs-patient-search #patient-search-page #patient-search-navbar.patient-search-navbar .header-nav .navbar-nav .nav-link:hover,
+body.hs-patient-search #patient-search-page #patient-search-navbar.patient-search-navbar .header-nav .navbar-nav .nav-link:focus {
+  color: #ffffff !important;
+}
+
+body.hs-patient-search #patient-search-page #patient-search-navbar.patient-search-navbar .header-contact-detail .contact-header,
+body.hs-patient-search #patient-search-page #patient-search-navbar.patient-search-navbar .header-contact-detail .contact-info-header {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+body.hs-patient-search #patient-search-page #patient-search-navbar.patient-search-navbar .dropdown-menu {
+  border: 1px solid rgba(10, 31, 68, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(10, 31, 68, 0.16);
+}
+
+/* =========================
+   Sidebar (page-only)
+   ========================= */
+
+body.hs-patient-search #patient-search-page #patient-search-sidebar.patient-search-sidebar .profile-sidebar {
+  background: #ffffff;
+  border: 1px solid rgba(10, 31, 68, 0.10);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(10, 31, 68, 0.08);
+  overflow: hidden;
+}
+
+body.hs-patient-search #patient-search-page #patient-search-sidebar.patient-search-sidebar .profile-sidebar .widget-profile,
+body.hs-patient-search #patient-search-page #patient-search-sidebar.patient-search-sidebar .profile-sidebar .pro-widget-content,
+body.hs-patient-search #patient-search-page #patient-search-sidebar.patient-search-sidebar .profile-sidebar .dashboard-widget {
+  background: transparent;
+  border: 0;
+}
+
+body.hs-patient-search #patient-search-page #patient-search-sidebar.patient-search-sidebar .profile-sidebar .profile-info-widget {
+  background:
+    radial-gradient(520px 240px at 10% 0%, rgba(255, 255, 255, 0.16), transparent 58%),
+    linear-gradient(135deg, #061a33 0%, var(--hs-primary, #0b3b74) 55%, var(--hs-primary-600, #1456a8) 100%);
+  border-bottom: 1px solid rgba(10, 31, 68, 0.08);
+  padding: 18px;
+}
+
+body.hs-patient-search #patient-search-page #patient-search-sidebar.patient-search-sidebar .profile-sidebar .profile-info-widget img {
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.28);
+}
+
+body.hs-patient-search #patient-search-page #patient-search-sidebar.patient-search-sidebar .profile-sidebar .profile-det-info h3 {
+  color: #ffffff;
+}
+
+body.hs-patient-search #patient-search-page #patient-search-sidebar.patient-search-sidebar .profile-sidebar .patient-details h5 {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+body.hs-patient-search #patient-search-page #patient-search-sidebar.patient-search-sidebar .profile-sidebar .dashboard-menu.sidebar {
+  background: transparent;
+  padding: 12px;
+}
+
+body.hs-patient-search #patient-search-page #patient-search-sidebar.patient-search-sidebar .profile-sidebar .dashboard-menu.sidebar ul {
+  margin: 0;
+  padding: 0;
+}
+
+body.hs-patient-search #patient-search-page #patient-search-sidebar.patient-search-sidebar .profile-sidebar .dashboard-menu.sidebar ul li a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: rgba(10, 31, 68, 0.82) !important;
+  background: transparent;
+  transition: background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease, color 180ms ease;
+}
+
+body.hs-patient-search #patient-search-page #patient-search-sidebar.patient-search-sidebar .profile-sidebar .dashboard-menu.sidebar ul li a i {
+  color: rgba(10, 31, 68, 0.70);
+}
+
+body.hs-patient-search #patient-search-page #patient-search-sidebar.patient-search-sidebar .profile-sidebar .dashboard-menu.sidebar ul li a:hover {
+  background: rgba(11, 59, 116, 0.06);
+  box-shadow: 0 10px 18px rgba(10, 31, 68, 0.08);
+  transform: translateY(-1px);
+  color: rgba(10, 31, 68, 0.92) !important;
+}
+
+body.hs-patient-search #patient-search-page #patient-search-sidebar.patient-search-sidebar .profile-sidebar .dashboard-menu.sidebar ul li.active a {
+  background: rgba(11, 59, 116, 0.10);
+  border: 1px solid rgba(11, 59, 116, 0.18);
+}
+
+/* =========================
+   Footer (page-only)
+   ========================= */
+
+body.hs-patient-search #patient-search-page #patient-search-footer.patient-search-footer {
+  margin-top: 26px;
+}
+
+body.hs-patient-search #patient-search-page #patient-search-footer.patient-search-footer .footer,
+body.hs-patient-search #patient-search-page #patient-search-footer.patient-search-footer footer,
+body.hs-patient-search #patient-search-page #patient-search-footer.patient-search-footer .hs-footer {
+  background:
+    radial-gradient(900px 420px at 10% 0%, rgba(255, 255, 255, 0.08), transparent 60%),
+    linear-gradient(135deg, #061a33 0%, var(--hs-primary, #0b3b74) 55%, var(--hs-primary-600, #1456a8) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+body.hs-patient-search #patient-search-page #patient-search-footer.patient-search-footer a {
+  color: rgba(255, 255, 255, 0.88);
+  transition: color 180ms ease, opacity 180ms ease;
+}
+
+body.hs-patient-search #patient-search-page #patient-search-footer.patient-search-footer a:hover {
+  color: #ffffff;
+}
+
+/* Responsive: keep sidebar spacing clean */
+@media (max-width: 991.98px) {
+  body.hs-patient-search #patient-search-page #patient-search-sidebar.patient-search-sidebar {
+    margin-bottom: 18px;
+  }
+}

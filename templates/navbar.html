@@ -1,0 +1,12 @@
+{% comment %}
+Single navbar entrypoint used across pages.
+Renders the appropriate navbar based on the authenticated user's role.
+{% endcomment %}
+
+{% if user.is_authenticated and user.is_patient %}
+  {% include 'patient_navbar.html' %}
+{% elif user.is_authenticated and user.is_doctor %}
+  {% include 'doctor-navbar.html' %}
+{% else %}
+  {% include 'navbar_home.html' %}
+{% endif %}

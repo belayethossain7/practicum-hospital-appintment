@@ -1,0 +1,500 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <!-- HealthStack/booking.html  30 Nov 2019 04:12:16 GMT -->
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=0"
+    />
+    <title>HealthStack</title>
+
+    <!-- Favicons -->
+    <link
+      type="image/x-icon"
+      href="{% static 'HealthStack-System/images/Normal/favicon.png' %}"
+      rel="icon"
+    />
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="{% static 'HealthStack-System/css/Normal/bootstrap.min.css' %}"
+    />
+
+    <!-- Fontawesome CSS -->
+    <link
+      rel="stylesheet"
+      href="{% static 'HealthStack-System/plugins/Normal/fontawesome/css/fontawesome.min.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'HealthStack-System/plugins/Normal/fontawesome/css/all.min.css' %}"
+    />
+
+    <!-- Main CSS -->
+    <link
+      rel="stylesheet"
+      href="{% static 'HealthStack-System/css/Normal/style.css' %}"
+    />
+
+    <!-- Booking CSS -->
+    <link
+      rel="stylesheet"
+      href="{% static 'HealthStack-System/css/Normal/booking.css' %}"
+    />
+    
+    <link
+      rel="stylesheet"
+      href="{% static 'HealthStack-System/css/Normal/timedropper.css' %}"
+    />
+    <link href="{% static 'HealthStack-System/css/Normal/date_dropper.css' %}" rel="stylesheet"/>   
+    <link href="{% static 'HealthStack-System/css/Normal/my_style.css' %}" rel="stylesheet"/>
+
+    <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script> -->
+    <!-- datedropper -->
+    <!-- <script src="{% static 'HealthStack-System/js/Normal/datedropper-jquery.js' %}"></script> -->
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="assets/js/html5shiv.min.js"></script>
+      <script src="assets/js/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Header -->
+      <header class="header">{% include 'navbar.html' %}</header>
+      <!-- /Header -->
+
+      <!-- Breadcrumb -->
+      <div class="breadcrumb-bar">
+        <div class="container-fluid">
+          <div class="row align-items-center">
+            <div class="col-md-12 col-12">
+              <nav aria-label="breadcrumb" class="page-breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item"><a href="{% url 'patient-dashboard' %}">Home</a></li>
+                  <li class="breadcrumb-item active" aria-current="page">
+                    Booking
+                  </li>
+                </ol>
+              </nav>
+              <h2 class="breadcrumb-title">Booking</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /Breadcrumb -->
+
+      <!-- Page Content -->
+      <div class="content">
+        <div class="container">
+          <div class="row">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-body">
+                  <div class="booking-doc-info">
+                    <a href="doctor-profile.html" class="booking-doc-img">
+                      <img
+                        src="{{ doctor.featured_image.url }}"
+                        alt="User Image"
+                      />
+                    </a>
+                    <div class="booking-info">
+                      <h4>
+                        <a href="doctor-profile.html">{{doctor.name}}</a>
+                      </h4>
+                      <div class="rating">
+                        <i class="fas fa-star filled"></i>
+                        <i class="fas fa-star filled"></i>
+                        <i class="fas fa-star filled"></i>
+                        <i class="fas fa-star filled"></i>
+                        <i class="fas fa-star"></i>
+                        <span class="d-inline-block average-rating">35</span>
+                      </div>
+                      <p class="text-muted mb-0">
+                        <i class="fas fa-map-marker-alt"></i>
+                        {{doctor.hospital_name}}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Schedule Widget -->
+              <div class="card">
+                <!-- <div class="card-body">
+                  <div class="booking-doc-info">
+                    
+
+                    <form
+                      action="#"
+                      method="POST"
+                      enctype="multipart/form-data"
+                    >
+                      {% csrf_token %}
+
+                      <div class="row form-row">
+                        <div class="col-12 col-md-12">
+                          <div class="form-group">
+                            <div class="change-avatar"></div>
+                          </div>
+                        </div>
+
+                        <div class="col-8 col-md-8">
+                          <div class="form-group">
+                            <label>Appointment Date</label>
+                            <input
+                              type="date"
+                              class="form-control"
+                              name="date"
+                            />
+                          </div>
+                        </div>
+
+                        <div class="col-8 col-md-8">
+                          <div class="form-group">
+                            <label>Appointment Time</label>
+                            <input
+                              type="time"
+                              class="form-control"
+                              name="time"
+                            />
+                          </div>
+                        </div>
+
+                        <div class="col-8 col-md-4">
+                          <div class="form-group">
+                            <label>Appointment Type</label>
+                            <select
+                              class="form-control select"
+                              name="appointment_type"
+                            >
+                              <option value="checkup">checkup</option>
+                              <option value="report">report</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="submit-section">
+                        <button
+                          type="submit"
+                          class="btn btn-primary submit-btn"
+                        >
+                          Save Changes
+                        </button>
+                      </div>
+                      
+                    </form>
+                    
+                  </div>
+                </div> -->
+                <!-- /Schedule Header -->
+
+                <div class="schedule widget-boxed mt-33 mt-0">
+                  <div class="widget-boxed-header">
+                      <h4><i class="fa fa-calendar pr-3 padd-r-10"></i>Schedule an Appointment</h4>
+                  </div>
+
+                  <form method="post" action="{% url 'booking' pk=doctor.doctor_id %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                      <div class="agent-contact-form-sidebar">
+                          <div class="row">
+                              <div class="col-lg-6 col-md-12 book">
+                                  <label>Appointment Date</label>
+                                  <!-- <input type="date" name="appoint_date" id="reservation-date" data-lang="en" data-large-mode="true" data-min-year="2021" data-max-year="2025" data-id="datedropper-0" data-theme="my-style" class="form-control" > -->
+                                  <input type="date" name="appoint_date" id="reservation-date" data-large-mode="true" data-lock="from" data-theme="my-style" class="form-control"/>
+                                  
+                                </div>
+                              <div class="col-lg-6 col-md-12 book2">
+                                  <label>Appointment Time</label>
+                                  <input type="text" name="appoint_time" id="reservation-time" class="form-control" readonly="" required>
+                              </div>
+                              <div class="col-lg-12 col-md-12">
+                                <label>Available Time Slots (10:00 AM - 4:00 PM)</label>
+                                <div id="appointment-slot-list" class="list-group slot-grid" style="max-height: 240px; overflow-y: auto;"></div>
+                                <small class="form-text text-muted">Past slots are red, booked slots are yellow, and cannot be selected.</small>
+                              </div>
+                              <div class="col-lg-6 col-md-12">
+                                <div class="form-group">
+                                  <label>Appointment Type</label>
+                                  <select
+                                    class="form-control select"
+                                    name="appointment_type"
+                                  >
+                                    <option value="checkup">checkup</option>
+                                    <option value="report">report</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div class="col-lg-12 col-md-12" style="padding-bottom: 10px;">
+                                <label>Message</label>
+                                <textarea placeholder="Message" name="message"></textarea>
+                              </div>
+
+                          </div>
+                          <div class="submit-section">
+                            <button
+                              type="submit"
+                              class="btn btn-primary submit-btn"
+                            >
+                              Submit Request
+                            </button>
+                          </div>
+                      </div>
+                  </form>
+
+              </div>
+              </div>
+
+              <!-- /Schedule Widget Payment button -->
+
+              <!-- Submit Section -->
+              <!-- <div class="submit-section proceed-btn text-right">
+                <a href="#" class="btn btn-primary submit-btn"
+                  >Proceed to Pay</a
+                >
+              </div> -->
+              <!-- /Submit Section -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /Page Content -->
+
+      <!-- Footer -->
+      {% include 'footer.html' %}
+      <!-- /Footer -->
+    </div>
+    <!-- /Main Wrapper -->
+
+    <!-- jQuery -->
+    <script src="{% static 'HealthStack-System/js/Normal/jquery.min.js' %}"></script>
+
+    <!-- Bootstrap Core JS -->
+    <script src="{% static 'HealthStack-System/js/Normal/popper.min.js' %}"></script>
+    <script src="{% static 'HealthStack-System/js/Normal/bootstrap.min.js' %}"></script>
+
+    <!-- Custom JS -->
+    <script src="{% static 'HealthStack-System/Outside_assets/js/script.js' %}"></script>
+
+    <!-- booking js -->
+    <script src="{% static 'HealthStack-System/js/Normal/date_dropper.js' %}"></script>
+
+    <!-- Date Dropper Script-->
+    <script>
+      $('#reservation-date').dateDropper();
+    </script>
+    <script>
+      (function() {
+        var slotListEl = document.getElementById('appointment-slot-list');
+        var dateInputEl = document.getElementById('reservation-date');
+        var timeInputEl = document.getElementById('reservation-time');
+        var slotsUrl = "{% url 'booking-slots' pk=doctor.doctor_id %}";
+
+        var urlParams = new URLSearchParams(window.location.search || '');
+        var prefillDate = urlParams.get('date') || '';
+        var prefillTime = urlParams.get('time') || '';
+
+        function pad2(n) {
+          return String(n).padStart(2, '0');
+        }
+
+        function format12h(hours24, minutes) {
+          var ampm = hours24 >= 12 ? 'PM' : 'AM';
+          var h = hours24 % 12;
+          if (h === 0) h = 12;
+          return h + ':' + pad2(minutes) + ' ' + ampm;
+        }
+
+        function slotStartMinutesFromLabel(label) {
+          // label format: "H:MM AM"
+          var m = String(label).trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+          if (!m) return null;
+          var h = parseInt(m[1], 10);
+          var min = parseInt(m[2], 10);
+          var ap = m[3].toUpperCase();
+          if (ap === 'PM' && h !== 12) h += 12;
+          if (ap === 'AM' && h === 12) h = 0;
+          return (h * 60) + min;
+        }
+
+        function formatRangeLabel(startLabel) {
+          var startMin = slotStartMinutesFromLabel(startLabel);
+          if (startMin === null) return startLabel;
+          var endMin = startMin + 30;
+          var endH = Math.floor(endMin / 60);
+          var endM = endMin % 60;
+          return startLabel + ' - ' + format12h(endH, endM);
+        }
+
+        function buildSlots() {
+          var out = [];
+          // 10:00 AM inclusive to 4:00 PM end-exclusive, 30-min increments.
+          for (var hour = 10; hour < 16; hour++) {
+            out.push(format12h(hour, 0));
+            out.push(format12h(hour, 30));
+          }
+          // Remove 4:30 PM (never added) and ensure last is 3:30 PM.
+          return out;
+        }
+
+        function clearSelection() {
+          timeInputEl.value = '';
+          var active = slotListEl.querySelector('.active');
+          if (active) active.classList.remove('active');
+        }
+
+        function renderSlots(booked) {
+          var allSlots = buildSlots();
+          slotListEl.innerHTML = '';
+          clearSelection();
+
+          if (!dateInputEl.value) {
+            var empty = document.createElement('div');
+            empty.className = 'list-group-item';
+            empty.textContent = 'Select a date to see available time slots.';
+            slotListEl.appendChild(empty);
+            return;
+          }
+
+          var selectedDate = dateInputEl.value;
+          var isToday = false;
+          var cutoffMinutes = null;
+          if (window.__serverToday && selectedDate && selectedDate === window.__serverToday) {
+            isToday = true;
+            cutoffMinutes = window.__serverNowMinutes;
+          } else {
+            // Fallback to browser clock if server values aren't available.
+            var now = new Date();
+            var todayStr = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate());
+            if (selectedDate && selectedDate === todayStr) {
+              isToday = true;
+              cutoffMinutes = (now.getHours() * 60) + now.getMinutes();
+            }
+          }
+
+          allSlots.forEach(function(startLabel) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'list-group-item list-group-item-action';
+            btn.textContent = formatRangeLabel(startLabel);
+            btn.setAttribute('data-slot', startLabel);
+
+            var startMin = slotStartMinutesFromLabel(startLabel);
+            if (isToday && startMin !== null && cutoffMinutes !== null && startMin <= cutoffMinutes) {
+              btn.className += ' list-group-item-danger';
+              btn.disabled = true;
+              btn.setAttribute('aria-disabled', 'true');
+              slotListEl.appendChild(btn);
+              return;
+            }
+
+            if (booked && booked.indexOf(startLabel) !== -1) {
+              btn.className += ' list-group-item-warning';
+              btn.disabled = true;
+              btn.setAttribute('aria-disabled', 'true');
+            } else {
+              btn.addEventListener('click', function() {
+                var currentlyActive = slotListEl.querySelector('.active');
+                if (currentlyActive) currentlyActive.classList.remove('active');
+                btn.classList.add('active');
+                timeInputEl.value = startLabel;
+              });
+            }
+
+            slotListEl.appendChild(btn);
+          });
+
+          if (prefillTime) {
+            var buttons = slotListEl.querySelectorAll('button[data-slot]');
+            for (var i = 0; i < buttons.length; i++) {
+              if (buttons[i].getAttribute('data-slot') === prefillTime && !buttons[i].disabled) {
+                buttons[i].click();
+                break;
+              }
+            }
+          }
+        }
+
+        function loadBookedSlots() {
+          if (!dateInputEl.value) {
+            renderSlots([]);
+            return;
+          }
+
+          var url = slotsUrl + '?date=' + encodeURIComponent(dateInputEl.value);
+          fetch(url, { credentials: 'same-origin' })
+            .then(function(resp) {
+              if (!resp.ok) throw new Error('Failed to load slots');
+              return resp.json();
+            })
+            .then(function(data) {
+              window.__serverToday = (data && data.server_today) ? data.server_today : null;
+              window.__serverNowMinutes = (data && typeof data.server_now_minutes === 'number') ? data.server_now_minutes : null;
+              renderSlots((data && data.booked) ? data.booked : []);
+            })
+            .catch(function() {
+              // If the endpoint fails, still show slots (no booked info).
+              window.__serverToday = null;
+              window.__serverNowMinutes = null;
+              renderSlots([]);
+            });
+
+            // Prefill date on load (if provided) and trigger slot loading.
+            if (prefillDate) {
+              dateInputEl.value = prefillDate;
+            }
+        }
+
+        dateInputEl.addEventListener('change', function() {
+          loadBookedSlots();
+        });
+        dateInputEl.addEventListener('input', function() {
+          loadBookedSlots();
+        });
+
+        // Initial render
+        loadBookedSlots();
+      })();
+    </script>
+
+    <script>
+      $(document).ready(function() {
+          $('.popup-youtube, .popup-vimeo, .popup-gmaps').magnificPopup({
+              disableOn: 700,
+              type: 'iframe',
+              mainClass: 'mfp-fade',
+              removalDelay: 160,
+              preloader: false,
+              fixedContentPos: false
+          });
+      });
+    </script>
+
+    <script>
+      $('.slick-carousel').each(function() {
+          var slider = $(this);
+          $(this).slick({
+              infinite: true,
+              dots: false,
+              arrows: false,
+              centerMode: true,
+              centerPadding: '0'
+          });
+
+          $(this).closest('.slick-slider-area').find('.slick-prev').on("click", function() {
+              slider.slick('slickPrev');
+          });
+          $(this).closest('.slick-slider-area').find('.slick-next').on("click", function() {
+              slider.slick('slickNext');
+          });
+      });
+    </script>
+  </body>
+
+  <!-- doccure/booking.html  30 Nov 2019 04:12:16 GMT -->
+</html>

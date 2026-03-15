@@ -1,0 +1,494 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=0"
+    />
+    <title>HealthStack</title>
+
+    <!-- Favicons -->
+    <link
+      type="image/x-icon"
+      href="{% static 'HealthStack-System/images/Normal/favicon.png' %}"
+      rel="icon"
+    />
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="{% static 'HealthStack-System/css/Normal/bootstrap.min.css' %}"
+    />
+
+    <!-- Fontawesome CSS -->
+    <link
+      rel="stylesheet"
+      href="{% static 'HealthStack-System/plugins/Normal/fontawesome/css/fontawesome.min.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'HealthStack-System/plugins/Normal/fontawesome/css/all.min.css' %}"
+    />
+
+    <!-- Main CSS -->
+    <link
+      rel="stylesheet"
+      href="{% static 'HealthStack-System/css/Normal/style.css' %}"
+    />
+
+    <!-- Appointment Home CSS -->
+    <link
+      rel="stylesheet"
+      href="{% static 'HealthStack-System/css/Normal/appointment_home.css' %}"
+    />
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="assets/js/html5shiv.min.js"></script>
+      <script src="assets/js/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body class="hs-home">
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Header -->
+      <header class="header">{% include 'navbar.html' %}</header>
+      <!-- header -->
+
+      <!-- Hero -->
+      <section class="hs-hero hs-hero--photo home-hero" id="home-hero">
+        <div class="container">
+          <div class="row align-items-center">
+            <div class="col-lg-6">
+              <h1 class="hs-hero-title home-hero__title">Book Your Hospital Appointment Easily</h1>
+              <p class="hs-hero-subtitle home-hero__subtitle">
+                Quickly find trusted doctors, compare hospitals, and secure an appointment slot in minutes.
+              </p>
+              <div class="hs-hero-actions home-hero__actions">
+                <a href="{% url 'search' %}" class="btn home-hero__btn home-hero__btn-secondary">Find Doctors</a>
+                <a href="#appointment" class="btn home-hero__btn home-hero__btn-primary">Book Appointment</a>
+              </div>
+            </div>
+
+            <div class="col-lg-6 mt-4 mt-lg-0">
+              <div class="hs-hero-media">
+                <img
+                  class="hs-hero-photo"
+                  src="{% static 'HealthStack-System/images/Normal/doctors/doctor-04.jpg' %}"
+                  alt="Doctor at hospital"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Appointment (filters) -->
+      <section class="hs-section hs-section-alt home-appointment" id="appointment" data-home-appointment="1">
+        <div class="container">
+          <div class="row align-items-start">
+            <div class="col-lg-5 mb-4 mb-lg-0">
+              <h2 class="hs-section-title home-appointment__title">Book an Appointment</h2>
+              <div class="hs-muted home-appointment__subtitle">Select hospital, doctor, date, and confirm a slot.</div>
+              <div class="home-appointment__steps" aria-hidden="true">
+                <span class="home-appointment__step">1. Hospital</span>
+                <span class="home-appointment__step">2. Specialization</span>
+                <span class="home-appointment__step">3. Doctor</span>
+                <span class="home-appointment__step">4. Slot</span>
+              </div>
+            </div>
+            <div class="col-lg-7">
+              <div class="card hs-card hs-filter-card home-appointment__card">
+                <div class="card-body">
+                  <form id="hsFilterForm" method="get" action="{% url 'hospital_home' %}">
+                    <div class="form-group mb-2">
+                      <label class="small hs-muted mb-1 home-appointment__label">Search</label>
+                      <input
+                        class="form-control home-appointment__control"
+                        type="text"
+                        name="q"
+                        value="{{ filters.q }}"
+                        placeholder="Search doctor or hospital"
+                        autocomplete="off"
+                      />
+                    </div>
+
+                    <div class="form-row">
+                      <div class="form-group col-12 col-md-6 mb-2">
+                        <label class="small hs-muted mb-1 home-appointment__label">Hospital</label>
+                        <select class="form-control home-appointment__control" name="hospital" id="hsHospitalSelect">
+                          <option value="">All hospitals</option>
+                          {% for h in hospitals %}
+                            <option value="{{ h.hospital_id }}" {% if filters.hospital == h.hospital_id|stringformat:"s" %}selected{% endif %}>
+                              {{ h.name }}
+                            </option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="form-group col-12 col-md-6 mb-2">
+                        <label class="small hs-muted mb-1 home-appointment__label">Specialization</label>
+                        <select class="form-control home-appointment__control" name="specialization" id="hsSpecializationSelect" data-selected="{{ filters.specialization }}" {% if not filters.hospital %}disabled{% endif %}>
+                          <option value="">Select hospital first</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="form-group mb-2">
+                      <label class="small hs-muted mb-1 home-appointment__label">Doctor</label>
+                      <select class="form-control home-appointment__control" name="doctor" id="hsDoctorSelect" data-selected="{{ filters.doctor }}" disabled>
+                        <option value="">Select specialization first</option>
+                      </select>
+                      <small class="hs-muted home-appointment__hint">Choose a doctor to load time slots.</small>
+                    </div>
+
+                    <div class="form-group mb-3">
+                      <label class="small hs-muted mb-1 home-appointment__label">Date</label>
+                      <input class="form-control home-appointment__control" type="date" name="date" id="hsDateInput" min="{{ today_iso }}" value="{{ filters.date }}" />
+                      <small class="hs-date-help text-danger d-none" id="hsDateHelp">Past dates are not allowed.</small>
+                    </div>
+
+                    <div class="form-group mb-3">
+                      <label class="small hs-muted mb-1 home-appointment__label">Time Slot</label>
+                      <select class="form-control home-appointment__control" name="time" id="hsSlotSelect" data-selected="{{ filters.time }}" disabled>
+                        <option value="">Select date to see slots</option>
+                      </select>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-12">
+                        <button type="button" id="hsQuickBookBtn" class="btn btn-primary btn-block hs-btn home-appointment__submit" disabled>
+                          Book Appointment
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Hospitals (branches) -->
+      <section class="hs-section home-hospitals" id="home-hospitals" data-home-hospitals="1">
+        <div class="container">
+          <div class="d-flex align-items-end justify-content-between mb-3 flex-wrap">
+            <div>
+              <h2 class="hs-section-title home-hospitals__title">Hospitals</h2>
+              <div class="hs-muted home-hospitals__subtitle">Select a hospital to see its branch doctors</div>
+            </div>
+            <div class="hs-carousel-controls">
+              <button type="button" class="btn btn-outline-primary btn-sm hs-btn-outline home-hospitals__control" id="hsHospitalPrev" aria-label="Previous">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <button type="button" class="btn btn-outline-primary btn-sm hs-btn-outline home-hospitals__control" id="hsHospitalNext" aria-label="Next">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          {% if hospitals %}
+            <div class="hs-carousel hs-hospital-carousel home-hospitals__carousel" id="hsHospitalCarousel">
+              {% for h in hospitals %}
+                <div class="hs-carousel-item hs-hospital-carousel-item">
+                  <div class="card hs-card hs-hospital-card h-100 home-hospitals__card">
+                    <a class="hs-card-link" href="{% url 'hospital-branch-doctors' pk=h.hospital_id %}">
+                      <div class="hs-card-img home-hospitals__img">
+                        <img src="{{ h.featured_image.url }}" alt="{{ h.name }}" />
+                      </div>
+                    </a>
+                    <div class="card-body d-flex flex-column">
+                      <a class="hs-card-link" href="{% url 'hospital-branch-doctors' pk=h.hospital_id %}">
+                        <h5 class="mb-1">{{ h.name }}</h5>
+                      </a>
+                      <div class="hs-muted small"><i class="fas fa-map-marker-alt"></i> {{ h.address }}</div>
+                      <div class="mt-auto pt-3">
+                        <a href="{% url 'hospital-branch-doctors' pk=h.hospital_id %}" class="btn btn-primary btn-sm hs-btn btn-block home-hospitals__cta">See Doctors</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="hs-empty">
+              <div class="hs-empty-title">No hospitals found.</div>
+            </div>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- Statistics -->
+      <section class="hs-section">
+        <div class="container">
+          <div class="row">
+            <div class="col-12 col-md-4 mb-3">
+              <div class="card hs-card hs-stat-card">
+                <div class="card-body">
+                  <div class="hs-muted small">Hospitals</div>
+                  <div class="hs-stat-value">{{ stats.hospitals }}</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-4 mb-3">
+              <div class="card hs-card hs-stat-card">
+                <div class="card-body">
+                  <div class="hs-muted small">Doctors</div>
+                  <div class="hs-stat-value">{{ stats.doctors }}</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-4 mb-3">
+              <div class="card hs-card hs-stat-card">
+                <div class="card-body">
+                  <div class="hs-muted small">Patients Served</div>
+                  <div class="hs-stat-value">{{ stats.patients }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- How It Works -->
+      <section class="hs-section home-how" id="home-how" data-home-how="1">
+        <div class="container">
+          <div class="d-flex align-items-end justify-content-between mb-3 flex-wrap">
+            <div>
+              <h2 class="hs-section-title home-how__title">How Booking Works</h2>
+              <div class="hs-muted home-how__subtitle">Simple steps to confirm an appointment</div>
+            </div>
+          </div>
+
+          <div class="row home-how__grid">
+            <div class="col-12 col-md-4 mb-4">
+              <div class="card hs-card h-100 home-how__card">
+                <div class="card-body">
+                  <div class="home-how__heading">
+                    <span class="home-how__icon" aria-hidden="true"><i class="fas fa-hospital"></i></span>
+                    <span class="home-how__step">01</span>
+                  </div>
+                  <div class="font-weight-bold mb-2 home-how__card-title">Choose a Hospital</div>
+                  <div class="hs-muted">Open a branch and review doctors available in that location.</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-4 mb-4">
+              <div class="card hs-card h-100 home-how__card">
+                <div class="card-body">
+                  <div class="home-how__heading">
+                    <span class="home-how__icon" aria-hidden="true"><i class="fas fa-user-md"></i></span>
+                    <span class="home-how__step">02</span>
+                  </div>
+                  <div class="font-weight-bold mb-2 home-how__card-title">Select a Doctor</div>
+                  <div class="hs-muted">Pick specialization and doctor, then choose your preferred date.</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-4 mb-4">
+              <div class="card hs-card h-100 home-how__card">
+                <div class="card-body">
+                  <div class="home-how__heading">
+                    <span class="home-how__icon" aria-hidden="true"><i class="far fa-calendar-check"></i></span>
+                    <span class="home-how__step">03</span>
+                  </div>
+                  <div class="font-weight-bold mb-2 home-how__card-title">Confirm the Slot</div>
+                  <div class="hs-muted">Select a time slot and confirm your appointment instantly.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quick Appointment Booking Cards -->
+      <section class="hs-section hs-section-alt home-slots" id="home-slots" data-home-slots="1">
+        <div class="container">
+          <div class="d-flex align-items-end justify-content-between mb-3 flex-wrap">
+            <div>
+              <h2 class="hs-section-title home-slots__title">Quick Appointment Booking</h2>
+              <div class="hs-muted home-slots__subtitle">Upcoming available appointment slots</div>
+            </div>
+            <div class="hs-carousel-controls">
+              <button type="button" class="btn btn-outline-primary btn-sm hs-btn-outline home-slots__control" id="hsSlotPrev" aria-label="Previous">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <button type="button" class="btn btn-outline-primary btn-sm hs-btn-outline home-slots__control" id="hsSlotNext" aria-label="Next">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <div id="hsSlotsContainer" class="home-slots__container" data-slots-url="{% url 'hospital-home-slots' %}">
+            {% include 'partials/appointment_slot_cards.html' with slot_cards=slot_cards %}
+          </div>
+        </div>
+      </section>
+
+      <!-- Featured Hospitals -->
+      <section class="hs-section home-featured" id="home-featured" data-home-featured="1">
+        <div class="container">
+          <div class="d-flex align-items-end justify-content-between mb-3 flex-wrap">
+            <div>
+              <h2 class="hs-section-title home-featured__title">Featured Hospitals</h2>
+              <div class="hs-muted home-featured__subtitle">Top hospitals with active doctors</div>
+            </div>
+            <a class="hs-link home-featured__link" href="{% url 'multiple-hospital' %}">View all</a>
+          </div>
+
+          <div class="row">
+            {% for h in featured_hospitals %}
+              <div class="col-12 col-md-6 col-lg-4 mb-4">
+                <div class="card hs-card hs-hospital-card h-100 home-featured__card">
+                  <div class="hs-card-img home-featured__img">
+                    <img src="{{ h.featured_image.url }}" alt="{{ h.name }}" />
+                  </div>
+                  <div class="card-body">
+                    <h5 class="mb-1 home-featured__name">{{ h.name }}</h5>
+                    <div class="hs-muted small mb-3 home-featured__address"><i class="fas fa-map-marker-alt"></i> {{ h.address }}</div>
+                    <a href="{% url 'hospital-profile' pk=h.hospital_id %}" class="btn btn-outline-primary btn-sm hs-btn-outline home-featured__cta">View Hospital</a>
+                  </div>
+                </div>
+              </div>
+            {% empty %}
+              <div class="col-12">
+                <div class="hs-empty">
+                  <div class="hs-empty-title">No hospitals found.</div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <!-- Hospital Info Section (auto-sliding cards) -->
+      <section class="hs-section hs-section-alt home-services" id="home-services" data-home-services="1">
+        <div class="container">
+          <div class="d-flex align-items-end justify-content-between mb-3 flex-wrap">
+            <div>
+              <h2 class="hs-section-title home-services__title">Hospital Services, Simplified</h2>
+              <div class="hs-muted home-services__subtitle">Everything you need to book with confidence</div>
+            </div>
+          </div>
+
+          <div class="hs-carousel hs-service-carousel home-services__carousel" id="hsServiceCarousel">
+            <div class="hs-carousel-item hs-service-carousel-item">
+              <div class="card hs-card hs-service-card h-100 home-services__card">
+                <div class="hs-card-img hs-service-img home-services__img">
+                  <img src="{% static 'HealthStack-System/images/Normal/img-01.jpg' %}" alt="Verified doctors" loading="lazy" />
+                </div>
+                <div class="card-body">
+                  <div class="home-services__kicker">Service</div>
+                  <div class="font-weight-bold mb-2 home-services__card-title">Verified Doctors</div>
+                  <div class="hs-muted home-services__text">Browse trusted doctor profiles across hospitals and branches.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hs-carousel-item hs-service-carousel-item">
+              <div class="card hs-card hs-service-card h-100 home-services__card">
+                <div class="hs-card-img hs-service-img home-services__img">
+                  <img src="{% static 'HealthStack-System/images/Normal/img-02.jpg' %}" alt="Fast booking" loading="lazy" />
+                </div>
+                <div class="card-body">
+                  <div class="home-services__kicker">Service</div>
+                  <div class="font-weight-bold mb-2 home-services__card-title">Fast Booking</div>
+                  <div class="hs-muted home-services__text">Choose a date/time and confirm your appointment quickly.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hs-carousel-item hs-service-carousel-item">
+              <div class="card hs-card hs-service-card h-100 home-services__card">
+                <div class="hs-card-img hs-service-img home-services__img">
+                  <img src="{% static 'HealthStack-System/images/Normal/img-03.jpg' %}" alt="Multi-branch hospitals" loading="lazy" />
+                </div>
+                <div class="card-body">
+                  <div class="home-services__kicker">Service</div>
+                  <div class="font-weight-bold mb-2 home-services__card-title">Multi-Branch Support</div>
+                  <div class="hs-muted home-services__text">Open a hospital branch and instantly see available doctors.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hs-carousel-item hs-service-carousel-item">
+              <div class="card hs-card hs-service-card h-100 home-services__card">
+                <div class="hs-card-img hs-service-img home-services__img">
+                  <img src="{% static 'HealthStack-System/images/Normal/video-call.jpg' %}" alt="Support" loading="lazy" />
+                </div>
+                <div class="card-body">
+                  <div class="home-services__kicker">Service</div>
+                  <div class="font-weight-bold mb-2 home-services__card-title">Patient Support</div>
+                  <div class="hs-muted home-services__text">Clear steps and reminders to help you book with confidence.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Patient Testimonials -->
+      <section class="hs-section home-testimonials" id="home-testimonials" data-home-testimonials="1">
+        <div class="container">
+          <div class="d-flex align-items-end justify-content-between mb-3 flex-wrap">
+            <div>
+              <h2 class="hs-section-title home-testimonials__title">Patient Testimonials</h2>
+              <div class="hs-muted home-testimonials__subtitle">Recent reviews from real patients</div>
+            </div>
+          </div>
+
+          <div class="row">
+            {% for t in testimonials|slice:":3" %}
+              <div class="col-12 col-md-4 mb-4">
+                <div class="card hs-card hs-testimonial-card h-100 home-testimonials__card">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <div class="hs-avatar mr-3 home-testimonials__avatar">
+                        <img src="{{ t.patient.featured_image.url }}" alt="{{ t.patient.name }}" />
+                      </div>
+                      <div>
+                        <div class="font-weight-bold home-testimonials__name">{{ t.patient.name|default:t.patient.username }}</div>
+                        <div class="hs-muted small home-testimonials__meta">for Dr. {{ t.doctor.name }}</div>
+                      </div>
+                    </div>
+                    {% if t.title %}
+                      <div class="font-weight-bold mb-2 home-testimonials__headline">{{ t.title }}</div>
+                    {% endif %}
+                    <div class="hs-muted home-testimonials__quote">“{{ t.message }}”</div>
+                  </div>
+                </div>
+              </div>
+            {% empty %}
+              <div class="col-12">
+                <div class="hs-empty">
+                  <div class="hs-empty-title">No testimonials yet.</div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      {% include 'footer.html' %}
+      <!-- /Footer -->
+    </div>
+    <!-- /Main Wrapper -->
+
+    <!-- jQuery -->
+    <script src="{% static 'HealthStack-System/js/Normal/jquery.min.js' %}"></script>
+
+    <!-- Bootstrap Core JS -->
+    <script src="{% static 'HealthStack-System/js/Normal/popper.min.js' %}"></script>
+    <script src="{% static 'HealthStack-System/js/Normal/bootstrap.min.js' %}"></script>
+
+    <!-- Custom JS -->
+    <script src="{% static 'HealthStack-System/Outside_assets/js/script.js' %}"></script>
+
+    <!-- Appointment Home JS -->
+    <script src="{% static 'HealthStack-System/js/Normal/appointment_home.js' %}"></script>
+  </body>
+</html>

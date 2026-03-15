@@ -1,0 +1,57 @@
+{% load static %}
+
+<nav class="navbar navbar-expand-lg header-nav hs-navbar" aria-label="Primary">
+  <div class="container">
+    <a href="{% url 'hospital_home' %}" class="navbar-brand logo hs-brand" aria-label="HealthStack Home">
+      <img
+        src="{% static 'HealthStack-System/images/Normal/logo.jpg' %}"
+        class="img-fluid hs-logo"
+        alt="HealthStack"
+      />
+    </a>
+
+    <button
+      class="navbar-toggler hs-navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#hsHomepageNavbar"
+      aria-controls="hsHomepageNavbar"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="hsHomepageNavbar">
+      <ul class="navbar-nav mr-auto hs-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'hospital_home' %}">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'about-us' %}">About</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'multiple-hospital' %}">Hospitals</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'search' %}">Doctors</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#contact">Contact</a>
+        </li>
+      </ul>
+
+      <div class="hs-nav-actions">
+        <a class="btn hs-btn-cta" href="#appointment" role="button">Book Appointment</a>
+
+        {% if user.is_authenticated %}
+          <a class="btn hs-btn-ghost" href="{% url 'patient-dashboard' %}" role="button">Dashboard</a>
+          <a class="btn hs-btn-ghost" href="{% url 'logout' %}" role="button">Logout</a>
+        {% else %}
+          <a class="btn hs-btn-ghost" href="{% url 'login' %}" role="button">Login</a>
+          <a class="btn hs-btn-ghost" href="{% url 'patient-register' %}" role="button">Register</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
