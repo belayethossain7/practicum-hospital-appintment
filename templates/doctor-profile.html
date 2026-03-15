@@ -23,6 +23,13 @@
 		
 		<!-- Main CSS -->
 		<link rel="stylesheet" href="{% static 'HealthStack-System/css/Normal/style.css' %}">
+
+		{% if user.is_authenticated and user.is_patient %}
+		<link
+		  rel="stylesheet"
+		  href="{% static 'HealthStack-System/css/Normal/patient_doctor_profile.css' %}?v=20260315"
+		/>
+		{% endif %}
 		
 		<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 		<!--[if lt IE 9]>
@@ -40,13 +47,17 @@
 		</style>
 	
 	</head>
-	<body>
+	<body class="{% if user.is_authenticated and user.is_patient %}hs-patient-doctor-profile{% endif %}">
 		<!-- Main Wrapper -->
-		<div class="main-wrapper">
+		<div id="patient-dp-page" class="main-wrapper hs-pdp" data-patient-doctor-profile="1">
 		
 			<!-- Header -->
 			<header class="header">
-				{% include 'navbar.html' %}
+				{% if user.is_authenticated and user.is_patient %}
+					<div id="patient-dp-navbar" class="patient-dp-navbar" data-patient-dp-navbar="1">{% include 'navbar.html' %}</div>
+				{% else %}
+					{% include 'navbar.html' %}
+				{% endif %}
 			</header>
 			<!-- /Header -->
 			
@@ -87,7 +98,7 @@
 							<div>
 								
 								{% if user.is_authenticated and user.is_patient %}
-								{% include 'patient-sidebar.html' %}
+								<aside id="patient-dp-sidebar" class="patient-dp-sidebar" data-patient-dp-sidebar="1">{% include 'patient-sidebar.html' %}</aside>
 								{% endif %}
 				
 								{% if user.is_authenticated and user.is_doctor %}
@@ -426,10 +437,13 @@
 			<!-- /Page Content -->
    
 			<!-- Footer -->
-			{% include 'footer.html' %}
+			{% if user.is_authenticated and user.is_patient %}
+				<footer id="patient-dp-footer" class="patient-dp-footer" data-patient-dp-footer="1">{% include 'footer.html' %}</footer>
+			{% else %}
+				{% include 'footer.html' %}
+			{% endif %}
 			<!-- /Footer -->
 		   
-				{% include 'navbar.html' %}
 		
 		<!-- Video Call Modal -->
 		<div class="modal fade call-modal" id="video_call">

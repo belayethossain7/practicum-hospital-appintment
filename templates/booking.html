@@ -44,6 +44,13 @@
       rel="stylesheet"
       href="{% static 'HealthStack-System/css/Normal/booking.css' %}"
     />
+
+    {% if user.is_authenticated and user.is_patient %}
+    <link
+      rel="stylesheet"
+      href="{% static 'HealthStack-System/css/Normal/patient_booking_slots.css' %}?v=20260315"
+    />
+    {% endif %}
     
     <link
       rel="stylesheet"
@@ -62,9 +69,9 @@
       <script src="assets/js/respond.min.js"></script>
     <![endif]-->
   </head>
-  <body>
+  <body class="{% if user.is_authenticated and user.is_patient %}hs-patient-booking{% endif %}">
     <!-- Main Wrapper -->
-    <div class="main-wrapper">
+    <div id="patient-booking-page" class="main-wrapper hs-pb" data-patient-booking="1">
       <!-- Header -->
       <header class="header">{% include 'navbar.html' %}</header>
       <!-- /Header -->
@@ -97,7 +104,7 @@
               <div class="card">
                 <div class="card-body">
                   <div class="booking-doc-info">
-                    <a href="doctor-profile.html" class="booking-doc-img">
+                    <a href="{% url 'doctor-profile' pk=doctor.doctor_id %}" class="booking-doc-img">
                       <img
                         src="{{ doctor.featured_image.url }}"
                         alt="User Image"
@@ -105,7 +112,7 @@
                     </a>
                     <div class="booking-info">
                       <h4>
-                        <a href="doctor-profile.html">{{doctor.name}}</a>
+                        <a href="{% url 'doctor-profile' pk=doctor.doctor_id %}">{{doctor.name}}</a>
                       </h4>
                       <div class="rating">
                         <i class="fas fa-star filled"></i>
@@ -213,7 +220,7 @@
                                   <label>Appointment Time</label>
                                   <input type="text" name="appoint_time" id="reservation-time" class="form-control" readonly="" required>
                               </div>
-                              <div class="col-lg-12 col-md-12">
+                              <div class="col-lg-12 col-md-12 patient-booking-slots" id="patient-booking-slots" data-patient-booking-slots="1">
                                 <label>Available Time Slots (10:00 AM - 4:00 PM)</label>
                                 <div id="appointment-slot-list" class="list-group slot-grid" style="max-height: 240px; overflow-y: auto;"></div>
                                 <small class="form-text text-muted">Past slots are red, booked slots are yellow, and cannot be selected.</small>
@@ -295,12 +302,27 @@
         var timeInputEl = document.getElementById('reservation-time');
         var slotsUrl = "{% url 'booking-slots' pk=doctor.doctor_id %}";
 
+        var __hsLastDateValue = null;
+        var __hsLoadingSlots = false;
+
         var urlParams = new URLSearchParams(window.location.search || '');
         var prefillDate = urlParams.get('date') || '';
         var prefillTime = urlParams.get('time') || '';
 
         function pad2(n) {
           return String(n).padStart(2, '0');
+        }
+
+        function normalizeDateString(value) {
+          if (!value) return null;
+          var v = String(value).trim();
+          // YYYY-MM-DD
+          var iso = v.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+          if (iso) return iso[1] + '-' + iso[2] + '-' + iso[3];
+          // MM/DD/YYYY
+          var us = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+          if (us) return us[3] + '-' + pad2(us[1]) + '-' + pad2(us[2]);
+          return null;
         }
 
         function format12h(hours24, minutes) {
@@ -361,44 +383,62 @@
             return;
           }
 
-          var selectedDate = dateInputEl.value;
+          var normalizedSelectedDate = normalizeDateString(dateInputEl.value);
           var isToday = false;
           var cutoffMinutes = null;
-          if (window.__serverToday && selectedDate && selectedDate === window.__serverToday) {
+
+          if (window.__serverToday && normalizedSelectedDate && normalizedSelectedDate === window.__serverToday) {
             isToday = true;
             cutoffMinutes = window.__serverNowMinutes;
-          } else {
-            // Fallback to browser clock if server values aren't available.
+          }
+
+          if (!isToday) {
+            // Fallback to browser clock if server values aren't available or date comparison fails.
             var now = new Date();
             var todayStr = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate());
-            if (selectedDate && selectedDate === todayStr) {
+            if (normalizedSelectedDate && normalizedSelectedDate === todayStr) {
               isToday = true;
               cutoffMinutes = (now.getHours() * 60) + now.getMinutes();
             }
           }
 
+          var bookedSet = {};
+          if (booked && booked.length) {
+            booked.forEach(function(x) {
+              var key = String(x || '').trim().replace(/\s+/g, ' ');
+              if (key) bookedSet[key] = true;
+            });
+          }
+
           allSlots.forEach(function(startLabel) {
             var btn = document.createElement('button');
             btn.type = 'button';
-            btn.className = 'list-group-item list-group-item-action';
+            btn.className = 'list-group-item list-group-item-action hs-booking-slot';
             btn.textContent = formatRangeLabel(startLabel);
             btn.setAttribute('data-slot', startLabel);
 
             var startMin = slotStartMinutesFromLabel(startLabel);
             if (isToday && startMin !== null && cutoffMinutes !== null && startMin <= cutoffMinutes) {
-              btn.className += ' list-group-item-danger';
+              btn.className += ' list-group-item-danger hs-booking-slot--past';
+              btn.setAttribute('data-slot-state', 'past');
               btn.disabled = true;
               btn.setAttribute('aria-disabled', 'true');
+              btn.tabIndex = -1;
               slotListEl.appendChild(btn);
               return;
             }
 
-            if (booked && booked.indexOf(startLabel) !== -1) {
-              btn.className += ' list-group-item-warning';
+            if (bookedSet[String(startLabel).trim().replace(/\s+/g, ' ')]) {
+              btn.className += ' list-group-item-warning hs-booking-slot--booked';
+              btn.setAttribute('data-slot-state', 'booked');
               btn.disabled = true;
               btn.setAttribute('aria-disabled', 'true');
+              btn.tabIndex = -1;
             } else {
+              btn.className += ' hs-booking-slot--available';
+              btn.setAttribute('data-slot-state', 'available');
               btn.addEventListener('click', function() {
+                if (btn.disabled) return;
                 var currentlyActive = slotListEl.querySelector('.active');
                 if (currentlyActive) currentlyActive.classList.remove('active');
                 btn.classList.add('active');
@@ -421,10 +461,21 @@
         }
 
         function loadBookedSlots() {
+          // Apply prefill date before any early-return.
+          if (prefillDate && !dateInputEl.value) {
+            dateInputEl.value = prefillDate;
+          }
+
           if (!dateInputEl.value) {
             renderSlots([]);
             return;
           }
+
+          if (__hsLoadingSlots) {
+            return;
+          }
+
+          __hsLoadingSlots = true;
 
           var url = slotsUrl + '?date=' + encodeURIComponent(dateInputEl.value);
           fetch(url, { credentials: 'same-origin' })
@@ -442,12 +493,11 @@
               window.__serverToday = null;
               window.__serverNowMinutes = null;
               renderSlots([]);
+            })
+            .finally(function() {
+              __hsLoadingSlots = false;
             });
 
-            // Prefill date on load (if provided) and trigger slot loading.
-            if (prefillDate) {
-              dateInputEl.value = prefillDate;
-            }
         }
 
         dateInputEl.addEventListener('change', function() {
@@ -456,6 +506,17 @@
         dateInputEl.addEventListener('input', function() {
           loadBookedSlots();
         });
+
+        // Some date picker widgets may update the input value without firing
+        // native change/input events consistently. Watch the value and refresh
+        // slots when it changes.
+        setInterval(function() {
+          var v = dateInputEl.value;
+          if (v !== __hsLastDateValue) {
+            __hsLastDateValue = v;
+            loadBookedSlots();
+          }
+        }, 350);
 
         // Initial render
         loadBookedSlots();

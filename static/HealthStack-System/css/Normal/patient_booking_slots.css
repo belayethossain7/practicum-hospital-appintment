@@ -1,0 +1,47 @@
+/* Patient Booking (slot states) — page-only fix
+   Goal: Past slots red, booked slots yellow, both unselectable.
+   Scope strictly to booking page wrapper.
+*/
+
+body.hs-patient-booking #patient-booking-page #patient-booking-slots {
+  --hs-slot-red-bg: #f8d7da;
+  --hs-slot-red-bd: #f5c2c7;
+  --hs-slot-red-fg: #842029;
+
+  --hs-slot-yellow-bg: #fff3cd;
+  --hs-slot-yellow-bd: #ffecb5;
+  --hs-slot-yellow-fg: #664d03;
+}
+
+body.hs-patient-booking #patient-booking-page #patient-booking-slots #appointment-slot-list .hs-booking-slot {
+  border-width: 1px;
+}
+
+/* Ensure disabled states are visually strong and truly non-interactive */
+body.hs-patient-booking #patient-booking-page #patient-booking-slots #appointment-slot-list .hs-booking-slot[aria-disabled="true"],
+body.hs-patient-booking #patient-booking-page #patient-booking-slots #appointment-slot-list .hs-booking-slot:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 1;
+}
+
+/* Past slots (red) */
+body.hs-patient-booking #patient-booking-page #patient-booking-slots #appointment-slot-list .hs-booking-slot.hs-booking-slot--past,
+body.hs-patient-booking #patient-booking-page #patient-booking-slots #appointment-slot-list .hs-booking-slot[data-slot-state="past"] {
+  background-color: var(--hs-slot-red-bg) !important;
+  border-color: var(--hs-slot-red-bd) !important;
+  color: var(--hs-slot-red-fg) !important;
+}
+
+/* Booked slots (yellow) */
+body.hs-patient-booking #patient-booking-page #patient-booking-slots #appointment-slot-list .hs-booking-slot.hs-booking-slot--booked,
+body.hs-patient-booking #patient-booking-page #patient-booking-slots #appointment-slot-list .hs-booking-slot[data-slot-state="booked"] {
+  background-color: var(--hs-slot-yellow-bg) !important;
+  border-color: var(--hs-slot-yellow-bd) !important;
+  color: var(--hs-slot-yellow-fg) !important;
+}
+
+/* Keep selected slot visible */
+body.hs-patient-booking #patient-booking-page #patient-booking-slots #appointment-slot-list .hs-booking-slot.active {
+  box-shadow: 0 10px 18px rgba(10, 31, 68, 0.10);
+}

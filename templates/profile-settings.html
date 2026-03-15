@@ -51,6 +51,13 @@
       href="{% static 'HealthStack-System/css/Normal/style.css' %}"
     />
 
+    {% if user.is_authenticated and user.is_patient %}
+    <link
+      rel="stylesheet"
+      href="{% static 'HealthStack-System/css/Normal/patient_profile_settings.css' %}?v=20260315"
+    />
+    {% endif %}
+
     <link href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" rel="stylesheet" />
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -59,11 +66,13 @@
       <script src="assets/js/respond.min.js"></script>
     <![endif]-->
   </head>
-  <body>
+  <body class="{% if user.is_authenticated and user.is_patient %}hs-patient-profile-settings{% endif %}">
     <!-- Main Wrapper -->
-    <div class="main-wrapper">
+    <div id="patient-ps-page" class="main-wrapper hs-pps" data-patient-profile-settings="1">
       <!-- Header -->
-      <header class="header">{% include 'navbar.html' %}</header>
+      <header class="header">
+        <div id="patient-ps-navbar" class="patient-ps-navbar" data-patient-ps-navbar="1">{% include 'navbar.html' %}</div>
+      </header>
       <!-- /Header -->
 
       <!-- Breadcrumb -->
@@ -92,7 +101,7 @@
           <div class="row">
             <!-- Profile Sidebar -->
             <div class="col-md-5 col-lg-4 col-xl-3 theiaStickySidebar">
-              <div>{% include 'patient-sidebar.html' %}</div>
+              <aside id="patient-ps-sidebar" class="patient-ps-sidebar" data-patient-ps-sidebar="1">{% include 'patient-sidebar.html' %}</aside>
             </div>
             <!-- /Profile Sidebar -->
 
@@ -225,7 +234,7 @@
       <!-- /Page Content -->
 
       <!-- Footer -->
-      {% include 'footer.html' %}
+      <footer id="patient-ps-footer" class="patient-ps-footer" data-patient-ps-footer="1">{% include 'footer.html' %}</footer>
       <!-- /Footer -->
     </div>
     <!-- /Main Wrapper -->

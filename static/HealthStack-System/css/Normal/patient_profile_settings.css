@@ -1,0 +1,233 @@
+/* Patient Profile Settings — page-only UI redesign
+   Scope: body.hs-patient-profile-settings #patient-ps-page
+   Wrappers:
+   - Navbar: #patient-ps-navbar.patient-ps-navbar
+   - Sidebar: #patient-ps-sidebar.patient-ps-sidebar
+   - Footer: #patient-ps-footer.patient-ps-footer
+*/
+
+body.hs-patient-profile-settings {
+  background: #f4f7fb;
+  min-height: 100vh;
+}
+
+body.hs-patient-profile-settings #patient-ps-page {
+  background: transparent;
+}
+
+/* =========================
+   Navbar (patient-only)
+   ========================= */
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-navbar.patient-ps-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-navbar.patient-ps-navbar .header-nav,
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-navbar.patient-ps-navbar .header-nav.hs-navbar,
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-navbar.patient-ps-navbar .hs-navbar.header-nav {
+  background:
+    radial-gradient(900px 420px at 10% 0%, rgba(255, 255, 255, 0.10), transparent 60%),
+    radial-gradient(760px 380px at 92% 14%, rgba(255, 255, 255, 0.08), transparent 55%),
+    linear-gradient(135deg, #061a33 0%, var(--hs-primary, #0b3b74) 55%, var(--hs-primary-600, #1456a8) 100%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 0 10px 24px rgba(10, 31, 68, 0.18);
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-navbar.patient-ps-navbar .header-nav .main-nav > li > a,
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-navbar.patient-ps-navbar .header-nav .navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.90) !important;
+  transition: color 180ms ease, opacity 180ms ease;
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-navbar.patient-ps-navbar .header-nav .main-nav > li > a:hover,
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-navbar.patient-ps-navbar .header-nav .navbar-nav .nav-link:hover,
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-navbar.patient-ps-navbar .header-nav .navbar-nav .nav-link:focus {
+  color: #ffffff !important;
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-navbar.patient-ps-navbar .header-contact-detail .contact-header,
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-navbar.patient-ps-navbar .header-contact-detail .contact-info-header {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-navbar.patient-ps-navbar .dropdown-menu {
+  border: 1px solid rgba(10, 31, 68, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(10, 31, 68, 0.16);
+}
+
+/* =========================
+   Breadcrumb (page-only)
+   ========================= */
+
+body.hs-patient-profile-settings #patient-ps-page .breadcrumb-bar {
+  background: transparent;
+  border-bottom: 0;
+}
+
+body.hs-patient-profile-settings #patient-ps-page .breadcrumb-bar .breadcrumb-title {
+  color: #0a1f44;
+}
+
+body.hs-patient-profile-settings #patient-ps-page .breadcrumb {
+  background: transparent;
+}
+
+body.hs-patient-profile-settings #patient-ps-page .breadcrumb .breadcrumb-item a,
+body.hs-patient-profile-settings #patient-ps-page .breadcrumb .breadcrumb-item {
+  color: rgba(10, 31, 68, 0.70);
+}
+
+body.hs-patient-profile-settings #patient-ps-page .breadcrumb .breadcrumb-item.active {
+  color: rgba(10, 31, 68, 0.88);
+}
+
+/* Page content spacing */
+body.hs-patient-profile-settings #patient-ps-page .content {
+  padding-top: 24px;
+  padding-bottom: 32px;
+}
+
+/* =========================
+   Cards (page-only)
+   ========================= */
+
+body.hs-patient-profile-settings #patient-ps-page .card {
+  background: #ffffff;
+  border: 1px solid rgba(10, 31, 68, 0.10);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(10, 31, 68, 0.08);
+}
+
+body.hs-patient-profile-settings #patient-ps-page .card .card-header {
+  background: transparent;
+  border-bottom: 1px solid rgba(10, 31, 68, 0.08);
+}
+
+body.hs-patient-profile-settings #patient-ps-page .card,
+body.hs-patient-profile-settings #patient-ps-page .card-body,
+body.hs-patient-profile-settings #patient-ps-page .card-header {
+  color: rgba(10, 31, 68, 0.82);
+}
+
+body.hs-patient-profile-settings #patient-ps-page .card .card-title,
+body.hs-patient-profile-settings #patient-ps-page .card h1,
+body.hs-patient-profile-settings #patient-ps-page .card h2,
+body.hs-patient-profile-settings #patient-ps-page .card h3,
+body.hs-patient-profile-settings #patient-ps-page .card h4,
+body.hs-patient-profile-settings #patient-ps-page .card h5,
+body.hs-patient-profile-settings #patient-ps-page .card h6 {
+  color: #0a1f44;
+}
+
+/* =========================
+   Sidebar (patient-only)
+   ========================= */
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-sidebar.patient-ps-sidebar .profile-sidebar {
+  background: #ffffff;
+  border: 1px solid rgba(10, 31, 68, 0.10);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(10, 31, 68, 0.08);
+  overflow: hidden;
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-sidebar.patient-ps-sidebar .profile-sidebar .widget-profile,
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-sidebar.patient-ps-sidebar .profile-sidebar .pro-widget-content,
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-sidebar.patient-ps-sidebar .profile-sidebar .dashboard-widget {
+  background: transparent;
+  border: 0;
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-sidebar.patient-ps-sidebar .profile-sidebar .profile-info-widget {
+  background:
+    radial-gradient(520px 240px at 10% 0%, rgba(255, 255, 255, 0.16), transparent 58%),
+    linear-gradient(135deg, #061a33 0%, var(--hs-primary, #0b3b74) 55%, var(--hs-primary-600, #1456a8) 100%);
+  border-bottom: 1px solid rgba(10, 31, 68, 0.08);
+  padding: 18px;
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-sidebar.patient-ps-sidebar .profile-sidebar .profile-info-widget img {
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.28);
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-sidebar.patient-ps-sidebar .profile-sidebar .profile-det-info h3 {
+  color: #ffffff;
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-sidebar.patient-ps-sidebar .profile-sidebar .patient-details h5 {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-sidebar.patient-ps-sidebar .profile-sidebar .dashboard-menu.sidebar {
+  background: transparent;
+  padding: 12px;
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-sidebar.patient-ps-sidebar .profile-sidebar .dashboard-menu.sidebar ul {
+  margin: 0;
+  padding: 0;
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-sidebar.patient-ps-sidebar .profile-sidebar .dashboard-menu.sidebar ul li a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: rgba(10, 31, 68, 0.82) !important;
+  background: transparent;
+  transition: background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease, color 180ms ease;
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-sidebar.patient-ps-sidebar .profile-sidebar .dashboard-menu.sidebar ul li a i {
+  color: rgba(10, 31, 68, 0.70);
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-sidebar.patient-ps-sidebar .profile-sidebar .dashboard-menu.sidebar ul li a:hover {
+  background: rgba(11, 59, 116, 0.06);
+  box-shadow: 0 10px 18px rgba(10, 31, 68, 0.08);
+  transform: translateY(-1px);
+  color: rgba(10, 31, 68, 0.92) !important;
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-sidebar.patient-ps-sidebar .profile-sidebar .dashboard-menu.sidebar ul li.active a {
+  background: rgba(11, 59, 116, 0.10);
+  border: 1px solid rgba(11, 59, 116, 0.18);
+}
+
+/* =========================
+   Footer (patient-only)
+   ========================= */
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-footer.patient-ps-footer {
+  margin-top: 26px;
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-footer.patient-ps-footer .footer,
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-footer.patient-ps-footer footer,
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-footer.patient-ps-footer .hs-footer {
+  background:
+    radial-gradient(900px 420px at 10% 0%, rgba(255, 255, 255, 0.08), transparent 60%),
+    linear-gradient(135deg, #061a33 0%, var(--hs-primary, #0b3b74) 55%, var(--hs-primary-600, #1456a8) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-footer.patient-ps-footer a {
+  color: rgba(255, 255, 255, 0.88);
+  transition: color 180ms ease, opacity 180ms ease;
+}
+
+body.hs-patient-profile-settings #patient-ps-page #patient-ps-footer.patient-ps-footer a:hover {
+  color: #ffffff;
+}
+
+@media (max-width: 991.98px) {
+  body.hs-patient-profile-settings #patient-ps-page #patient-ps-sidebar.patient-ps-sidebar {
+    margin-bottom: 18px;
+  }
+}

@@ -165,7 +165,7 @@
                                   <td>
                                     <h2 class="table-avatar">
                                       <a
-                                        href="doctor-profile.html"
+                                        href="{% url 'doctor-profile' pk=appointment.doctor.doctor_id %}"
                                         class="avatar avatar-sm mr-2"
                                       >
                                         <img
@@ -174,7 +174,7 @@
                                           alt="User Image"
                                         />
                                       </a>
-                                      <a href="doctor-profile.html"
+                                      <a href="{% url 'doctor-profile' pk=appointment.doctor.doctor_id %}"
                                         >{{ appointment.doctor.name }}
                                         <span
                                           >{{appointment.doctor.department_name}}</span
@@ -262,7 +262,7 @@
                                   <td>
                                     <h2 class="table-avatar">
                                       <a
-                                        href="doctor-profile.html"
+                                        href="{% url 'doctor-profile' pk=appointment.doctor.doctor_id %}"
                                         class="avatar avatar-sm mr-2"
                                       >
                                         <img
@@ -271,7 +271,7 @@
                                           alt="User Image"
                                         />
                                       </a>
-                                      <a href="doctor-profile.html"
+                                      <a href="{% url 'doctor-profile' pk=appointment.doctor.doctor_id %}"
                                         >{{ appointment.doctor.name }}
                                         <span
                                           >{{appointment.doctor.department_name}}</span
@@ -369,7 +369,7 @@
                                   <td>
                                     <h2 class="table-avatar">
                                       <a
-                                        href="doctor-profile.html"
+                                        href="{% url 'doctor-profile' pk=prescription.doctor.doctor_id %}"
                                         class="avatar avatar-sm mr-2"
                                       >
                                         <img
@@ -378,7 +378,7 @@
                                           alt="User Image"
                                         />
                                       </a>
-                                      <a href="doctor-profile.html"
+                                      <a href="{% url 'doctor-profile' pk=prescription.doctor.doctor_id %}"
                                         >Dr. {{prescription.doctor}}<span>{{prescription.doctor.department_name }}</span></a
                                       >
                                     </h2>
@@ -438,7 +438,7 @@
                                   <td>
                                     <h2 class="table-avatar">
                                       <a
-                                        href="doctor-profile.html"
+                                        href="{% url 'doctor-profile' pk=report.doctor.doctor_id %}"
                                         class="avatar avatar-sm mr-2"
                                       >
                                         <img
@@ -447,7 +447,7 @@
                                           alt="User Image"
                                         />
                                       </a>
-                                      <a href="doctor-profile.html"
+                                      <a href="{% url 'doctor-profile' pk=report.doctor.doctor_id %}"
                                         >Dr.{{report.doctor}}<span>{{report.doctor.department_name }}</span></a
                                       >
                                     </h2>
@@ -501,7 +501,7 @@
                                   <td>
                                     <h2 class="table-avatar">
                                       <a
-                                        href="doctor-profile.html"
+                                        href="{% url 'doctor-profile' pk=payment.appointment.doctor.doctor_id %}"
                                         class="avatar avatar-sm mr-2"
                                       >
                                         <img
@@ -510,7 +510,7 @@
                                           alt="User Image"
                                         />
                                       </a>
-                                      <a href="doctor-profile.html"
+                                      <a href="{% url 'doctor-profile' pk=payment.appointment.doctor.doctor_id %}"
                                         >{{payment.appointment.doctor.name}} <span>{{payment.appointment.doctor.department}}</span></a
                                       >
                                     </h2>
