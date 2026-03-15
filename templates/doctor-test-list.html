@@ -39,19 +39,30 @@
       href="{% static 'HealthStack-System/css/Normal/style.css' %}"
     />
 
+    {% if user.is_authenticated and user.is_patient %}
+    <link
+      rel="stylesheet"
+      href="{% static 'HealthStack-System/css/Normal/patient_test_information.css' %}?v=20260315"
+    />
+    {% endif %}
+
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
       <script src="assets/js/html5shiv.min.js"></script>
       <script src="assets/js/respond.min.js"></script>
     <![endif]-->
   </head>
-  <body>
+  <body class="{% if user.is_authenticated and user.is_patient %}hs-patient-testinfo{% endif %}">
   {% if user.is_authenticated %}
     <!-- Main Wrapper -->
-    <div class="main-wrapper">
+    <div id="patient-testinfo-page" class="main-wrapper hs-pti" data-patient-testinfo="1">
       <!-- Header -->
       <header class="header">
-      {% include 'navbar.html' %}
+      {% if user.is_authenticated and user.is_patient %}
+        <div id="patient-ti-navbar" class="patient-ti-navbar" data-patient-ti-navbar="1">{% include 'navbar.html' %}</div>
+      {% else %}
+        {% include 'navbar.html' %}
+      {% endif %}
       </header>
       <!-- /Header -->
 
@@ -90,7 +101,7 @@
               <!-- Profile Sidebar -->
               <div>
                 {% if user.is_authenticated and user.is_patient %}
-								{% include 'patient-sidebar.html' %}
+							<aside id="patient-ti-sidebar" class="patient-ti-sidebar" data-patient-ti-sidebar="1">{% include 'patient-sidebar.html' %}</aside>
 								{% endif %}
 				
 								{% if user.is_authenticated and user.is_doctor %}
@@ -153,7 +164,11 @@
       <!-- /Page Content -->
 
       <!-- Footer -->
-      {% include 'footer.html' %}
+      {% if user.is_authenticated and user.is_patient %}
+        <footer id="patient-ti-footer" class="patient-ti-footer" data-patient-ti-footer="1">{% include 'footer.html' %}</footer>
+      {% else %}
+        {% include 'footer.html' %}
+      {% endif %}
       <!-- /Footer -->
     </div>
     <!-- /Main Wrapper -->
