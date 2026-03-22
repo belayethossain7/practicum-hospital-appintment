@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+    <title>HealthStack — Lab Login</title>
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'HealthStack-System/images/Normal/favicon.png' %}">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{% static 'HealthStack-System/css/admin/bootstrap.min.css' %}">
+
+    <!-- Fontawesome CSS -->
+    <link rel="stylesheet" href="{% static 'HealthStack-System/css/admin/font-awesome.min.css' %}">
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{% static 'HealthStack-System/css/admin/style.css' %}">
+
+    <!-- Lab Login (page-only) CSS -->
+    <link rel="stylesheet" href="{% static 'css/lab/lab-login.css' %}">
+</head>
+<body class="hs-lab-login">
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper login-body hs-ll" id="lab-login-page" data-lab-login="1">
+        <div class="login-wrapper">
+            <div class="container">
+                <div class="loginbox">
+                    <div class="login-left">
+                        <img class="img-fluid" src="{% static 'HealthStack-System/images/Normal/footer_logo.png' %}" alt="Logo">
+                        <p class="login-left-subtitle">Laboratory Management System</p>
+                    </div>
+                    <div class="login-right">
+                        <div class="login-right-wrap">
+                            <h1><i class="fa fa-flask lab-icon"></i> Lab Login</h1>
+                            <p class="account-subtitle">Access your Lab Dashboard</p>
+
+                            <!-- Form -->
+                            <form action="{% url 'lab-login' %}" method="POST">
+                                {% csrf_token %}
+
+                                {% include 'message.html' %}
+
+                                <div class="form-group">
+                                    <input class="form-control" type="text" placeholder="Username" name="username" autocomplete="username">
+                                </div>
+
+                                <div class="form-group">
+                                    <input class="form-control" type="password" id="labPassInput" placeholder="Password" name="password" autocomplete="current-password">
+                                    <label class="show-pw-label mt-2">
+                                        <input type="checkbox" onclick="toggleLabPw()"> Show Password
+                                    </label>
+                                </div>
+
+                                <div class="form-group">
+                                    <button class="btn btn-primary btn-block" type="submit">Login</button>
+                                </div>
+                            </form>
+                            <!-- /Form -->
+
+                            <div class="text-center forgotpass"><a href="{% url 'reset-password' %}">Forgot Password?</a></div>
+                            <div class="login-or">
+                                <span class="or-line"></span>
+                                <span class="span-or">or</span>
+                            </div>
+                            <div class="text-center dont-have">Return to <a href="{% url 'hospital_home' %}">Homepage</a></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /Main Wrapper -->
+
+    <!-- jQuery -->
+    <script src="{% static 'HealthStack-System/js/admin/jquery-3.2.1.min.js' %}"></script>
+
+    <!-- Bootstrap Core JS -->
+    <script src="{% static 'HealthStack-System/js/admin/popper.min.js' %}"></script>
+    <script src="{% static 'HealthStack-System/js/admin/bootstrap.min.js' %}"></script>
+
+    <!-- Custom JS -->
+    <script src="{% static 'HealthStack-System/js/admin/script.js' %}"></script>
+
+    <script>
+        function toggleLabPw() {
+            var x = document.getElementById('labPassInput');
+            x.type = x.type === 'password' ? 'text' : 'password';
+        }
+    </script>
+
+    {% if messages %}
+    <script>
+        $(document).ready(function () { $('.toast').toast('show'); });
+    </script>
+    {% endif %}
+</body>
+</html>

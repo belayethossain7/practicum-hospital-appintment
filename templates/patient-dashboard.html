@@ -42,7 +42,7 @@
     <!-- Patient Dashboard (page-only) -->
     <link
       rel="stylesheet"
-      href="{% static 'HealthStack-System/css/Normal/patient_dashboard.css' %}?v=20260315"
+      href="{% static 'HealthStack-System/css/Normal/patient_dashboard.css' %}?v=20260322c"
     />
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -117,6 +117,14 @@
                       <li class="nav-item">
                         <a
                           class="nav-link"
+                          href="#pat_test_payment"
+                          data-toggle="tab"
+                          ><span class="test-pay-label">Test &amp; Payment</span></a
+                        >
+                      </li>
+                      <li class="nav-item">
+                        <a
+                          class="nav-link"
                           href="#pat_medical_records"
                           data-toggle="tab"
                           ><span class="med-records">Medical Records</span></a
@@ -154,9 +162,9 @@
                                   <th>Appt Date</th>
                                   <th>Type</th>
                                   <th>Amount</th>
-                                  <th>Status</th>
                                   <th>Payment Status</th>
                                   <th>Action</th>
+                                  <th>Cancel Appointment</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -195,17 +203,6 @@
                                   {% else %}
                                   <td>{{appointment.doctor.report_fee}} BDT</td>
                                   {% endif %}
-                                  <td>
-                                    {% if appointment.appointment_status == 'pending' %}
-                                    <span class="badge badge-pill bg-warning-light">Pending</span>
-                                    {% endif %}
-                                    {% if appointment.appointment_status == 'confirmed' %}
-                                    <span class="badge badge-pill bg-success-light">Confirm</span>
-                                    {% endif %}
-                                    {% if appointment.appointment_status == 'cancelled' %}
-                                    <span class="badge badge-pill bg-danger-light">Cancelled</span>
-                                    {% endif %}
-                                  </td>
                                   <td class="text-center">
                                     {% if appointment.payment_status == 'pending' %}
                                     <span class="badge badge-pill bg-warning-light">Pending</span>
@@ -217,13 +214,36 @@
 
                                   <td>
                                     <div class="table-action">
+                                      {% if appointment.payment_status == 'VALID' %}
+                                      <span class="btn btn-sm bg-success-light btn-paid-disabled" title="Already paid">
+                                        <i class="fas fa-check-circle"></i> Paid
+                                      </span>
+                                      {% else %}
                                       <a
                                         href="{% url 'ssl-payment-request' pk=appointment.patient.patient_id id=appointment.id %}"
                                         class="btn btn-sm bg-success-light"
                                       >
-                                        <i class="fas fa-dollar-sign"></i> Pay
-                                        Now
+                                        <i class="fas fa-dollar-sign"></i> Pay Now
                                       </a>
+                                      {% endif %}
+                                    </div>
+                                  </td>
+
+                                  <td>
+                                    <div class="table-action">
+                                      {% if appointment.payment_status == 'VALID' %}
+                                      <span class="btn btn-sm bg-secondary-light btn-cancel-disabled" title="Cannot cancel a paid appointment">
+                                        <i class="fas fa-ban"></i> N/A
+                                      </span>
+                                      {% else %}
+                                      <a
+                                        href="{% url 'cancel-appointment' pk=appointment.id %}"
+                                        class="btn btn-sm bg-danger-light"
+                                        onclick="return confirm('Are you sure you want to cancel this appointment?');"
+                                      >
+                                        <i class="fas fa-times-circle"></i> Cancel
+                                      </a>
+                                      {% endif %}
                                     </div>
                                   </td>
                                 </tr>
@@ -251,7 +271,6 @@
                                   <th>Appt Date</th>
                                   <th>Type</th>
                                   <th>Amount</th>
-                                  <th>Status</th>
                                   <th>Payment Status</th>
                                   <th>Action</th>
                                 </tr>
@@ -292,41 +311,21 @@
                                   {% else %}
                                   <td>{{appointment.doctor.report_fee}} BDT</td>
                                   {% endif %}
-                                  <td>
-                                    {% if appointment.appointment_status == 'pending' %}
-                                    <span class="badge badge-pill bg-warning-light">Pending</span>
-                                    {% endif %}
-                                    {% if appointment.appointment_status == 'confirmed' %}
-                                    <span class="badge badge-pill bg-success-light">Confirm</span>
-                                    {% endif %}
-                                    {% if appointment.appointment_status == 'cancelled' %}
-                                    <span class="badge badge-pill bg-danger-light">Cancelled</span>
-                                    {% endif %}
-                                  </td>
                                   <td class="text-center">
-                                    {% if appointment.payment_status == 'pending' %}
-                                    <span class="badge badge-pill bg-warning-light">Pending</span>
-                                    {% endif %}
-                                    {% if appointment.payment_status == 'VALID' %}
                                     <span class="badge badge-pill bg-success-light">Paid</span>
-                                    {% endif %}
                                   </td>
 
                                   <td>
                                     <div class="table-action">
-                                      <a
-                                        href="{% url 'ssl-payment-request' pk=appointment.patient.patient_id id=appointment.id %}"
-                                        class="btn btn-sm bg-success-light"
-                                      >
-                                        <i class="fas fa-dollar-sign"></i> Pay
-                                        Now
-                                      </a>
+                                      <span class="btn btn-sm bg-success-light btn-paid-disabled" title="Already paid">
+                                        <i class="fas fa-check-circle"></i> Paid
+                                      </span>
                                     </div>
                                   </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                  <td colspan="7" class="text-center text-muted">No finished appointments yet.</td>
+                                  <td colspan="6" class="text-center text-muted">No finished appointments yet.</td>
                                 </tr>
                                 {% endfor %}
                               </tbody>
@@ -402,6 +401,170 @@
                       </div>
                     </div>
                     <!-- /Prescription Tab -->
+
+                    <!-- Test & Payment Tab -->
+                    <div class="tab-pane fade" id="pat_test_payment">
+                      <div class="card card-table mb-0">
+                        <div class="card-header">
+                          <h4 class="card-title mb-0">Test &amp; Payment</h4>
+                        </div>
+                        <div class="card-body">
+                          <div class="table-responsive">
+                            <table class="table table-hover table-center mb-0">
+                              <thead>
+                                <tr>
+                                  <th>Doctor</th>
+                                  <th>Prescription ID</th>
+                                  <th>Tests</th>
+                                  <th>Total Amount</th>
+                                  <th>Payment Status</th>
+                                  <th>Action</th>
+                                  <th>Receipt</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {% for item in prescriptions_with_tests %}
+                                <tr>
+                                  <td>
+                                    <h2 class="table-avatar">
+                                      <a
+                                        href="{% url 'doctor-profile' pk=item.prescription.doctor.doctor_id %}"
+                                        class="avatar avatar-sm mr-2"
+                                      >
+                                        <img
+                                          class="avatar-img rounded-circle"
+                                          src="{{ item.prescription.doctor.featured_image.url }}"
+                                          alt="User Image"
+                                        />
+                                      </a>
+                                      <a href="{% url 'doctor-profile' pk=item.prescription.doctor.doctor_id %}"
+                                        >{{ item.prescription.doctor.name }}
+                                        <span>{{ item.prescription.doctor.department_name }}</span></a
+                                      >
+                                    </h2>
+                                  </td>
+                                  <td>#{{ item.prescription.prescription_id }}</td>
+                                  <td>
+                                    <button
+                                      type="button"
+                                      class="btn btn-sm bg-info-light"
+                                      data-toggle="modal"
+                                      data-target="#testModal{{ item.prescription.prescription_id }}"
+                                    >
+                                      <i class="far fa-eye"></i> View ({{ item.tests.count }})
+                                    </button>
+                                  </td>
+                                  <td>{{ item.total_amount }} BDT</td>
+                                  <td class="text-center">
+                                    {% if item.all_paid %}
+                                    <span class="badge badge-pill bg-success-light">Paid</span>
+                                    {% else %}
+                                    <span class="badge badge-pill bg-warning-light">Pending</span>
+                                    {% endif %}
+                                  </td>
+                                  <td>
+                                    <div class="table-action">
+                                      {% if item.all_paid %}
+                                      <span class="btn btn-sm bg-success-light btn-paid-disabled" title="Already paid">
+                                        <i class="fas fa-check-circle"></i> Paid
+                                      </span>
+                                      {% else %}
+                                      <a
+                                        href="{% url 'pay-prescription-tests' pk=item.prescription.prescription_id %}"
+                                        class="btn btn-sm bg-success-light"
+                                      >
+                                        <i class="fas fa-dollar-sign"></i> Pay Now
+                                      </a>
+                                      {% endif %}
+                                    </div>
+                                  </td>
+                                  <td>
+                                    <div class="table-action">
+                                      {% if item.test_payment %}
+                                      <a
+                                        href="{% url 'test-receipt-pdf' pk=item.prescription.prescription_id %}"
+                                        class="btn btn-sm bg-info-light"
+                                        target="_blank"
+                                      >
+                                        <i class="fas fa-file-pdf"></i> Receipt
+                                      </a>
+                                      {% else %}
+                                      <span class="btn btn-sm bg-secondary-light btn-cancel-disabled" title="Pay first to view receipt">
+                                        <i class="fas fa-file-pdf"></i> N/A
+                                      </span>
+                                      {% endif %}
+                                    </div>
+                                  </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                  <td colspan="7" class="text-center text-muted">No prescribed tests found.</td>
+                                </tr>
+                                {% endfor %}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- /Test & Payment Tab -->
+
+                    <!-- Test Detail Modals -->
+                    {% for item in prescriptions_with_tests %}
+                    <div class="modal fade" id="testModal{{ item.prescription.prescription_id }}" tabindex="-1" role="dialog" aria-labelledby="testModalLabel{{ item.prescription.prescription_id }}" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="testModalLabel{{ item.prescription.prescription_id }}">
+                              Tests — Prescription #{{ item.prescription.prescription_id }}
+                            </h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          </div>
+                          <div class="modal-body">
+                            <table class="table table-sm table-bordered mb-0">
+                              <thead>
+                                <tr>
+                                  <th>#</th>
+                                  <th>Test Name</th>
+                                  <th>Price (BDT)</th>
+                                  <th>Status</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {% for test in item.tests %}
+                                <tr>
+                                  <td>{{ forloop.counter }}</td>
+                                  <td>{{ test.test_name }}</td>
+                                  <td>{{ test.test_info_price }}</td>
+                                  <td>
+                                    {% if test.test_info_pay_status == 'Paid' %}
+                                    <span class="badge badge-pill bg-success-light">Paid</span>
+                                    {% else %}
+                                    <span class="badge badge-pill bg-warning-light">Pending</span>
+                                    {% endif %}
+                                  </td>
+                                </tr>
+                                {% endfor %}
+                              </tbody>
+                              <tfoot>
+                                <tr>
+                                  <td colspan="2" class="text-right"><strong>Total</strong></td>
+                                  <td><strong>{{ item.total_amount }} BDT</strong></td>
+                                  <td></td>
+                                </tr>
+                              </tfoot>
+                            </table>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {% endfor %}
+                    <!-- /Test Detail Modals -->
 
                     <!-- medical record -->
                     <div id="pat_medical_records" class="tab-pane fade">
@@ -593,6 +756,21 @@
 
     <!-- Searchbar JS -->
     <script src="{% static 'HealthStack-System/js/Normal/sidebar.js' %}"></script>
+
+    <!-- Neutralize theiaStickySidebar plugin: it injects inline absolute positioning
+         and wrapper divs that fight with our CSS position:sticky layout.
+         This removes those inline styles so CSS takes full control. -->
+    <script>
+    $(document).ready(function() {
+      var $col = $('.theiaStickySidebar');
+      // Remove inline styles the plugin sets on the column itself
+      $col.css({ 'position': '', 'height': '', 'overflow': '', 'padding-bottom': '', 'margin-bottom': '' });
+      // The plugin also creates an inner wrapper — clean its inline styles too
+      $col.find('.theiaStickySidebar-inner, .theiaStickySidebar > div[style]').each(function() {
+        $(this).css({ 'position': '', 'top': '', 'height': '', 'padding-bottom': '', 'margin-bottom': '' });
+      });
+    });
+    </script>
 
     {% if messages %}
     <script>

@@ -472,6 +472,19 @@ def patient_register(request):
     context = {'page': page, 'form': form}
     return render(request, 'patient-register.html', context)
 
+@login_required(login_url="login")
+def cancel_appointment(request, pk):
+    if request.user.is_patient:
+        patient = Patient.objects.get(user=request.user)
+        appointment = get_object_or_404(Appointment, id=pk, patient=patient)
+        if appointment.payment_status != 'VALID':
+            appointment.appointment_status = 'cancelled'
+            appointment.save()
+            messages.success(request, 'Appointment cancelled successfully.')
+        else:
+            messages.error(request, 'Cannot cancel a paid appointment.')
+    return redirect('patient-dashboard')
+
 @csrf_exempt
 @login_required(login_url="login")
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -495,6 +508,33 @@ def patient_dashboard(request):
             .filter(payment_type='appointment')
             .filter(status='VALID')
         )
+
+        # Test & Payment section: prescriptions that have tests
+        prescriptions_with_tests = []
+        for pres in prescription:
+            tests = Prescription_test.objects.filter(prescription=pres)
+            if tests.exists():
+                total_amount = 0
+                all_paid = True
+                for t in tests:
+                    try:
+                        total_amount += float(t.test_info_price or 0)
+                    except (ValueError, TypeError):
+                        pass
+                    if t.test_info_pay_status != 'Paid':
+                        all_paid = False
+                # Check if a valid test payment exists for this prescription
+                test_payment = Payment.objects.filter(
+                    prescription=pres, payment_type='test', status='VALID'
+                ).first()
+                prescriptions_with_tests.append({
+                    'prescription': pres,
+                    'tests': tests,
+                    'total_amount': total_amount,
+                    'all_paid': all_paid,
+                    'test_payment': test_payment,
+                })
+
         context = {
             'patient': patient,
             'pending_prescription_appointments': pending_prescription_appointments,
@@ -502,11 +542,83 @@ def patient_dashboard(request):
             'payments': payments,
             'report': report,
             'prescription': prescription,
+            'prescriptions_with_tests': prescriptions_with_tests,
         }
     else:
         return redirect('logout')
         
     return render(request, 'patient-dashboard.html', context)
+
+
+@csrf_exempt
+@login_required(login_url="login")
+def pay_prescription_tests(request, pk):
+    """Create testCart + testOrder for all unpaid tests in a prescription, then redirect to SSLCommerz."""
+    if not request.user.is_patient:
+        return redirect('logout')
+
+    patient = Patient.objects.get(user=request.user)
+    pres = get_object_or_404(Prescription, prescription_id=pk, patient=patient)
+    unpaid_tests = Prescription_test.objects.filter(prescription=pres).exclude(test_info_pay_status='Paid')
+
+    if not unpaid_tests.exists():
+        messages.info(request, 'All tests are already paid.')
+        return redirect('patient-dashboard')
+
+    # Clear any existing unpurchased carts for this user
+    testCart.objects.filter(user=request.user, purchased=False).delete()
+    old_orders = testOrder.objects.filter(user=request.user, ordered=False)
+    old_orders.delete()
+
+    # Create fresh cart + order
+    order = testOrder.objects.create(user=request.user, ordered=False)
+    for test in unpaid_tests:
+        cart_item = testCart.objects.create(user=request.user, item=test, name=test.test_name or 'test', purchased=False)
+        order.orderitems.add(cart_item)
+    order.save()
+
+    return redirect('ssl-payment-request-test', pk=patient.patient_id, id=order.id, pk2=pres.prescription_id)
+
+
+@login_required(login_url="login")
+def test_receipt_pdf(request, pk):
+    """Generate a PDF receipt for a paid prescription's tests."""
+    if not request.user.is_patient:
+        return redirect('logout')
+
+    patient = Patient.objects.get(user=request.user)
+    pres = get_object_or_404(Prescription, prescription_id=pk, patient=patient)
+    tests = Prescription_test.objects.filter(prescription=pres)
+    payment = Payment.objects.filter(prescription=pres, payment_type='test', status='VALID').first()
+
+    if not payment:
+        messages.error(request, 'No valid payment found for these tests.')
+        return redirect('patient-dashboard')
+
+    total_amount = 0
+    for t in tests:
+        try:
+            total_amount += float(t.test_info_price or 0)
+        except (ValueError, TypeError):
+            pass
+
+    context = {
+        'patient': patient,
+        'prescription': pres,
+        'tests': tests,
+        'payment': payment,
+        'total_amount': total_amount,
+        'current_date': datetime.date.today(),
+    }
+    template = get_template('test_receipt_pdf.html')
+    html = template.render(context)
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+    if not pdf.err:
+        response = HttpResponse(result.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename=test_receipt.pdf'
+        return response
+    return HttpResponse("Error generating PDF", status=500)
 
 
 # def profile_settings(request):

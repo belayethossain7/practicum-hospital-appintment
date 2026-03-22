@@ -207,6 +207,12 @@ class Prescription_medicine(models.Model):
         return str(self.prescription.prescription_id)
 
 class Prescription_test(models.Model):
+    TEST_STATUS_CHOICES = (
+        ('Pending', 'Pending'),
+        ('Processing', 'Processing'),
+        ('Completed', 'Completed'),
+    )
+
     prescription = models.ForeignKey(Prescription, on_delete=models.CASCADE, null=True, blank=True)
     test_id = models.AutoField(primary_key=True)
     test_name = models.CharField(max_length=200, null=True, blank=True)
@@ -214,13 +220,16 @@ class Prescription_test(models.Model):
     test_info_id = models.CharField(max_length=200, null=True, blank=True)
     test_info_price = models.CharField(max_length=200, null=True, blank=True)
     test_info_pay_status = models.CharField(max_length=200, null=True, blank=True)
-    
-    """
-    (create prescription)
-    doctor input --> test_id 
-    using test_id --> retrive price
-    store price in prescription_test column
-    """
+
+    # Lab workflow fields
+    test_status = models.CharField(max_length=20, choices=TEST_STATUS_CHOICES, default='Pending')
+    report_file = models.FileField(upload_to='lab_reports/', null=True, blank=True)
+    report_text = models.TextField(null=True, blank=True)
+    assigned_lab_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='assigned_tests'
+    )
+    completed_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return str(self.prescription.prescription_id)

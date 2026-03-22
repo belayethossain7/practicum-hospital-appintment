@@ -1,139 +1,85 @@
 {% load static %}
 
 <nav class="navbar navbar-expand-lg header-nav hs-navbar" aria-label="Primary">
-  <div class="navbar-header">
-    <a id="mobile_btn" href="javascript:void(0);">
-      <span class="bar-icon">
-        <span></span>
-        <span></span>
-        <span></span>
-      </span>
-    </a>
-    <a href="{% url 'hospital_home'%}" class="navbar-brand logo">
+  <div class="container">
+    <a href="{% url 'hospital_home' %}" class="navbar-brand logo hs-brand" aria-label="HealthStack Home">
       <img
         src="{% static 'HealthStack-System/images/Normal/logo.jpg' %}"
-        class="img-fluid"
-        alt="Logo"
+        class="img-fluid hs-logo"
+        alt="HealthStack"
       />
     </a>
-  </div>
-  <div class="main-menu-wrapper">
-    <div class="menu-header">
-      <a href="" class="menu-logo">
-        <img
-          src="{% static 'HealthStack-System/images/Normal/logo.jpg' %}"
-          class="img-fluid"
-          alt="Logo"
-        />
-      </a>
-      <a id="menu_close" class="menu-close" href="javascript:void(0);">
-        <i class="fas fa-times"></i>
-      </a>
-    </div>
-    <ul class="main-nav">
-      <li>
-        <a href="{% url 'hospital_home'%}">Home</a>
-      </li>
 
-      <li>
-        <a href="{% url 'patient-dashboard' %}">Dashboard</a>
-      </li>
+    <button
+      class="navbar-toggler hs-navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#hsPatientNavbar"
+      aria-controls="hsPatientNavbar"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-      <li class="has-submenu">
-        <a href="#">Hospital <i class="fas fa-chevron-down"></i></a>
-        <ul class="submenu">
-          <li><a href="{% url 'multiple-hospital' %}">Hospital Info</a></li>
-          <li><a href="{% url 'search' %}">Search Doctor</a></li>
-          
-          <!-- <li><a href="#">Checkout</a></li> -->
-          <!-- <li>
-            <a href="">Booking Success</a>
-          </li> -->
-          
-          <!-- <li><a href="#">Favourites</a></li> -->
-          <!-- <li><a href="#">Chat</a></li> -->
-        </ul>
-      </li>
+    <div class="collapse navbar-collapse" id="hsPatientNavbar">
+      <ul class="navbar-nav mr-auto hs-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'hospital_home' %}">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'patient-dashboard' %}">Dashboard</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">Hospital</a>
+          <div class="dropdown-menu hs-dropdown-menu">
+            <a class="dropdown-item" href="{% url 'multiple-hospital' %}">Hospital Info</a>
+            <a class="dropdown-item" href="{% url 'search' %}">Search Doctor</a>
+          </div>
+        </li>
+        {% if user.is_authenticated and user.is_patient %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'chat-home' pk=user.id %}">Chat with Doctor</a>
+        </li>
+        {% endif %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'pharmacy_shop' %}">Medical Shop</a>
+        </li>
+      </ul>
 
-      {% if user.is_authenticated and user.is_patient %}
-      <li>
-        <a href="{% url 'chat-home' pk=user.id %}">Chat with Doctor</a>
-      </li>
-      {% endif %}
-
-      <li>
-        <a href="{% url 'pharmacy_shop' %}">Medical Shop</a>
-      </li>
-      <!-- <li class="has-submenu">
-                  <a href="#">Pages <i class="fas fa-chevron-down"></i></a>
-                  <ul class="submenu">
-                    <li><a href="voice-call.html">Voice Call</a></li>
-                    <li><a href="video-call.html">Video Call</a></li>
-                    <li><a href="search.html">Search Doctors</a></li>
-                    <li><a href="calendar.html">Calendar</a></li>
-                    <li><a href="components.html">Components</a></li>
-                    <li class="has-submenu">
-                      <a href="invoices.html">Invoices</a>
-                      <ul class="submenu">
-                        <li><a href="invoices.html">Invoices</a></li>
-                        <li><a href="invoice-view.html">Invoice View</a></li>
-                      </ul>
-                    </li>
-                    <li><a href="blank-page.html">Starter Page</a></li>
-                    <li><a href="login.html">Login</a></li>
-                    <li><a href="register.html">Register</a></li>
-                    <li><a href="forgot-password.html">Forgot Password</a></li>
-                  </ul>
-                </li> -->
-    </ul>
-  </div>
-  <ul class="nav header-navbar-rht">
-    <li class="nav-item contact-item">
-      <div class="header-contact-img">
-        <i class="far fa-hospital"></i>
-      </div>
-      <div class="header-contact-detail">
-        <p class="contact-header">Contact</p>
-        <p class="contact-info-header">+880{{patient.phone_number}}</p>
-      </div>
-    </li>
-    <!-- User Menu -->
-    <li class="nav-item dropdown has-arrow logged-item">
-      <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
-        <span class="user-img">
-          <img
-            class="rounded-circle"
-            src="{{patient.featured_image.url}}"
-            width="31"
-            alt="{{ patient.name|default:user.get_username|default:'Patient' }}"
-            onerror="this.onerror=null;this.src='{% static 'HealthStack-System/images/Normal/patients/patient.jpg' %}';"
-          />
-        </span>
-      </a>
-      <div class="dropdown-menu dropdown-menu-right">
-        <div class="user-header">
-          <div class="avatar avatar-sm">
+      <div class="hs-nav-actions">
+        <!-- User Dropdown -->
+        <div class="nav-item dropdown hs-user-dropdown">
+          <a href="#" class="dropdown-toggle hs-user-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <img
-              src="{{patient.featured_image.url}}"
+              class="rounded-circle hs-avatar"
+              src="{{ patient.featured_image.url }}"
+              width="34" height="34"
               alt="{{ patient.name|default:user.get_username|default:'Patient' }}"
-              class="avatar-img rounded-circle"
               onerror="this.onerror=null;this.src='{% static 'HealthStack-System/images/Normal/patients/patient.jpg' %}';"
             />
-          </div>
-          <div class="user-text">
-            <h6>{{patient.name}}</h6>
-            <p class="text-muted mb-0">Patient</p>
+            <span class="hs-user-name d-none d-lg-inline-block">{{ patient.name|default:user.get_username|default:'Patient' }}</span>
+          </a>
+          <div class="dropdown-menu dropdown-menu-right hs-dropdown-menu">
+            <div class="hs-dropdown-header">
+              <img
+                src="{{ patient.featured_image.url }}"
+                alt="{{ patient.name|default:user.get_username|default:'Patient' }}"
+                class="rounded-circle hs-avatar"
+                width="40" height="40"
+                onerror="this.onerror=null;this.src='{% static 'HealthStack-System/images/Normal/patients/patient.jpg' %}';"
+              />
+              <div class="hs-dropdown-header-text">
+                <strong>{{ patient.name }}</strong>
+                <small>Patient</small>
+              </div>
+            </div>
+            <a class="dropdown-item" href="{% url 'patient-dashboard' %}"><i class="fas fa-columns mr-2"></i>Dashboard</a>
+            <a class="dropdown-item" href="{% url 'profile-settings' %}"><i class="fas fa-user-cog mr-2"></i>Profile Settings</a>
+            <a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a>
           </div>
         </div>
-        <a class="dropdown-item" href="{% url 'patient-dashboard' %}"
-          >Dashboard</a
-        >
-        <a class="dropdown-item" href="{% url 'profile-settings' %}"
-          >Profile Settings</a
-        >
-        <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
       </div>
-    </li>
-    <!-- /User Menu -->
-  </ul>
+    </div>
+  </div>
 </nav>

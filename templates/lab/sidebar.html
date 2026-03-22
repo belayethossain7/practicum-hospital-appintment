@@ -1,0 +1,54 @@
+{% load static %}
+<!-- Lab Sidebar -->
+<aside class="lab-sidebar" id="labSidebar">
+    <div class="lab-sidebar-header">
+        <a href="{% url 'lab-dashboard' %}" class="lab-logo">
+            <img src="{% static 'HealthStack-System/images/Normal/favicon.png' %}" alt="Logo" class="lab-logo-img">
+            <span class="lab-logo-text">HealthStack</span>
+        </a>
+    </div>
+
+    <nav class="lab-sidebar-nav">
+        <ul>
+            <li class="lab-nav-section">Main</li>
+            <li class="lab-nav-item active">
+                <a href="{% url 'lab-dashboard' %}">
+                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="lab-nav-item">
+                <a href="{% url 'lab-dashboard' %}?status=Pending">
+                    <i class="fas fa-clock"></i> <span>Pending Tests</span>
+                </a>
+            </li>
+            <li class="lab-nav-item">
+                <a href="{% url 'lab-dashboard' %}?status=Processing">
+                    <i class="fas fa-spinner"></i> <span>Processing</span>
+                </a>
+            </li>
+            <li class="lab-nav-item">
+                <a href="{% url 'lab-dashboard' %}?status=Completed">
+                    <i class="fas fa-check-circle"></i> <span>Completed</span>
+                </a>
+            </li>
+
+            <li class="lab-nav-section">Management</li>
+            <li class="lab-nav-item">
+                <a href="{% url 'test-list' %}">
+                    <i class="fas fa-list"></i> <span>Test Catalog</span>
+                </a>
+            </li>
+            <li class="lab-nav-item">
+                <a href="{% url 'mypatient-list' %}">
+                    <i class="fas fa-users"></i> <span>Patient List</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="lab-sidebar-footer">
+        <a href="{% url 'lab-logout' %}" class="lab-sidebar-logout">
+            <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+        </a>
+    </div>
+</aside>

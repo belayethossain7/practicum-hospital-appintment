@@ -136,7 +136,7 @@ def admin_login(request):
                 return redirect('admin-dashboard')
             elif user.is_labworker:
                 messages.success(request, 'User logged in')
-                return redirect('labworker-dashboard')
+                return redirect('lab-dashboard')
             elif user.is_pharmacist:
                 messages.success(request, 'User logged in')
                 return redirect('pharmacist-dashboard')

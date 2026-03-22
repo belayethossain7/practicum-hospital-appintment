@@ -1,0 +1,103 @@
+/* ============================================================
+   Lab Login — page-isolated styling
+   Scope: body.hs-lab-login  +  #lab-login-page
+   ============================================================ */
+
+body.hs-lab-login {
+    background:
+        radial-gradient(900px 520px at 12% 6%, rgba(255, 255, 255, 0.08), transparent 60%),
+        radial-gradient(760px 420px at 92% 10%, rgba(255, 255, 255, 0.06), transparent 55%),
+        linear-gradient(135deg, #05132b 0%, #0a3060 55%, #146ebd 100%);
+    min-height: 100vh;
+}
+
+body.hs-lab-login #lab-login-page.login-body {
+    background: transparent;
+}
+
+body.hs-lab-login #lab-login-page .login-wrapper .loginbox {
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+body.hs-lab-login #lab-login-page .login-wrapper .loginbox .login-left {
+    background:
+        radial-gradient(700px 360px at 20% 15%, rgba(255, 255, 255, 0.14), transparent 60%),
+        linear-gradient(135deg, #05132b 0%, #0a3060 55%, #146ebd 100%) !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+body.hs-lab-login .login-left-subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 18px;
+}
+
+body.hs-lab-login #lab-login-page .login-wrapper .loginbox .login-right {
+    background: rgba(255, 255, 255, 0.97);
+}
+
+body.hs-lab-login #lab-login-page .login-wrapper .loginbox .login-right h1 {
+    font-weight: 900;
+    letter-spacing: -0.2px;
+    color: #0a3060;
+}
+
+body.hs-lab-login .lab-icon {
+    color: #146ebd;
+    margin-right: 8px;
+}
+
+body.hs-lab-login #lab-login-page .account-subtitle {
+    color: #5e6b7a;
+    font-weight: 600;
+}
+
+body.hs-lab-login #lab-login-page .form-control {
+    border-radius: 12px;
+}
+
+body.hs-lab-login #lab-login-page .form-control:focus {
+    border-color: rgba(10, 48, 96, 0.55);
+    box-shadow: 0 0 0 0.2rem rgba(10, 48, 96, 0.18);
+}
+
+body.hs-lab-login #lab-login-page .btn.btn-primary {
+    background: linear-gradient(135deg, #0a3060 0%, #146ebd 100%);
+    border: 0;
+    border-radius: 12px;
+    font-weight: 900;
+    box-shadow: 0 12px 22px rgba(10, 48, 96, 0.22);
+    transition: transform 180ms ease, filter 180ms ease, box-shadow 180ms ease;
+}
+
+body.hs-lab-login #lab-login-page .btn.btn-primary:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+    box-shadow: 0 16px 30px rgba(10, 48, 96, 0.30);
+}
+
+body.hs-lab-login .show-pw-label {
+    font-size: 13px;
+    color: #6b7b8d;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Toast overrides */
+body.hs-lab-login .toast.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    min-width: 280px;
+}

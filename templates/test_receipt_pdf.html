@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Test Payment Receipt</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 13px;
+      color: #222;
+      margin: 0;
+      padding: 0;
+    }
+    .invoice-box {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 30px;
+      border: 1px solid #ddd;
+    }
+    .invoice-header {
+      border-bottom: 2px solid #0b3b74;
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+    }
+    .invoice-header h1 {
+      color: #0b3b74;
+      font-size: 24px;
+      margin: 0 0 4px 0;
+    }
+    .invoice-header p {
+      margin: 2px 0;
+      color: #555;
+      font-size: 12px;
+    }
+    .meta-table {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    .meta-table td {
+      vertical-align: top;
+      padding: 3px 6px;
+      font-size: 12px;
+    }
+    .meta-table .label {
+      font-weight: bold;
+      color: #333;
+      width: 140px;
+    }
+    .section-title {
+      background: #0b3b74;
+      color: #fff;
+      padding: 6px 12px;
+      font-size: 14px;
+      font-weight: bold;
+      margin: 18px 0 0 0;
+    }
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 0;
+    }
+    .items-table th,
+    .items-table td {
+      border: 1px solid #ddd;
+      padding: 8px 10px;
+      text-align: left;
+      font-size: 12px;
+    }
+    .items-table th {
+      background: #f0f4f8;
+      color: #0a1f44;
+      font-weight: bold;
+    }
+    .items-table tr:nth-child(even) {
+      background: #fafbfc;
+    }
+    .total-row td {
+      font-weight: bold;
+      font-size: 13px;
+      background: #e8f0fe;
+    }
+    .status-paid {
+      color: #28a745;
+      font-weight: bold;
+    }
+    .footer-note {
+      margin-top: 30px;
+      padding-top: 14px;
+      border-top: 1px solid #ddd;
+      font-size: 11px;
+      color: #888;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="invoice-box">
+    <!-- Header -->
+    <div class="invoice-header">
+      <h1>HealthStack</h1>
+      <p>Test Payment Receipt</p>
+    </div>
+
+    <!-- Patient & Payment Info -->
+    <table class="meta-table">
+      <tr>
+        <td class="label">Patient Name:</td>
+        <td>{{ patient.name }}</td>
+        <td class="label">Receipt Date:</td>
+        <td>{{ current_date }}</td>
+      </tr>
+      <tr>
+        <td class="label">Doctor:</td>
+        <td>Dr. {{ prescription.doctor.name }}</td>
+        <td class="label">Prescription ID:</td>
+        <td>#{{ prescription.prescription_id }}</td>
+      </tr>
+      <tr>
+        <td class="label">Transaction ID:</td>
+        <td>{{ payment.transaction_id }}</td>
+        <td class="label">Transaction Date:</td>
+        <td>{{ payment.transaction_date }}</td>
+      </tr>
+      <tr>
+        <td class="label">Card Type:</td>
+        <td>{{ payment.card_type }}</td>
+        <td class="label">Card Issuer:</td>
+        <td>{{ payment.card_issuer }}</td>
+      </tr>
+      <tr>
+        <td class="label">Payment Status:</td>
+        <td class="status-paid">PAID</td>
+        <td class="label">Invoice No:</td>
+        <td>{{ payment.invoice_number }}</td>
+      </tr>
+    </table>
+
+    <!-- Test Items -->
+    <div class="section-title">Test Details</div>
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th>Test Name</th>
+          <th style="width:120px;text-align:right">Price (BDT)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for test in tests %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ test.test_name }}</td>
+          <td style="text-align:right">{{ test.test_info_price }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="total-row">
+          <td colspan="2" style="text-align:right">Total Amount</td>
+          <td style="text-align:right">{{ total_amount }} BDT</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Footer -->
+    <div class="footer-note">
+      This is a computer-generated receipt. No signature required.<br/>
+      HealthStack &mdash; Your Health, Our Priority.
+    </div>
+  </div>
+</body>
+</html>

@@ -9,10 +9,18 @@
 body.hs-patient-dashboard {
   background: #f4f7fb;
   min-height: 100vh;
+  /* Only the page-level scrollbar — no double scrollbars */
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
+/* Flexbox column on the wrapper so header → content → footer stack properly
+   and the footer is always pushed to the bottom of the viewport */
 body.hs-patient-dashboard #patient-dashboard-page {
   background: transparent;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 /* =========================
@@ -23,41 +31,6 @@ body.hs-patient-dashboard #patient-dashboard-page #patient-navbar.patient-navbar
   position: sticky;
   top: 0;
   z-index: 1030;
-}
-
-/* Hard override: legacy `.header-nav { background: #fff; }` must not win */
-body.hs-patient-dashboard #patient-dashboard-page #patient-navbar.patient-navbar .header-nav,
-body.hs-patient-dashboard #patient-dashboard-page #patient-navbar.patient-navbar .header-nav.hs-navbar,
-body.hs-patient-dashboard #patient-dashboard-page #patient-navbar.patient-navbar .hs-navbar.header-nav {
-  background:
-    radial-gradient(900px 420px at 10% 0%, rgba(255, 255, 255, 0.10), transparent 60%),
-    radial-gradient(760px 380px at 92% 14%, rgba(255, 255, 255, 0.08), transparent 55%),
-    linear-gradient(135deg, #061a33 0%, var(--hs-primary, #0b3b74) 55%, var(--hs-primary-600, #1456a8) 100%) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
-  box-shadow: 0 10px 24px rgba(10, 31, 68, 0.18);
-}
-
-body.hs-patient-dashboard #patient-dashboard-page #patient-navbar.patient-navbar .header-nav .main-nav > li > a,
-body.hs-patient-dashboard #patient-dashboard-page #patient-navbar.patient-navbar .header-nav .navbar-nav .nav-link {
-  color: rgba(255, 255, 255, 0.90) !important;
-  transition: color 180ms ease, opacity 180ms ease;
-}
-
-body.hs-patient-dashboard #patient-dashboard-page #patient-navbar.patient-navbar .header-nav .main-nav > li > a:hover,
-body.hs-patient-dashboard #patient-dashboard-page #patient-navbar.patient-navbar .header-nav .navbar-nav .nav-link:hover,
-body.hs-patient-dashboard #patient-dashboard-page #patient-navbar.patient-navbar .header-nav .navbar-nav .nav-link:focus {
-  color: #ffffff !important;
-}
-
-body.hs-patient-dashboard #patient-dashboard-page #patient-navbar.patient-navbar .header-contact-detail .contact-header,
-body.hs-patient-dashboard #patient-dashboard-page #patient-navbar.patient-navbar .header-contact-detail .contact-info-header {
-  color: rgba(255, 255, 255, 0.85) !important;
-}
-
-body.hs-patient-dashboard #patient-dashboard-page #patient-navbar.patient-navbar .dropdown-menu {
-  border: 1px solid rgba(10, 31, 68, 0.12);
-  border-radius: 12px;
-  box-shadow: 0 18px 40px rgba(10, 31, 68, 0.16);
 }
 
 /* =========================
@@ -85,10 +58,17 @@ body.hs-patient-dashboard #patient-dashboard-page .breadcrumb .breadcrumb-item.a
   color: rgba(10, 31, 68, 0.88);
 }
 
-/* Page content spacing */
+/* Page content — stretches to fill remaining space via flex-grow */
 body.hs-patient-dashboard #patient-dashboard-page .content {
   padding-top: 24px;
   padding-bottom: 32px;
+  flex: 1 0 auto;           /* fills space between navbar/breadcrumb and footer */
+  overflow: visible;        /* no inner scrollbar — page body scrolls */
+}
+
+/* Row that holds sidebar + main content */
+body.hs-patient-dashboard #patient-dashboard-page .content > .container-fluid > .row {
+  align-items: flex-start;  /* sidebar sticks to top, content column flows down */
 }
 
 /* =========================
@@ -125,6 +105,20 @@ body.hs-patient-dashboard #patient-dashboard-page .card-header {
 /* =========================
    Sidebar (dashboard-only)
    ========================= */
+
+/* Make the sidebar column sticky — stays visible while main content scrolls.
+   No max-height / overflow-y so there is NO sidebar scrollbar. */
+body.hs-patient-dashboard #patient-dashboard-page .theiaStickySidebar {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 80px;              /* sits just below the sticky navbar */
+  align-self: flex-start; /* prevents stretching to row height */
+  z-index: 1020;
+  /* explicitly clear anything theiaStickySidebar JS may inject */
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
 
 body.hs-patient-dashboard #patient-dashboard-page #patient-sidebar.patient-sidebar .profile-sidebar {
   background: #ffffff;
@@ -263,8 +257,10 @@ body.hs-patient-dashboard #patient-dashboard-page .table-action .btn {
    Footer (dashboard-only)
    ========================= */
 
+/* Footer: flex-shrink: 0 keeps it at the bottom and prevents overlap */
 body.hs-patient-dashboard #patient-dashboard-page #patient-footer.patient-footer {
   margin-top: 26px;
+  flex-shrink: 0;
 }
 
 body.hs-patient-dashboard #patient-dashboard-page #patient-footer.patient-footer .footer,
@@ -302,5 +298,115 @@ body.hs-patient-dashboard #patient-dashboard-page .content a:hover {
 
   body.hs-patient-dashboard #patient-dashboard-page #patient-sidebar.patient-sidebar {
     margin-bottom: 18px;
+  }
+
+  /* On mobile/tablet, sidebar flows normally above content — not sticky */
+  body.hs-patient-dashboard #patient-dashboard-page .theiaStickySidebar {
+    position: static !important;
+    max-height: none !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+}
+
+/* =========================
+   Disabled / Paid button
+   ========================= */
+body.hs-patient-dashboard #patient-dashboard-page .btn-paid-disabled {
+  pointer-events: none;
+  cursor: default;
+  opacity: 0.72;
+  font-weight: 500;
+}
+
+body.hs-patient-dashboard #patient-dashboard-page .btn-cancel-disabled {
+  pointer-events: none;
+  cursor: default;
+  opacity: 0.55;
+  font-weight: 500;
+  background: #e9ecef !important;
+  color: #6c757d !important;
+  border: 1px solid rgba(10, 31, 68, 0.10);
+}
+
+body.hs-patient-dashboard #patient-dashboard-page .bg-secondary-light {
+  background: #e9ecef;
+  color: #6c757d;
+}
+
+/* =========================
+   Modal fix: prevent full-screen blur
+   =========================
+   style.css has `.modal-open .main-wrapper { filter: blur(1px) }` (Voice call section)
+   which blurs the entire page when ANY modal opens. Override it for the patient dashboard
+   so the background is only dimmed (via Bootstrap's .modal-backdrop) not blurred.
+*/
+body.hs-patient-dashboard.modal-open #patient-dashboard-page {
+  -webkit-filter: none !important;
+  -moz-filter: none !important;
+  -o-filter: none !important;
+  -ms-filter: none !important;
+  filter: none !important;
+}
+
+/* Keep the backdrop as a subtle dim overlay (Bootstrap default is 0.5, style.css sets 0.4) */
+body.hs-patient-dashboard .modal-backdrop.show {
+  opacity: 0.45;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Ensure the modal itself is on top and scrollable on long test lists */
+body.hs-patient-dashboard .modal {
+  overflow-y: auto;
+}
+
+body.hs-patient-dashboard .modal-dialog {
+  margin: 1.75rem auto;
+}
+
+/* =========================
+   Test & Payment tab
+   ========================= */
+
+/* Modal styling scoped to patient dashboard */
+body.hs-patient-dashboard .modal .modal-header {
+  background: linear-gradient(135deg, #061a33 0%, #0b3b74 100%);
+  color: #fff;
+  border-radius: 0;
+}
+
+body.hs-patient-dashboard .modal .modal-header .close {
+  color: #fff;
+  opacity: 0.85;
+}
+
+body.hs-patient-dashboard .modal .modal-header .close:hover {
+  opacity: 1;
+}
+
+body.hs-patient-dashboard .modal .modal-title {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+body.hs-patient-dashboard .modal .modal-body .table-sm th {
+  font-size: 13px;
+  color: #0a1f44;
+}
+
+body.hs-patient-dashboard .modal .modal-body .table-sm td {
+  font-size: 13px;
+}
+
+body.hs-patient-dashboard .modal .modal-body .table-bordered tfoot td {
+  background: #f0f4f8;
+}
+
+/* Tab label for small screens */
+@media (max-width: 575.98px) {
+  body.hs-patient-dashboard #patient-dashboard-page .test-pay-label {
+    font-size: 12px;
   }
 }
