@@ -1,6 +1,8 @@
 {% load static %}
 
-<div class="profile-sidebar">
+{% with current_url=request.resolver_match.url_name %}
+
+<div class="profile-sidebar dp-theme-sidebar-inner">
   <div class="widget-profile pro-widget-content">
     <div class="profile-info-widget">
       <a href="#" class="booking-doc-img">
@@ -21,14 +23,14 @@
   <div class="dashboard-widget">
     <nav class="dashboard-menu sidebar">
       <ul>
-        <li class="active">
+        <li class="{% if current_url == 'doctor-dashboard' %}active{% endif %}">
           <a href="{% url 'doctor-dashboard' %}">
             <i class="fas fa-columns"></i>
             <span>Dashboard</span>
           </a>
         </li>
 
-        <li>
+        <li class="{% if current_url == 'doctor-profile' %}active{% endif %}">
         <a href="{% url 'doctor-profile' pk=doctor.doctor_id %}">
           <i class="fas fa-user"></i>
           <span>Profile</span>
@@ -36,13 +38,13 @@
       </li>
 
 
-        <li>
+        <li class="{% if current_url == 'appointments' %}active{% endif %}">
           <a href="{% url 'appointments'%}">
             <i class="fas fa-user-circle"></i>
             <span>Appoinment</span>
           </a>
         </li>
-        <li class="nav-item has-submenu">
+        <li class="nav-item has-submenu {% if current_url == 'patient-search' %}active{% endif %}">
           
             <a href="#" class="nav-link"><i class="fas fa-search"></i><span>Patient ID</span></a>
               <ul class="submenu collapse" style="padding:19px">
@@ -54,22 +56,28 @@
           
         </li>
         
-        <li>
+        <li class="{% if current_url == 'multiple-hospital' %}active{% endif %}">
           <a href="{% url 'multiple-hospital' %}">
             <i class="fas fa-hospital"></i>
             <span>Multiple Hospital</span>
           </a>
       </li>
-        <li>
+        <li class="{% if current_url == 'my-patients' %}active{% endif %}">
           <a href="{% url 'my-patients' %}">
             <i class="fas fa-user-injured"></i>
             <span>My Patients</span>
           </a>
         </li>
-        <li>
+        <li class="{% if current_url == 'doctor-test-list' %}active{% endif %}">
           <a href="{% url 'doctor-test-list'%}" target="_blank">
             <i class="fas fa-hourglass-start"></i>
             <span>Test Information</span>
+          </a>
+        </li>
+        <li class="{% if current_url == 'doctor-lab-reports' %}active{% endif %}">
+          <a href="{% url 'doctor-lab-reports'%}">
+            <i class="fas fa-flask"></i>
+            <span>Lab Reports</span>
           </a>
         </li>
         <!-- <li>
@@ -91,7 +99,7 @@
             <small class="unread-msg">23</small>
           </a>
         </li> -->
-        <li>
+        <li class="{% if current_url == 'doctor-profile-settings' %}active{% endif %}">
           <a
             href="{% url 'doctor-profile-settings' %}"
           >
@@ -105,7 +113,7 @@
             <span>Social Media</span>
           </a>
         </li> -->
-        <li>
+        <li class="{% if current_url == 'doctor-change-password' %}active{% endif %}">
           <a href="{% url 'doctor-change-password' pk=user.id%}">
             <i class="fas fa-lock"></i>
             <span>Change Password</span>
@@ -121,3 +129,5 @@
     </nav>
   </div>
 </div>
+
+{% endwith %}

@@ -1,0 +1,268 @@
+/* ============================================================
+   Lab Reports — Shared CSS for patient & doctor lab reports pages
+   Scope: body.hs-patient-lab-reports, body.hs-doctor-lab-reports
+   ============================================================ */
+
+/* ------------ PRESCRIPTION CARDS ------------ */
+.lr-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 16px rgba(30, 41, 59, 0.07);
+    margin-bottom: 24px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    transition: box-shadow 0.2s;
+}
+
+.lr-card:hover {
+    box-shadow: 0 4px 24px rgba(30, 41, 59, 0.12);
+}
+
+.lr-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #0b3b74 0%, #1a5bb5 100%);
+    color: #fff;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.lr-card-header h5 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.lr-card-header h5 i {
+    margin-right: 6px;
+    opacity: 0.8;
+}
+
+.lr-card-date {
+    font-size: 13px;
+    opacity: 0.85;
+    margin-top: 2px;
+    display: block;
+}
+
+.lr-card-date i {
+    margin-right: 4px;
+}
+
+.lr-card-header-left,
+.lr-card-header-right {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.lr-card-header-right {
+    align-items: flex-end;
+}
+
+.lr-doctor-badge {
+    font-size: 13px;
+    background: rgba(255,255,255,0.15);
+    padding: 3px 12px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.lr-doctor-badge i {
+    margin-right: 4px;
+}
+
+.lr-btn-view-pres {
+    background: rgba(255,255,255,0.2) !important;
+    color: #fff !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    padding: 4px 12px !important;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.lr-btn-view-pres:hover {
+    background: rgba(255,255,255,0.35) !important;
+    color: #fff !important;
+}
+
+.lr-card-body {
+    padding: 0;
+}
+
+/* ------------ TABLE ------------ */
+.lr-table {
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.lr-table thead th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 16px;
+    border-bottom: 2px solid #e2e8f0;
+    border-top: none;
+}
+
+.lr-table tbody td {
+    padding: 14px 16px;
+    font-size: 14px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.lr-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.lr-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* ------------ BADGES ------------ */
+.lr-badge-paid {
+    background: #d1fae5 !important;
+    color: #065f46 !important;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 8px;
+}
+
+.lr-badge-unpaid {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 8px;
+}
+
+.lr-badge-completed {
+    background: #d1fae5 !important;
+    color: #065f46 !important;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 8px;
+}
+
+.lr-badge-processing {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 8px;
+}
+
+.lr-badge-pending {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 8px;
+}
+
+/* ------------ REPORT BUTTONS ------------ */
+.lr-btn-report {
+    background: linear-gradient(135deg, #059669, #10b981) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    padding: 5px 14px !important;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.lr-btn-report:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+    color: #fff !important;
+}
+
+.lr-btn-report-text {
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    padding: 5px 14px !important;
+    transition: all 0.2s;
+}
+
+.lr-btn-report-text:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+    color: #fff !important;
+}
+
+/* ------------ EMPTY STATE ------------ */
+.lr-empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: #94a3b8;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 16px rgba(30, 41, 59, 0.07);
+}
+
+.lr-empty-state i {
+    font-size: 56px;
+    margin-bottom: 20px;
+    opacity: 0.4;
+}
+
+.lr-empty-state h4 {
+    color: #475569;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.lr-empty-state p {
+    font-size: 15px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* ------------ RESPONSIVE ------------ */
+@media (max-width: 768px) {
+    .lr-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .lr-card-header-right {
+        align-items: flex-start;
+    }
+
+    .lr-table thead th,
+    .lr-table tbody td {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .lr-card-header {
+        padding: 14px 16px;
+    }
+
+    .lr-table {
+        font-size: 12px;
+    }
+}

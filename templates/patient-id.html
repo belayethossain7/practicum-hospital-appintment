@@ -21,6 +21,9 @@
 	<!-- Main CSS -->
 	<link rel="stylesheet" href="{% static 'HealthStack-System/css/Normal/style.css' %}">
     <link rel="stylesheet" href="{% static 'HealthStack-System/css/Normal/search.css' %}">
+
+	<!-- DP Theme CSS -->
+	<link rel="stylesheet" href="{% static 'HealthStack-System/css/Normal/dp_theme_ui.css' %}" />
 		
 		<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 		<!--[if lt IE 9]>
@@ -29,17 +32,17 @@
 		<![endif]-->
 	
 	</head>
-	<body>
+	<body class="dp-theme">
 
 		<!-- Main Wrapper -->
-		<div class="main-wrapper">
+		<div class="main-wrapper dp-theme-wrapper">
 		
 			<!-- Header -->
 			<header class="header">{% include 'navbar.html' %}</header>
 			<!-- /Header -->
 			
 			<!-- Breadcrumb -->
-			<div class="breadcrumb-bar">
+			<div class="breadcrumb-bar dp-theme-breadcrumb">
                 <div class="container-fluid">
                   <div class="row align-items-center">
                     <div class="col-md-12 col-12">
@@ -50,7 +53,7 @@
                           </li>
                         </ol>
                       </nav>
-                      <h2 class="breadcrumb-title">Dashboard</h2>
+                      <h2 class="breadcrumb-title dp-theme-page-title">Dashboard</h2>
                     </div>
                   </div>
                 </div>
@@ -58,13 +61,13 @@
 			<!-- /Breadcrumb -->
 			
 			<!-- Page Content -->
-			<div class="content">
+			<div class="content dp-theme-content">
 				<div class="container-fluid">
 					<div class="row">
-						<div class="col-md-5 col-lg-4 col-xl-3 theiaStickySidebar">
+						<div class="col-md-5 col-lg-4 col-xl-3 theiaStickySidebar dp-theme-sidebar-col">
 						
 							<!-- Profile Sidebar -->
-							<div>{% include 'doctor-sidebar.html' %}</div>
+							<div class="dp-theme-sidebar">{% include 'doctor-sidebar.html' %}</div>
 							<!-- /Profile Sidebar -->
 							
 						</div>
@@ -109,7 +112,7 @@
 			<!-- /Page Content -->
    
 			<!-- Footer -->
-			{% include 'footer.html' %}
+			<div class="dp-theme-footer">{% include 'footer.html' %}</div>
 			<!-- /Footer -->
 		   
 		</div>
@@ -128,6 +131,9 @@
 		
 		<!-- Custom JS -->
 		<script src="{% static 'HealthStack-System/Outside_assets/js/script.js' %}"></script>
+
+		<!-- DP Theme JS -->
+		<script src="{% static 'HealthStack-System/js/Normal/dp_theme.js' %}"></script>
 
         <!-- Search Bar JS -->
         <script>

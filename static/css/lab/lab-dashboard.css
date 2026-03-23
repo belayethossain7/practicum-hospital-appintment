@@ -553,7 +553,15 @@ body.hs-lab-dashboard {
 .lab-action-group {
     display: flex;
     gap: 6px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
+/* Keep per-row upload form inline within action group */
+.lab-upload-form {
+    display: inline;
+    margin: 0;
+    padding: 0;
 }
 
 .lab-btn-detail {
@@ -605,7 +613,8 @@ body.hs-lab-dashboard {
     color: #fff;
 }
 
-.lab-btn-upload {
+.lab-btn-upload,
+.lab-upload-btn {
     background: linear-gradient(135deg, #7c3aed, #8b5cf6);
     color: #fff !important;
     border: none;
@@ -614,15 +623,18 @@ body.hs-lab-dashboard {
     font-weight: 600;
     padding: 5px 12px;
     transition: all 0.2s;
+    cursor: pointer;
 }
 
-.lab-btn-upload:hover {
+.lab-btn-upload:hover,
+.lab-upload-btn:hover {
     filter: brightness(1.1);
     box-shadow: 0 4px 12px rgba(124,58,237,0.25);
     color: #fff;
 }
 
-.lab-btn-view-report {
+.lab-btn-view-report,
+.lab-view-btn {
     background: linear-gradient(135deg, #0d9488, #14b8a6);
     color: #fff !important;
     border: none;
@@ -632,9 +644,11 @@ body.hs-lab-dashboard {
     padding: 5px 12px;
     transition: all 0.2s;
     text-decoration: none;
+    cursor: pointer;
 }
 
-.lab-btn-view-report:hover {
+.lab-btn-view-report:hover,
+.lab-view-btn:hover {
     filter: brightness(1.1);
     box-shadow: 0 4px 12px rgba(13,148,136,0.25);
     color: #fff;
@@ -919,6 +933,34 @@ body.hs-lab-dashboard .toast.notification {
     }
 }
 
+.lab-btn-reupload {
+    background: linear-gradient(135deg, #ea580c, #f97316);
+    color: #fff !important;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    transition: all 0.2s;
+}
+
+.lab-btn-reupload:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 4px 12px rgba(234,88,12,0.25);
+    color: #fff;
+}
+
+.lab-report-filename {
+    font-size: 11px;
+    color: #64748b;
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    margin-top: 2px;
+}
+
 @media (max-width: 575.98px) {
     .lab-table {
         font-size: 13px;
@@ -930,6 +972,6 @@ body.hs-lab-dashboard .toast.notification {
     }
 
     .lab-action-group {
-        flex-direction: column;
+        flex-wrap: wrap;
     }
 }

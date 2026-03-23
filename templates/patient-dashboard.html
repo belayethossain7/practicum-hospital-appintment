@@ -45,21 +45,27 @@
       href="{% static 'HealthStack-System/css/Normal/patient_dashboard.css' %}?v=20260322c"
     />
 
+    <!-- DP Theme (Doctor & Patient Panel) -->
+    <link
+      rel="stylesheet"
+      href="{% static 'HealthStack-System/css/Normal/dp_theme_ui.css' %}?v=20260323a"
+    />
+
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
       <script src="assets/js/html5shiv.min.js"></script>
       <script src="assets/js/respond.min.js"></script>
     <![endif]-->
   </head>
-  <body class="hs-patient-dashboard">
+  <body class="hs-patient-dashboard dp-theme">
     <!-- Main Wrapper -->
-    <div id="patient-dashboard-page" class="main-wrapper hs-pd" data-patient-dashboard="1">
+    <div id="patient-dashboard-page" class="main-wrapper hs-pd dp-theme-wrapper" data-patient-dashboard="1">
       <!-- Header (Patient Dashboard only) -->
       <header id="patient-navbar" class="header patient-navbar" data-patient-navbar="1">{% include 'navbar.html' %}</header>
       <!-- /Header -->
 
       <!-- Breadcrumb -->
-      <div class="breadcrumb-bar">
+      <div class="breadcrumb-bar dp-theme-breadcrumb">
         <div class="container-fluid">
           <div class="row align-items-center">
             
@@ -74,7 +80,7 @@
                   </li>
                 </ol>
               </nav>
-              <h2 class="breadcrumb-title">Patient Dashboard</h2>{% include 'message.html' %}
+              <h2 class="breadcrumb-title dp-theme-page-title">Patient Dashboard</h2>{% include 'message.html' %}
             </div>
 
           </div>
@@ -82,13 +88,18 @@
       </div>
       <!-- /Breadcrumb -->
       
+      <!-- Sidebar overlay (mobile) -->
+      <div class="dp-sidebar-overlay"></div>
+      <!-- Sidebar toggle (mobile) -->
+      <button class="dp-sidebar-toggle" aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button>
+
       <!-- Page Content -->
-      <div class="content">
+      <div class="content dp-theme-content">
         <div class="container-fluid">
           <div class="row">
             <!-- Profile Sidebar -->
-            <div class="col-md-5 col-lg-4 col-xl-3 theiaStickySidebar">
-              <aside id="patient-sidebar" class="patient-sidebar" data-patient-sidebar="1">{% include 'patient-sidebar.html' %}</aside>
+            <div class="col-md-5 col-lg-4 col-xl-3 theiaStickySidebar dp-theme-sidebar-col">
+              <aside id="patient-sidebar" class="patient-sidebar dp-theme-sidebar" data-patient-sidebar="1">{% include 'patient-sidebar.html' %}</aside>
             </div>
             <!-- / Profile Sidebar -->
 
@@ -715,7 +726,7 @@
       <!-- /Page Content -->
 
       <!-- Footer (Patient Dashboard only) -->
-      <footer id="patient-footer" class="patient-footer" data-patient-footer="1">{% include 'footer.html' %}</footer>
+      <footer id="patient-footer" class="patient-footer dp-theme-footer" data-patient-footer="1">{% include 'footer.html' %}</footer>
       <!-- /Footer -->
     </div>
     <!-- /Main Wrapper -->
@@ -756,6 +767,9 @@
 
     <!-- Searchbar JS -->
     <script src="{% static 'HealthStack-System/js/Normal/sidebar.js' %}"></script>
+
+    <!-- DP Theme JS -->
+    <script src="{% static 'HealthStack-System/js/Normal/dp_theme.js' %}?v=20260323a"></script>
 
     <!-- Neutralize theiaStickySidebar plugin: it injects inline absolute positioning
          and wrapper divs that fight with our CSS position:sticky layout.

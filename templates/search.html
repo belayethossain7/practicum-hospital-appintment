@@ -66,6 +66,9 @@
       href="{% static 'HealthStack-System/css/Normal/patient_search.css' %}?v=20260315"
     />
 
+    <!-- DP Theme CSS -->
+    <link rel="stylesheet" href="{% static 'HealthStack-System/css/Normal/dp_theme_ui.css' %}" />
+
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -73,15 +76,15 @@
       <script src="assets/js/respond.min.js"></script>
     <![endif]-->
   </head>
-  <body class="hs-patient-search">
+  <body class="hs-patient-search dp-theme">
     <!-- Main Wrapper -->
-    <div id="patient-search-page" class="main-wrapper hs-ps" data-patient-search="1">
+    <div id="patient-search-page" class="main-wrapper hs-ps dp-theme-wrapper" data-patient-search="1">
       <!-- Header -->
       <header id="patient-search-navbar" class="header patient-search-navbar" data-patient-search-navbar="1">{% include 'navbar.html' %}</header>
       <!-- /Header -->
 
       <!-- Breadcrumb -->
-      <div class="breadcrumb-bar">
+      <div class="breadcrumb-bar dp-theme-breadcrumb">
 				<div class="container-fluid">
 					<div class="row align-items-center">
             
@@ -92,7 +95,7 @@
 									<li class="breadcrumb-item active" aria-current="page">Search Doctor</li>
 								</ol>
 							</nav>
-							<h2 class="breadcrumb-title">Search Doctor</h2>
+							<h2 class="breadcrumb-title dp-theme-page-title">Search Doctor</h2>
 						</div>
 
 						<div class="col-md-6 col-6">
@@ -115,12 +118,12 @@
       <!-- /Breadcrumb -->
 
       <!-- Page Content -->
-      <div class="content">
+      <div class="content dp-theme-content">
         <div class="container-fluid">
           <div class="row">
             <!-- Profile Sidebar -->
-            <div class="col-md-5 col-lg-4 col-xl-3 theiaStickySidebar">
-              <aside id="patient-search-sidebar" class="patient-search-sidebar" data-patient-search-sidebar="1">{% include 'patient-sidebar.html' %}</aside>
+            <div class="col-md-5 col-lg-4 col-xl-3 theiaStickySidebar dp-theme-sidebar-col">
+              <aside id="patient-search-sidebar" class="patient-search-sidebar dp-theme-sidebar" data-patient-search-sidebar="1">{% include 'patient-sidebar.html' %}</aside>
             </div>
             <!-- / Profile Sidebar -->
 
@@ -235,7 +238,7 @@
       <!-- /Page Content -->
 
       <!-- Footer -->
-      <footer id="patient-search-footer" class="patient-search-footer" data-patient-search-footer="1">{% include 'footer.html' %}</footer>
+      <footer id="patient-search-footer" class="patient-search-footer dp-theme-footer" data-patient-search-footer="1">{% include 'footer.html' %}</footer>
       <!-- /Footer -->
     </div>
     <!-- /Main Wrapper -->
@@ -263,6 +266,9 @@
 
     <!-- Custom JS -->
     <script src="{% static 'HealthStack-System/Outside_assets/js/script.js' %}"></script>
+
+    <!-- DP Theme JS -->
+    <script src="{% static 'HealthStack-System/js/Normal/dp_theme.js' %}"></script>
   </body>
 
   <!-- doccure/search.html  30 Nov 2019 04:12:16 GMT -->

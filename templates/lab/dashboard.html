@@ -161,10 +161,10 @@
                                     <td>
                                         <div class="lab-action-group">
                                             <!-- View Details -->
-                                            <button class="btn btn-sm lab-btn-detail"
+                                            <button type="button" class="btn btn-sm lab-btn-detail"
                                                     onclick="openTestDetail({{ item.test.test_id }})"
                                                     title="View Details">
-                                                <i class="fas fa-eye"></i>
+                                                <i class="fas fa-eye"></i> View
                                             </button>
 
                                             {% if item.test.test_status == 'Pending' %}
@@ -190,20 +190,37 @@
                                             {% if item.test.report_file %}
                                             <!-- View Report -->
                                             <a href="{{ item.test.report_file.url }}" target="_blank"
-                                               class="btn btn-sm lab-btn-view-report" title="View Report">
-                                                <i class="fas fa-file-alt"></i> View
+                                               class="btn btn-sm lab-view-btn" title="View Report">
+                                                <i class="fas fa-file-alt"></i> Report
                                             </a>
                                             {% endif %}
 
-                                            {% if item.test.test_status != 'Completed' or not item.test.report_file %}
-                                            <!-- Upload Report -->
-                                            <button class="btn btn-sm lab-btn-upload"
-                                                    onclick="openUploadModal({{ item.test.test_id }}, '{{ item.test.test_name|escapejs }}')"
-                                                    title="{% if item.test.report_file %}Re-upload Report{% else %}Upload Report{% endif %}">
-                                                <i class="fas fa-upload"></i> {% if item.test.report_file %}Re-upload{% else %}Report{% endif %}
-                                            </button>
-                                            {% endif %}
+                                            <!-- Upload / Re-upload Report (per-row inline form) -->
+                                            <form method="POST"
+                                                  action="{% url 'lab-upload-report' pk=item.test.test_id %}"
+                                                  enctype="multipart/form-data"
+                                                  class="d-inline lab-upload-form"
+                                                  id="uploadForm_{{ item.test.test_id }}">
+                                                {% csrf_token %}
+                                                <input type="file"
+                                                       name="report_file"
+                                                       id="reportFile_{{ item.test.test_id }}"
+                                                       class="d-none lab-upload-file-input"
+                                                       accept=".pdf,.png,.jpg,.jpeg,.docx,.doc,.txt">
+                                                <button type="button"
+                                                        class="btn btn-sm {% if item.test.report_file %}lab-btn-reupload{% else %}lab-upload-btn{% endif %}"
+                                                        onclick="document.getElementById('reportFile_{{ item.test.test_id }}').click()"
+                                                        title="{% if item.test.report_file %}Re-upload Report{% else %}Upload Report{% endif %}">
+                                                    <i class="fas fa-{% if item.test.report_file %}sync-alt{% else %}upload{% endif %}"></i>
+                                                    {% if item.test.report_file %}Re-upload{% else %}Upload{% endif %}
+                                                </button>
+                                            </form>
                                         </div>
+                                        {% if item.test.report_file %}
+                                        <small class="lab-report-filename" title="{{ item.test.report_file.name }}">
+                                            <i class="fas fa-paperclip"></i> {{ item.test.report_file.name|truncatechars:25 }}
+                                        </small>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -270,40 +287,7 @@
 </div>
 
 
-<!-- ============================================================ -->
-<!-- UPLOAD REPORT MODAL                                          -->
-<!-- ============================================================ -->
-<div class="modal fade" id="uploadReportModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content lab-modal">
-            <div class="modal-header lab-modal-header">
-                <h5 class="modal-title"><i class="fas fa-file-upload"></i> Upload Report</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="uploadReportForm" method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <p class="mb-3">Uploading report for: <strong id="uploadTestName"></strong></p>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Report File (PDF / Image)</label>
-                        <input type="file" class="form-control" name="report_file" accept=".pdf,.png,.jpg,.jpeg">
-                        <small id="filePreview" class="d-block mt-1 fw-semibold"></small>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Report Text / Notes</label>
-                        <textarea class="form-control" name="report_text" rows="5" placeholder="Enter test results or notes…"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn lab-btn-submit"><i class="fas fa-upload"></i> Upload Report</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 
 <!-- ============================================================ -->

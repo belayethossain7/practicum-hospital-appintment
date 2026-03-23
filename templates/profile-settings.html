@@ -60,15 +60,18 @@
 
     <link href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" rel="stylesheet" />
 
+    <!-- DP Theme CSS -->
+    <link rel="stylesheet" href="{% static 'HealthStack-System/css/Normal/dp_theme_ui.css' %}" />
+
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
       <script src="assets/js/html5shiv.min.js"></script>
       <script src="assets/js/respond.min.js"></script>
     <![endif]-->
   </head>
-  <body class="{% if user.is_authenticated and user.is_patient %}hs-patient-profile-settings{% endif %}">
+  <body class="{% if user.is_authenticated and user.is_patient %}hs-patient-profile-settings{% endif %} dp-theme">
     <!-- Main Wrapper -->
-    <div id="patient-ps-page" class="main-wrapper hs-pps" data-patient-profile-settings="1">
+    <div id="patient-ps-page" class="main-wrapper hs-pps dp-theme-wrapper" data-patient-profile-settings="1">
       <!-- Header -->
       <header class="header">
         <div id="patient-ps-navbar" class="patient-ps-navbar" data-patient-ps-navbar="1">{% include 'navbar.html' %}</div>
@@ -76,7 +79,7 @@
       <!-- /Header -->
 
       <!-- Breadcrumb -->
-      <div class="breadcrumb-bar">
+      <div class="breadcrumb-bar dp-theme-breadcrumb">
         <div class="container-fluid">
           <div class="row align-items-center">
             <div class="col-md-12 col-12">
@@ -88,7 +91,7 @@
                   </li>
                 </ol>
               </nav>
-              <h2 class="breadcrumb-title">Profile Settings</h2>
+              <h2 class="breadcrumb-title dp-theme-page-title">Profile Settings</h2>
             </div>
           </div>
         </div>
@@ -96,12 +99,12 @@
       <!-- /Breadcrumb -->
 
       <!-- Page Content -->
-      <div class="content">
+      <div class="content dp-theme-content">
         <div class="container-fluid">
           <div class="row">
             <!-- Profile Sidebar -->
-            <div class="col-md-5 col-lg-4 col-xl-3 theiaStickySidebar">
-              <aside id="patient-ps-sidebar" class="patient-ps-sidebar" data-patient-ps-sidebar="1">{% include 'patient-sidebar.html' %}</aside>
+            <div class="col-md-5 col-lg-4 col-xl-3 theiaStickySidebar dp-theme-sidebar-col">
+              <aside id="patient-ps-sidebar" class="patient-ps-sidebar dp-theme-sidebar" data-patient-ps-sidebar="1">{% include 'patient-sidebar.html' %}</aside>
             </div>
             <!-- /Profile Sidebar -->
 
@@ -234,7 +237,7 @@
       <!-- /Page Content -->
 
       <!-- Footer -->
-      <footer id="patient-ps-footer" class="patient-ps-footer" data-patient-ps-footer="1">{% include 'footer.html' %}</footer>
+      <footer id="patient-ps-footer" class="patient-ps-footer dp-theme-footer" data-patient-ps-footer="1">{% include 'footer.html' %}</footer>
       <!-- /Footer -->
     </div>
     <!-- /Main Wrapper -->
@@ -258,6 +261,9 @@
 
     <!-- Custom JS -->
     <script src="{% static 'HealthStack-System/Outside_assets/js/script.js' %}"></script>
+
+    <!-- DP Theme JS -->
+    <script src="{% static 'HealthStack-System/js/Normal/dp_theme.js' %}"></script>
 
     <!-- Searchbar JS -->
     <script src="{% static 'HealthStack-System/js/Normal/sidebar.js' %}"></script>

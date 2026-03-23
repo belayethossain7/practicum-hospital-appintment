@@ -1077,7 +1077,7 @@ def render_to_pdf(template_src, context_dict={}):
     result=BytesIO()
     pres_pdf=pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
     if not pres_pdf.err:
-        return HttpResponse(result.getvalue(),content_type="aplication/pres_pdf")
+        return HttpResponse(result.getvalue(),content_type="application/pdf")
     return None
 
 
@@ -1108,7 +1108,7 @@ def prescription_pdf(request,pk):
     context={'patient':patient,'prescription':prescription,'prescription_test':prescription_test,'prescription_medicine':prescription_medicine}
     pres_pdf=render_to_pdf('prescription_pdf.html', context)
     if pres_pdf:
-        response=HttpResponse(pres_pdf, content_type='application/pres_pdf')
+        response=HttpResponse(pres_pdf, content_type='application/pdf')
         content="inline; filename=prescription.pdf"
         response['Content-Disposition']= content
         return response
@@ -1153,4 +1153,39 @@ def got_offline(sender, user, request, **kwargs):
     user.save()
     
 
+# -------------------------------------------------------------------
+# Patient Lab Reports — view all uploaded lab test reports
+# -------------------------------------------------------------------
+@csrf_exempt
+@login_required(login_url="login")
+def patient_lab_reports(request):
+    """Show all lab test reports for the logged-in patient, grouped by prescription."""
+    if not request.user.is_patient:
+        logout(request)
+        messages.error(request, 'Not Authorized')
+        return redirect('login')
 
+    patient = Patient.objects.get(user=request.user)
+
+    # Get all prescriptions for this patient that have at least one paid test
+    prescriptions = (
+        Prescription.objects
+        .filter(patient=patient)
+        .order_by('-create_date')
+    )
+
+    prescription_data = []
+    for pres in prescriptions:
+        tests = Prescription_test.objects.filter(prescription=pres).order_by('test_id')
+        if tests.exists():
+            prescription_data.append({
+                'prescription': pres,
+                'tests': tests,
+            })
+
+    context = {
+        'patient': patient,
+        'prescription_data': prescription_data,
+        'user': request.user,
+    }
+    return render(request, 'patient-lab-reports.html', context)

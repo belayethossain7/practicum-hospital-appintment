@@ -39,21 +39,24 @@
       href="{% static 'HealthStack-System/css/Normal/style.css' %}"
     />
 
+    <!-- DP Theme CSS -->
+    <link rel="stylesheet" href="{% static 'HealthStack-System/css/Normal/dp_theme_ui.css' %}" />
+
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
       <script src="assets/js/html5shiv.min.js"></script>
       <script src="assets/js/respond.min.js"></script>
     <![endif]-->
   </head>
-  <body>
+  <body class="dp-theme">
     <!-- Main Wrapper -->
-    <div class="main-wrapper">
+    <div class="main-wrapper dp-theme-wrapper">
       	<!-- Header -->
 	      	<header class="header">{% include 'navbar.html' %}</header>
       	<!-- /Header -->
 
      	<!-- Breadcrumb -->
-      	<div class="breadcrumb-bar">
+      	<div class="breadcrumb-bar dp-theme-breadcrumb">
         <div class="container-fluid">
           <div class="row align-items-center">
             <div class="col-md-12 col-12">
@@ -67,7 +70,7 @@
                   </li>
                 </ol>
               </nav>
-              <h2 class="breadcrumb-title">Patient Dashboard</h2>
+              <h2 class="breadcrumb-title dp-theme-page-title">Patient Dashboard</h2>
             </div>
           </div>
         </div>
@@ -75,12 +78,12 @@
       	<!-- /Breadcrumb -->
 
       	<!-- Page Content -->
-      	<div class="content">
+      	<div class="content dp-theme-content">
         	<div class="container-fluid">
           		<div class="row">
             		<!-- Profile Sidebar -->
-            		<div class="col-md-5 col-lg-4 col-xl-3 theiaStickySidebar">
-              <div>{% include 'patient-sidebar.html' %}</div>
+            		<div class="col-md-5 col-lg-4 col-xl-3 theiaStickySidebar dp-theme-sidebar-col">
+              <div class="dp-theme-sidebar">{% include 'patient-sidebar.html' %}</div>
             		</div>
             		<!-- / Profile Sidebar -->
 
@@ -195,23 +198,43 @@
 														<tr style="background-color: rgb(84, 147, 199)">
 															<th class="text-center">Test Name</th>
 															<th class="text-center">Description</th>
-															<!-- <th class="text-center"> Test id </th> -->
-															<!-- <th class="text-center"> price</th> -->
+															<th class="text-center">Status</th>
+															<th class="text-center">Report</th>
 															<th class="text-center">Action</th>
-															
-															
 														</tr>
 													</thead>
 													<tbody>
 														{% for pt in prescription_test %}
 														<tr>
-															
 															<td class="text-center">{{pt.test_name}}</td>
 															<td class="text-center">{{pt.test_description}}</td>
-															<!-- <td class="text-center">{{pt.test_info_id}}</td> -->
-															<!-- <td class="text-center">{{pt.test_info_price}}</td> -->
-															<td class="text-center"><a href="{% url 'test-add-to-cart' pk=prescription.prescription_id pk2=pt.test_info_id %}" class="btn btn-primary">Select</a></td>
-															
+															<td class="text-center">
+																{% if pt.test_status == 'Completed' %}
+																	<span class="badge" style="background:#d1fae5;color:#065f46;padding:5px 12px;border-radius:8px;font-weight:600;">Completed</span>
+																{% elif pt.test_status == 'Processing' %}
+																	<span class="badge" style="background:#fef3c7;color:#92400e;padding:5px 12px;border-radius:8px;font-weight:600;">Processing</span>
+																{% else %}
+																	<span class="badge" style="background:#f1f5f9;color:#475569;padding:5px 12px;border-radius:8px;font-weight:600;">Pending</span>
+																{% endif %}
+															</td>
+															<td class="text-center">
+																{% if pt.report_file %}
+																	<a href="{{ pt.report_file.url }}" target="_blank" class="btn btn-sm btn-outline-success" style="border-radius:8px;font-weight:600;">
+																		<i class="fas fa-file-alt"></i> View Report
+																	</a>
+																{% elif pt.report_text %}
+																	<span class="text-muted"><i class="fas fa-file-alt"></i> Text Only</span>
+																{% else %}
+																	<span class="text-muted"><i class="fas fa-clock"></i> Awaiting</span>
+																{% endif %}
+															</td>
+															<td class="text-center">
+																{% if pt.test_info_pay_status == 'Paid' %}
+																	<span class="badge" style="background:#d1fae5;color:#065f46;padding:5px 10px;border-radius:8px;">Paid</span>
+																{% else %}
+																	<a href="{% url 'test-add-to-cart' pk=prescription.prescription_id pk2=pt.test_info_id %}" class="btn btn-primary btn-sm" style="border-radius:8px;">Select</a>
+																{% endif %}
+															</td>
 														</tr>
 														{% endfor %}
 													</tbody>
@@ -255,8 +278,14 @@
 										
 									</div>
 									<br>
-									<button class="btn btn-md bg-primary"> <a href="{% url 'test-cart' pk=prescription.prescription_id %}" > Test Cart </a></button><br><br>
-									<button class="btn btn-md bg-info"> <a target="_blank" href="{% url 'pres_pdf' pk=prescription.prescription_id %}" > Download Prescription </a></button>
+									<div class="d-flex gap-2 flex-wrap">
+										<a href="{% url 'test-cart' pk=prescription.prescription_id %}" class="btn btn-primary" style="border-radius:8px;font-weight:600;">
+											<i class="fas fa-shopping-cart"></i> Test Cart
+										</a>
+										<a href="{% url 'pres_pdf' pk=prescription.prescription_id %}" target="_blank" class="btn btn-info text-white" style="border-radius:8px;font-weight:600;">
+											<i class="fas fa-file-pdf"></i> Download Prescription PDF
+										</a>
+									</div>
 									{% endfor %}
 								</div>
 								<!-- /Invoice Information -->
@@ -283,6 +312,9 @@
 
     <!-- Custom JS -->
     <script src="{% static 'HealthStack-System/Outside_assets/js/script.js' %}"></script>
+
+    <!-- DP Theme JS -->
+    <script src="{% static 'HealthStack-System/js/Normal/dp_theme.js' %}"></script>
   </body>
 
 <!-- doccure/invoice-view.html  30 Nov 2019 04:12:20 GMT -->

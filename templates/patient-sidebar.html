@@ -2,7 +2,7 @@
 
 {% with current_url=request.resolver_match.url_name %}
 
-    <div class="profile-sidebar">
+    <div class="profile-sidebar dp-theme-sidebar-inner">
       <div class="widget-profile pro-widget-content">
         <div class="profile-info-widget">
           <a href="#" class="booking-doc-img">
@@ -61,6 +61,13 @@
               <a href="{% url 'doctor-test-list'%}" target="_blank">
                 <i class="fas fa-hourglass-start"></i>
                 <span>Test Information</span>
+              </a>
+            </li>
+
+            <li class="{% if current_url == 'patient-lab-reports' %}active{% endif %}">
+              <a href="{% url 'patient-lab-reports' %}">
+                <i class="fas fa-flask"></i>
+                <span>My Lab Reports</span>
               </a>
             </li>
         

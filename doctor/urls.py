@@ -24,6 +24,7 @@ urlpatterns = [
     path('schedule-timings/', views.schedule_timings, name='schedule-timings'),
     path('patient-id/', views.patient_id, name='patient-id'),
     path('create-prescription/<int:pk>/', views.create_prescription, name='create-prescription'),
+    path('edit-prescription/<int:pk>/', views.edit_prescription, name='edit-prescription'),
     path('patient-profile/<int:pk>/',views.patient_profile, name='patient-profile'),
     path('delete-education/<int:pk>/',views.delete_education, name='delete-education'),
     path('delete-experience/<int:pk>/',views.delete_experience, name='delete-experience'),
@@ -37,7 +38,9 @@ urlpatterns = [
     path('doctor-test-list/', views.doctor_test_list, name='doctor-test-list'),
     path('test-info/', views.test_info_lookup, name='test-info-lookup'),
     path('doctor-view-prescription/<int:pk>/', views.doctor_view_prescription, name='doctor-view-prescription'),
+    path('doctor-prescription-pdf/<int:pk>/', views.doctor_prescription_pdf, name='doctor-prescription-pdf'),
     path('doctor-view-report/<int:pk>/', views.doctor_view_report, name='doctor-view-report'),
+    path('doctor-lab-reports/', views.doctor_lab_reports, name='doctor-lab-reports'),
 
 ]
 

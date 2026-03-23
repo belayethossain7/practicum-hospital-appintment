@@ -24,6 +24,9 @@
 		<!-- Main CSS -->
 		<link rel="stylesheet" href="{% static 'HealthStack-System/css/Normal/style.css' %}">
 
+		<!-- DP Theme CSS -->
+		<link rel="stylesheet" href="{% static 'HealthStack-System/css/Normal/dp_theme_ui.css' %}" />
+
 		{% if user.is_authenticated and user.is_patient %}
 		<link
 		  rel="stylesheet"
@@ -47,9 +50,9 @@
 		</style>
 	
 	</head>
-	<body class="{% if user.is_authenticated and user.is_patient %}hs-patient-doctor-profile{% endif %}">
+	<body class="{% if user.is_authenticated and user.is_patient %}hs-patient-doctor-profile{% endif %} dp-theme">
 		<!-- Main Wrapper -->
-		<div id="patient-dp-page" class="main-wrapper hs-pdp" data-patient-doctor-profile="1">
+		<div id="patient-dp-page" class="main-wrapper hs-pdp dp-theme-wrapper" data-patient-doctor-profile="1">
 		
 			<!-- Header -->
 			<header class="header">
@@ -62,7 +65,7 @@
 			<!-- /Header -->
 			
 			<!-- Breadcrumb -->
-			<div class="breadcrumb-bar">
+			<div class="breadcrumb-bar dp-theme-breadcrumb">
 				<div class="container-fluid">
 					<div class="row align-items-center">
 						<div class="col-md-12 col-12">
@@ -81,7 +84,7 @@
 									<li class="breadcrumb-item active" aria-current="page">Doctor Profile</li>
 								</ol>
 							</nav>
-							<h2 class="breadcrumb-title">Doctor Profile</h2>
+							<h2 class="breadcrumb-title dp-theme-page-title">Doctor Profile</h2>
 						</div>
 					</div>
 				</div>
@@ -89,13 +92,13 @@
 			<!-- /Breadcrumb -->
 			
 			<!-- Page Content -->
-			<div class="content">
+			<div class="content dp-theme-content">
 				<div class="container-fluid">
 					<div class="row">
 
-						<div class="col-md-5 col-lg-4 col-xl-3 theiaStickySidebar">
+						<div class="col-md-5 col-lg-4 col-xl-3 theiaStickySidebar dp-theme-sidebar-col">
 							<!-- Profile Sidebar -->
-							<div>
+							<div class="dp-theme-sidebar">
 								
 								{% if user.is_authenticated and user.is_patient %}
 								<aside id="patient-dp-sidebar" class="patient-dp-sidebar" data-patient-dp-sidebar="1">{% include 'patient-sidebar.html' %}</aside>
@@ -438,9 +441,9 @@
    
 			<!-- Footer -->
 			{% if user.is_authenticated and user.is_patient %}
-				<footer id="patient-dp-footer" class="patient-dp-footer" data-patient-dp-footer="1">{% include 'footer.html' %}</footer>
+				<footer id="patient-dp-footer" class="patient-dp-footer dp-theme-footer" data-patient-dp-footer="1">{% include 'footer.html' %}</footer>
 			{% else %}
-				{% include 'footer.html' %}
+				<div class="dp-theme-footer">{% include 'footer.html' %}</div>
 			{% endif %}
 			<!-- /Footer -->
 		   
@@ -489,6 +492,9 @@
 
 		<!-- Custom JS -->
 		<script src="{% static 'HealthStack-System/Outside_assets/js/script.js' %}"></script>
+
+		<!-- DP Theme JS -->
+		<script src="{% static 'HealthStack-System/js/Normal/dp_theme.js' %}"></script>
 
 		<!-- Searchbar JS -->
 		<script src="{% static 'HealthStack-System/js/Normal/sidebar.js' %}"></script>

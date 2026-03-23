@@ -1,0 +1,205 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0" />
+    <title>HealthStack — Lab Reports</title>
+
+    <!-- Favicons -->
+    <link type="image/x-icon" href="{% static 'HealthStack-System/images/Normal/favicon.png' %}" rel="icon" />
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{% static 'HealthStack-System/css/Normal/bootstrap.min.css' %}" />
+
+    <!-- Fontawesome CSS -->
+    <link rel="stylesheet" href="{% static 'HealthStack-System/plugins/Normal/fontawesome/css/fontawesome.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'HealthStack-System/plugins/Normal/fontawesome/css/all.min.css' %}" />
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{% static 'HealthStack-System/css/Normal/style.css' %}" />
+
+    <!-- DP Theme (Doctor & Patient Panel) -->
+    <link rel="stylesheet" href="{% static 'HealthStack-System/css/Normal/dp_theme_ui.css' %}?v=20260323a" />
+
+    <!-- Page-specific CSS -->
+    <link rel="stylesheet" href="{% static 'css/lab-reports.css' %}" />
+</head>
+<body class="hs-doctor-lab-reports dp-theme">
+    <!-- Main Wrapper -->
+    <div class="main-wrapper dp-theme-wrapper">
+        <!-- Header -->
+        <header class="header">{% include 'doctor-navbar.html' %}</header>
+        <!-- /Header -->
+
+        <!-- Breadcrumb -->
+        <div class="breadcrumb-bar dp-theme-breadcrumb">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-md-12 col-12">
+                        <nav aria-label="breadcrumb" class="page-breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{% url 'doctor-dashboard' %}">Home</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Lab Reports</li>
+                            </ol>
+                        </nav>
+                        <h2 class="breadcrumb-title dp-theme-page-title">Lab Reports</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /Breadcrumb -->
+
+        <!-- Sidebar overlay (mobile) -->
+        <div class="dp-sidebar-overlay"></div>
+        <button class="dp-sidebar-toggle" aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button>
+
+        <!-- Page Content -->
+        <div class="content dp-theme-content">
+            <div class="container-fluid">
+                <div class="row">
+                    <!-- Profile Sidebar -->
+                    <div class="col-md-5 col-lg-4 col-xl-3 theiaStickySidebar dp-theme-sidebar-col">
+                        <div class="dp-theme-sidebar">{% include 'doctor-sidebar.html' %}</div>
+                    </div>
+                    <!-- / Profile Sidebar -->
+
+                    <div class="col-md-7 col-lg-8 col-xl-9">
+
+                        {% if prescription_data %}
+                        {% for item in prescription_data %}
+                        <!-- Prescription Card -->
+                        <div class="lr-card">
+                            <div class="lr-card-header">
+                                <div class="lr-card-header-left">
+                                    <h5><i class="fas fa-file-prescription"></i> Prescription #{{ item.prescription.prescription_id }}</h5>
+                                    <span class="lr-card-date"><i class="fas fa-calendar-alt"></i> {{ item.prescription.create_date }}</span>
+                                </div>
+                                <div class="lr-card-header-right">
+                                    {% if item.prescription.patient %}
+                                    <span class="lr-doctor-badge">
+                                        <i class="fas fa-user"></i> {{ item.prescription.patient.name }}
+                                    </span>
+                                    {% endif %}
+                                    <a href="{% url 'doctor-view-prescription' pk=item.prescription.prescription_id %}" class="btn btn-sm lr-btn-view-pres">
+                                        <i class="fas fa-eye"></i> View Prescription
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="lr-card-body">
+                                <div class="table-responsive">
+                                    <table class="table lr-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Test Name</th>
+                                                <th class="text-center">Payment</th>
+                                                <th class="text-center">Status</th>
+                                                <th class="text-center">Report</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for test in item.tests %}
+                                            <tr>
+                                                <td>
+                                                    <strong>{{ test.test_name }}</strong>
+                                                    {% if test.test_description %}
+                                                    <br><small class="text-muted">{{ test.test_description|truncatechars:60 }}</small>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-center">
+                                                    {% if test.test_info_pay_status == 'Paid' %}
+                                                        <span class="badge lr-badge-paid"><i class="fas fa-check"></i> Paid</span>
+                                                    {% else %}
+                                                        <span class="badge lr-badge-unpaid">Unpaid</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-center">
+                                                    {% if test.test_status == 'Completed' %}
+                                                        <span class="badge lr-badge-completed"><i class="fas fa-check-circle"></i> Completed</span>
+                                                    {% elif test.test_status == 'Processing' %}
+                                                        <span class="badge lr-badge-processing"><i class="fas fa-spinner"></i> Processing</span>
+                                                    {% else %}
+                                                        <span class="badge lr-badge-pending"><i class="fas fa-clock"></i> Pending</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-center">
+                                                    {% if test.report_file %}
+                                                        <a href="{{ test.report_file.url }}" target="_blank" class="btn btn-sm lr-btn-report">
+                                                            <i class="fas fa-file-alt"></i> View Report
+                                                        </a>
+                                                    {% elif test.report_text %}
+                                                        <button class="btn btn-sm lr-btn-report-text" onclick="showReportText('{{ test.report_text|escapejs }}', '{{ test.test_name|escapejs }}')">
+                                                            <i class="fas fa-align-left"></i> View Text
+                                                        </button>
+                                                    {% else %}
+                                                        <span class="text-muted"><i class="fas fa-clock"></i> Awaiting</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        {% else %}
+                        <!-- Empty State -->
+                        <div class="lr-empty-state">
+                            <i class="fas fa-flask"></i>
+                            <h4>No Lab Reports Found</h4>
+                            <p>No prescriptions with lab tests found. Lab reports will appear here once you prescribe tests for your patients.</p>
+                        </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /Page Content -->
+
+        <!-- Footer -->
+        <div class="dp-theme-footer">{% include 'footer.html' %}</div>
+        <!-- /Footer -->
+    </div>
+    <!-- /Main Wrapper -->
+
+    <!-- Report Text Modal -->
+    <div class="modal fade" id="reportTextModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background:linear-gradient(135deg,#0b3b74,#1a5bb5);color:#fff;">
+                    <h5 class="modal-title"><i class="fas fa-file-alt"></i> <span id="reportTextTitle">Report Text</span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <pre id="reportTextContent" style="white-space:pre-wrap;font-size:14px;background:#f8fafc;padding:16px;border-radius:10px;max-height:400px;overflow-y:auto;"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="{% static 'HealthStack-System/js/Normal/jquery.min.js' %}"></script>
+    <!-- Bootstrap Core JS -->
+    <script src="{% static 'HealthStack-System/js/Normal/popper.min.js' %}"></script>
+    <script src="{% static 'HealthStack-System/js/Normal/bootstrap.min.js' %}"></script>
+    <!-- Sticky Sidebar JS -->
+    <script src="{% static 'HealthStack-System/plugins/Normal/theia-sticky-sidebar/ResizeSensor.js' %}"></script>
+    <script src="{% static 'HealthStack-System/plugins/Normal/theia-sticky-sidebar/theia-sticky-sidebar.js' %}"></script>
+    <!-- Custom JS -->
+    <script src="{% static 'HealthStack-System/Outside_assets/js/script.js' %}"></script>
+
+    <!-- DP Theme JS -->
+    <script src="{% static 'HealthStack-System/js/Normal/dp_theme.js' %}?v=20260323a"></script>
+
+    <script>
+    function showReportText(text, testName) {
+        document.getElementById('reportTextTitle').textContent = testName + ' — Report';
+        document.getElementById('reportTextContent').textContent = text;
+        $('#reportTextModal').modal('show');
+    }
+    </script>
+</body>
+</html>

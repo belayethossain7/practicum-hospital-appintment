@@ -1,8 +1,8 @@
 {% load static %}
 
-<nav class="navbar navbar-expand-lg header-nav hs-navbar" aria-label="Primary">
+<nav class="navbar navbar-expand-lg header-nav hs-navbar dp-theme-navbar" aria-label="Primary">
   <div class="container">
-    <a href="{% url 'hospital_home' %}" class="navbar-brand logo hs-brand" aria-label="HealthStack Home">
+    <a href="{% url 'hospital_home' %}" class="navbar-brand logo hs-brand dp-theme-logo" aria-label="HealthStack Home">
       <img
         src="{% static 'HealthStack-System/images/Normal/logo.jpg' %}"
         class="img-fluid hs-logo"
@@ -11,7 +11,7 @@
     </a>
 
     <button
-      class="navbar-toggler hs-navbar-toggler"
+      class="navbar-toggler"
       type="button"
       data-toggle="collapse"
       data-target="#hsDoctorNavbar"
@@ -23,7 +23,7 @@
     </button>
 
     <div class="collapse navbar-collapse" id="hsDoctorNavbar">
-      <ul class="navbar-nav mr-auto hs-nav">
+      <ul class="navbar-nav mr-auto">
         <li class="nav-item">
           <a class="nav-link" href="{% url 'hospital_home' %}">Home</a>
         </li>
@@ -41,29 +41,28 @@
         </li>
       </ul>
 
-      <div class="hs-nav-actions">
+      <div class="dp-theme-nav-actions">
         <!-- User Dropdown -->
-        <div class="nav-item dropdown hs-user-dropdown">
-          <a href="#" class="dropdown-toggle hs-user-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <div class="nav-item dropdown dp-theme-user-dropdown">
+          <a href="#" class="dropdown-toggle dp-theme-user-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <img
-              class="rounded-circle hs-avatar"
+              class="dp-theme-user-avatar"
               src="{{ doctor.featured_image.url }}"
               width="34" height="34"
               alt="{{ doctor.name|default:user.get_username|default:'Doctor' }}"
               onerror="this.onerror=null;this.src='{% static 'HealthStack-System/images/Normal/doctors/doctor-thumb-02.jpg' %}';"
             />
-            <span class="hs-user-name d-none d-lg-inline-block">{{ doctor.name|default:user.get_username|default:'Doctor' }}</span>
+            <span class="dp-theme-user-name d-none d-lg-inline-block">{{ doctor.name|default:user.get_username|default:'Doctor' }}</span>
           </a>
-          <div class="dropdown-menu dropdown-menu-right hs-dropdown-menu">
-            <div class="hs-dropdown-header">
+          <div class="dropdown-menu dropdown-menu-right">
+            <div class="dp-theme-dropdown-header">
               <img
                 src="{{ doctor.featured_image.url }}"
                 alt="{{ doctor.name|default:user.get_username|default:'Doctor' }}"
-                class="rounded-circle hs-avatar"
                 width="40" height="40"
                 onerror="this.onerror=null;this.src='{% static 'HealthStack-System/images/Normal/doctors/doctor-thumb-02.jpg' %}';"
               />
-              <div class="hs-dropdown-header-text">
+              <div class="dp-theme-dropdown-header-text">
                 <strong>{{ doctor.name }}</strong>
                 <small>Doctor</small>
               </div>

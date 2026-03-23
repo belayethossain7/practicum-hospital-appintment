@@ -15,11 +15,17 @@ function toggleSidebar() {
 
 // ------------ TEST DETAIL MODAL ------------
 function openTestDetail(testId) {
-    var modal = new bootstrap.Modal(document.getElementById('testDetailModal'));
+    var modalEl = document.getElementById('testDetailModal');
     var body = document.getElementById('testDetailBody');
 
     // Show spinner while loading
     body.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-primary" role="status"></div></div>';
+
+    // Reuse existing Bootstrap Modal instance, or create one if first call
+    var modal = bootstrap.Modal.getInstance(modalEl);
+    if (!modal) {
+        modal = new bootstrap.Modal(modalEl);
+    }
     modal.show();
 
     fetch('/lab/test-detail/' + testId + '/')
@@ -145,36 +151,44 @@ function openTestDetail(testId) {
         });
 }
 
-// ------------ UPLOAD REPORT MODAL ------------
-function openUploadModal(testId, testName) {
-    var form = document.getElementById('uploadReportForm');
-    form.action = '/lab/upload-report/' + testId + '/';
-    form.reset();
-    document.getElementById('uploadTestName').textContent = testName;
-    // Clear file preview
-    var preview = document.getElementById('filePreview');
-    if (preview) preview.textContent = '';
-    var modal = new bootstrap.Modal(document.getElementById('uploadReportModal'));
-    modal.show();
-}
-
-// ------------ FILE PREVIEW ON SELECT ------------
+// ------------ PER-ROW UPLOAD (direct file input) ------------
+// Each table row has its own <form> with a hidden <input type="file">.
+// Upload button calls input.click() → file picker opens directly.
+// On file selection → validate → auto-submit the per-row form.
 document.addEventListener('DOMContentLoaded', function () {
-    var fileInput = document.querySelector('#uploadReportForm input[name="report_file"]');
-    if (fileInput) {
-        fileInput.addEventListener('change', function () {
-            var preview = document.getElementById('filePreview');
-            if (!preview) return;
-            if (this.files && this.files.length > 0) {
-                var f = this.files[0];
-                var sizeMB = (f.size / 1024 / 1024).toFixed(2);
-                preview.textContent = f.name + ' (' + sizeMB + ' MB)';
-                preview.style.color = f.size > 10 * 1024 * 1024 ? '#dc3545' : '#198754';
-            } else {
-                preview.textContent = '';
+    var ALLOWED_EXT = ['pdf', 'png', 'jpg', 'jpeg', 'docx', 'doc', 'txt'];
+    var MAX_SIZE_MB = 15;
+
+    document.querySelectorAll('.lab-upload-file-input').forEach(function (input) {
+        input.addEventListener('change', function () {
+            if (!this.files || this.files.length === 0) return;
+
+            var file = this.files[0];
+            var ext = file.name.split('.').pop().toLowerCase();
+
+            if (ALLOWED_EXT.indexOf(ext) === -1) {
+                alert('Invalid file type ".' + ext + '".\nAllowed: PDF, PNG, JPG, JPEG, DOCX, DOC, TXT');
+                this.value = '';
+                return;
             }
+            if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+                alert('File too large (' + (file.size / 1024 / 1024).toFixed(1) + ' MB).\nMaximum allowed: ' + MAX_SIZE_MB + ' MB');
+                this.value = '';
+                return;
+            }
+
+            // Disable the Upload button and show spinner
+            var form = this.closest('form');
+            var btn = form ? form.querySelector('button[type="button"]') : null;
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Uploading…';
+            }
+
+            // Auto-submit the per-row form
+            if (form) form.submit();
         });
-    }
+    });
 });
 
 // ------------ HELPERS ------------

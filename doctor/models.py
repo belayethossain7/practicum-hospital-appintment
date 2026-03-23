@@ -174,6 +174,11 @@ class Test(models.Model):
 
         
 class Prescription(models.Model):
+    PRESCRIPTION_STATUS = (
+        ('draft', 'Draft'),
+        ('completed', 'Completed'),
+    )
+
     # medicine name, quantity, days, time, description, test, test_descrip
     prescription_id = models.AutoField(primary_key=True)
     appointment = models.ForeignKey(Appointment, on_delete=models.SET_NULL, null=True, blank=True, related_name='prescriptions')
@@ -189,6 +194,7 @@ class Prescription(models.Model):
     test_name = models.CharField(max_length=200, null=True, blank=True)
     test_description = models.TextField(null=True, blank=True)
     extra_information = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=PRESCRIPTION_STATUS, default='completed')
 
     def __str__(self):
         return str(self.patient.username)

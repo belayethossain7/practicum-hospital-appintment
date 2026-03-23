@@ -24,8 +24,8 @@ from .decorators import lab_login_required
 logger = logging.getLogger(__name__)
 
 # Allowed file extensions for report uploads
-ALLOWED_REPORT_EXTENSIONS = {'.pdf', '.png', '.jpg', '.jpeg'}
-MAX_UPLOAD_SIZE_MB = 10
+ALLOWED_REPORT_EXTENSIONS = {'.pdf', '.png', '.jpg', '.jpeg', '.docx', '.txt', '.doc'}
+MAX_UPLOAD_SIZE_MB = 15
 
 
 # -------------------------------------------------------------------
@@ -223,7 +223,7 @@ def upload_report(request, pk):
         if ext not in ALLOWED_REPORT_EXTENSIONS:
             messages.error(
                 request,
-                f'Invalid file type "{ext}". Only PDF, PNG, JPG, and JPEG are allowed.'
+                f'Invalid file type "{ext}". Allowed: PDF, PNG, JPG, JPEG, DOCX, DOC, TXT.'
             )
             return redirect('lab-dashboard')
 

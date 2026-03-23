@@ -677,138 +677,324 @@ def patient_profile(request, pk):
 
 @csrf_exempt
 @login_required(login_url="doctor-login")
-def create_prescription(request,pk):
-        if request.user.is_doctor:
-            doctor = Doctor_Information.objects.get(user=request.user)
-            patient = Patient.objects.get(patient_id=pk) 
-            create_date = datetime.date.today()
+def create_prescription(request, pk):
+    if not request.user.is_doctor:
+        messages.error(request, 'Not authorized.')
+        return redirect('doctor-login')
 
-            appointment_id = request.GET.get('appointment_id') if request.method == 'GET' else request.POST.get('appointment_id')
+    doctor = Doctor_Information.objects.get(user=request.user)
+    patient = Patient.objects.get(patient_id=pk)
+    create_date = datetime.date.today()
+
+    appointment_id = request.GET.get('appointment_id') if request.method == 'GET' else request.POST.get('appointment_id')
+    linked_appointment = None
+    if appointment_id:
+        try:
+            linked_appointment = Appointment.objects.get(id=int(appointment_id), doctor=doctor, patient=patient)
+        except (ValueError, Appointment.DoesNotExist):
             linked_appointment = None
-            if appointment_id:
+
+    # Default empty rows for initial GET
+    medicine_rows = [{'medicine_name': '', 'quantity': '', 'frequency': '', 'relation_with_meal': '', 'duration': '', 'instruction': ''}]
+    test_rows = [{'test_info_id': '', 'test_name': '', 'test_description': ''}]
+    extra_information = ''
+
+    if request.method == 'POST':
+        if appointment_id and linked_appointment is None:
+            messages.error(request, 'Invalid appointment for prescription.')
+            return redirect('appointments')
+
+        # If prescription already exists for this appointment → redirect to edit
+        if linked_appointment:
+            existing = Prescription.objects.filter(appointment=linked_appointment).first()
+            if existing:
+                messages.info(request, 'Prescription already exists for this appointment. Redirected to edit.')
+                return redirect('edit-prescription', pk=existing.prescription_id)
+
+        # Extract POST data
+        medicine_name = request.POST.getlist('medicine_name')
+        medicine_quantity = request.POST.getlist('quantity')
+        medecine_frequency = request.POST.getlist('frequency')
+        medicine_duration = request.POST.getlist('duration')
+        medicine_relation_with_meal = request.POST.getlist('relation_with_meal')
+        medicine_instruction = request.POST.getlist('instruction')
+        test_info_id = request.POST.getlist('id')
+        test_description = request.POST.getlist('description')
+        extra_information = request.POST.get('extra_information', '')
+
+        # Reconstruct medicine_rows from POST (for re-rendering on error)
+        max_medicine_len = max(
+            len(medicine_name), len(medicine_quantity), len(medecine_frequency),
+            len(medicine_relation_with_meal), len(medicine_duration), len(medicine_instruction), 0,
+        )
+        medicine_rows = []
+        for index in range(max_medicine_len):
+            medicine_rows.append({
+                'medicine_name': (medicine_name[index] if index < len(medicine_name) else '').strip(),
+                'quantity': (medicine_quantity[index] if index < len(medicine_quantity) else '').strip(),
+                'frequency': (medecine_frequency[index] if index < len(medecine_frequency) else '').strip(),
+                'relation_with_meal': (medicine_relation_with_meal[index] if index < len(medicine_relation_with_meal) else '').strip(),
+                'duration': (medicine_duration[index] if index < len(medicine_duration) else '').strip(),
+                'instruction': (medicine_instruction[index] if index < len(medicine_instruction) else '').strip(),
+            })
+        if not medicine_rows:
+            medicine_rows = [{'medicine_name': '', 'quantity': '', 'frequency': '', 'relation_with_meal': '', 'duration': '', 'instruction': ''}]
+
+        # Reconstruct test_rows from POST (for re-rendering on error)
+        max_test_len = max(len(test_info_id), len(test_description), 0)
+        test_rows = []
+        for index in range(max_test_len):
+            tid = (test_info_id[index] if index < len(test_info_id) else '').strip()
+            tdesc = (test_description[index] if index < len(test_description) else '').strip()
+            tname = ''
+            if tid:
+                ti = Test_Information.objects.filter(test_id=tid).first()
+                if ti:
+                    tname = ti.test_name or ''
+            test_rows.append({'test_info_id': tid, 'test_name': tname, 'test_description': tdesc})
+        if not test_rows:
+            test_rows = [{'test_info_id': '', 'test_name': '', 'test_description': ''}]
+
+        # Validate medicine rows
+        valid_medicine_rows = []
+        has_error = False
+        for row in medicine_rows:
+            if all(not v for v in row.values()):
+                continue
+            if any(not v for v in row.values()):
+                messages.error(request, 'All medicine fields are required. Please fill or remove empty medicine rows.')
+                has_error = True
+                break
+            valid_medicine_rows.append(row)
+
+        # Validate test rows
+        resolved_tests = []
+        if not has_error:
+            for trow in test_rows:
+                raw_test_id = trow['test_info_id']
+                raw_description = trow['test_description']
+                if not raw_test_id and not raw_description:
+                    continue
+                if not raw_test_id or not raw_description:
+                    messages.error(request, 'All test fields are required. Please fill or remove empty test rows.')
+                    has_error = True
+                    break
                 try:
-                    linked_appointment = Appointment.objects.get(id=int(appointment_id), doctor=doctor, patient=patient)
-                except (ValueError, Appointment.DoesNotExist):
-                    linked_appointment = None
-            
+                    parsed_test_id = int(raw_test_id)
+                except ValueError:
+                    messages.error(request, f'Invalid Test ID: {raw_test_id}')
+                    has_error = True
+                    break
+                test_info = Test_Information.objects.filter(test_id=parsed_test_id).first()
+                if not test_info:
+                    messages.error(request, f'Test ID {parsed_test_id} not found.')
+                    has_error = True
+                    break
+                resolved_tests.append((test_info, raw_description))
 
-            if request.method == 'POST':
-                if appointment_id and linked_appointment is None:
-                    messages.error(request, 'Invalid appointment for prescription.')
-                    return redirect('appointments')
+        if has_error:
+            # Re-render with user's data preserved
+            context = {
+                'doctor': doctor, 'patient': patient,
+                'appointment': linked_appointment, 'appointment_id': appointment_id,
+                'medicine_rows': medicine_rows, 'test_rows': test_rows,
+                'extra_information': extra_information,
+            }
+            return render(request, 'create-prescription.html', context)
 
-                if linked_appointment and Prescription.objects.filter(appointment=linked_appointment).exists():
-                    messages.error(request, 'Prescription already exists for this appointment.')
-                    return redirect('appointments')
+        # Save prescription
+        prescription = Prescription(
+            doctor=doctor, patient=patient, appointment=linked_appointment,
+            extra_information=extra_information, create_date=create_date,
+            status=request.POST.get('status', 'completed'),
+        )
+        prescription.save()
 
-                prescription = Prescription(doctor=doctor, patient=patient, appointment=linked_appointment)
+        for row in valid_medicine_rows:
+            Prescription_medicine.objects.create(
+                prescription=prescription,
+                medicine_name=row['medicine_name'], quantity=row['quantity'],
+                frequency=row['frequency'], duration=row['duration'],
+                instruction=row['instruction'], relation_with_meal=row['relation_with_meal'],
+            )
 
-                test_description = request.POST.getlist('description')
-                medicine_name = request.POST.getlist('medicine_name')
-                medicine_quantity = request.POST.getlist('quantity')
-                medecine_frequency = request.POST.getlist('frequency')
-                medicine_duration = request.POST.getlist('duration')
-                medicine_relation_with_meal = request.POST.getlist('relation_with_meal')
-                medicine_instruction = request.POST.getlist('instruction')
-                extra_information = request.POST.get('extra_information')
-                test_info_id = request.POST.getlist('id')
+        for test_info, description_value in resolved_tests:
+            Prescription_test.objects.create(
+                prescription=prescription,
+                test_name=test_info.test_name, test_description=description_value,
+                test_info_id=test_info.test_id, test_info_price=test_info.test_price,
+            )
 
-                def _redirect_back_with_appointment() -> HttpResponse:
-                    url = reverse('create-prescription', kwargs={'pk': patient.patient_id})
-                    if appointment_id:
-                        url = f"{url}?appointment_id={appointment_id}"
-                    return redirect(url)
+        messages.success(request, 'Prescription Created')
+        return redirect('doctor-view-prescription', pk=prescription.prescription_id)
 
-                medicine_rows: list[dict[str, str]] = []
-                max_medicine_len = max(
-                    len(medicine_name),
-                    len(medicine_quantity),
-                    len(medecine_frequency),
-                    len(medicine_relation_with_meal),
-                    len(medicine_duration),
-                    len(medicine_instruction),
-                    0,
-                )
+    context = {
+        'doctor': doctor, 'patient': patient,
+        'appointment': linked_appointment, 'appointment_id': appointment_id,
+        'medicine_rows': medicine_rows, 'test_rows': test_rows,
+        'extra_information': extra_information,
+    }
+    return render(request, 'create-prescription.html', context)
 
-                for index in range(max_medicine_len):
-                    row = {
-                        'medicine_name': (medicine_name[index] if index < len(medicine_name) else '').strip(),
-                        'quantity': (medicine_quantity[index] if index < len(medicine_quantity) else '').strip(),
-                        'frequency': (medecine_frequency[index] if index < len(medecine_frequency) else '').strip(),
-                        'relation_with_meal': (medicine_relation_with_meal[index] if index < len(medicine_relation_with_meal) else '').strip(),
-                        'duration': (medicine_duration[index] if index < len(medicine_duration) else '').strip(),
-                        'instruction': (medicine_instruction[index] if index < len(medicine_instruction) else '').strip(),
-                    }
 
-                    if all(not value for value in row.values()):
-                        continue
+@csrf_exempt
+@login_required(login_url="doctor-login")
+def edit_prescription(request, pk):
+    if not request.user.is_doctor:
+        messages.error(request, 'Not authorized.')
+        return redirect('doctor-login')
 
-                    if any(not value for value in row.values()):
-                        messages.error(request, 'All medicine fields are required. Please fill or remove empty medicine rows.')
-                        return _redirect_back_with_appointment()
+    doctor = Doctor_Information.objects.get(user=request.user)
+    prescription = get_object_or_404(Prescription, prescription_id=pk, doctor=doctor)
+    patient = prescription.patient
 
-                    medicine_rows.append(row)
+    # Build initial medicine/test rows from existing DB data
+    medicines_qs = Prescription_medicine.objects.filter(prescription=prescription)
+    tests_qs = Prescription_test.objects.filter(prescription=prescription)
 
-                resolved_tests: list[tuple[Test_Information, str]] = []
-                max_test_len = max(len(test_info_id), len(test_description), 0)
-                for index in range(max_test_len):
-                    raw_test_id = (test_info_id[index] if index < len(test_info_id) else '')
-                    raw_description = (test_description[index] if index < len(test_description) else '')
+    medicine_rows = [
+        {'medicine_name': m.medicine_name or '', 'quantity': m.quantity or '',
+         'frequency': m.frequency or '', 'relation_with_meal': m.relation_with_meal or '',
+         'duration': m.duration or '', 'instruction': m.instruction or ''}
+        for m in medicines_qs
+    ]
+    if not medicine_rows:
+        medicine_rows = [{'medicine_name': '', 'quantity': '', 'frequency': '', 'relation_with_meal': '', 'duration': '', 'instruction': ''}]
 
-                    raw_test_id = str(raw_test_id).strip()
-                    raw_description = str(raw_description).strip()
+    test_rows = [
+        {'test_info_id': str(t.test_info_id or ''), 'test_name': t.test_name or '', 'test_description': t.test_description or ''}
+        for t in tests_qs
+    ]
+    if not test_rows:
+        test_rows = [{'test_info_id': '', 'test_name': '', 'test_description': ''}]
 
-                    if not raw_test_id and not raw_description:
-                        continue
+    extra_information = prescription.extra_information or ''
 
-                    if not raw_test_id or not raw_description:
-                        messages.error(request, 'All test fields are required. Please fill or remove empty test rows.')
-                        return _redirect_back_with_appointment()
+    if request.method == 'POST':
+        # Extract POST data
+        medicine_name = request.POST.getlist('medicine_name')
+        medicine_quantity = request.POST.getlist('quantity')
+        medecine_frequency = request.POST.getlist('frequency')
+        medicine_duration = request.POST.getlist('duration')
+        medicine_relation_with_meal = request.POST.getlist('relation_with_meal')
+        medicine_instruction = request.POST.getlist('instruction')
+        test_info_id = request.POST.getlist('id')
+        test_description = request.POST.getlist('description')
+        extra_information = request.POST.get('extra_information', '')
 
-                    try:
-                        parsed_test_id = int(raw_test_id)
-                    except ValueError:
-                        messages.error(request, f'Invalid Test ID: {raw_test_id}')
-                        return _redirect_back_with_appointment()
+        # Reconstruct medicine_rows from POST
+        max_medicine_len = max(
+            len(medicine_name), len(medicine_quantity), len(medecine_frequency),
+            len(medicine_relation_with_meal), len(medicine_duration), len(medicine_instruction), 0,
+        )
+        medicine_rows = []
+        for index in range(max_medicine_len):
+            medicine_rows.append({
+                'medicine_name': (medicine_name[index] if index < len(medicine_name) else '').strip(),
+                'quantity': (medicine_quantity[index] if index < len(medicine_quantity) else '').strip(),
+                'frequency': (medecine_frequency[index] if index < len(medecine_frequency) else '').strip(),
+                'relation_with_meal': (medicine_relation_with_meal[index] if index < len(medicine_relation_with_meal) else '').strip(),
+                'duration': (medicine_duration[index] if index < len(medicine_duration) else '').strip(),
+                'instruction': (medicine_instruction[index] if index < len(medicine_instruction) else '').strip(),
+            })
+        if not medicine_rows:
+            medicine_rows = [{'medicine_name': '', 'quantity': '', 'frequency': '', 'relation_with_meal': '', 'duration': '', 'instruction': ''}]
 
-                    test_info = Test_Information.objects.filter(test_id=parsed_test_id).first()
-                    if not test_info:
-                        messages.error(request, f'Test ID {parsed_test_id} not found.')
-                        return _redirect_back_with_appointment()
+        # Reconstruct test_rows from POST
+        max_test_len = max(len(test_info_id), len(test_description), 0)
+        test_rows = []
+        for index in range(max_test_len):
+            tid = (test_info_id[index] if index < len(test_info_id) else '').strip()
+            tdesc = (test_description[index] if index < len(test_description) else '').strip()
+            tname = ''
+            if tid:
+                ti = Test_Information.objects.filter(test_id=tid).first()
+                if ti:
+                    tname = ti.test_name or ''
+            test_rows.append({'test_info_id': tid, 'test_name': tname, 'test_description': tdesc})
+        if not test_rows:
+            test_rows = [{'test_info_id': '', 'test_name': '', 'test_description': ''}]
 
-                    resolved_tests.append((test_info, raw_description))
+        # Validate medicine rows
+        valid_medicine_rows = []
+        has_error = False
+        for row in medicine_rows:
+            if all(not v for v in row.values()):
+                continue
+            if any(not v for v in row.values()):
+                messages.error(request, 'All medicine fields are required. Please fill or remove empty medicine rows.')
+                has_error = True
+                break
+            valid_medicine_rows.append(row)
 
-            
-                prescription.extra_information = extra_information
-                prescription.create_date = create_date
-                
-                prescription.save()
+        # Validate test rows
+        resolved_tests = []
+        if not has_error:
+            for trow in test_rows:
+                raw_test_id = trow['test_info_id']
+                raw_description = trow['test_description']
+                if not raw_test_id and not raw_description:
+                    continue
+                if not raw_test_id or not raw_description:
+                    messages.error(request, 'All test fields are required. Please fill or remove empty test rows.')
+                    has_error = True
+                    break
+                try:
+                    parsed_test_id = int(raw_test_id)
+                except ValueError:
+                    messages.error(request, f'Invalid Test ID: {raw_test_id}')
+                    has_error = True
+                    break
+                test_info = Test_Information.objects.filter(test_id=parsed_test_id).first()
+                if not test_info:
+                    messages.error(request, f'Test ID {parsed_test_id} not found.')
+                    has_error = True
+                    break
+                resolved_tests.append((test_info, raw_description))
 
-                for row in medicine_rows:
-                    medicine = Prescription_medicine(prescription=prescription)
-                    medicine.medicine_name = row['medicine_name']
-                    medicine.quantity = row['quantity']
-                    medicine.frequency = row['frequency']
-                    medicine.duration = row['duration']
-                    medicine.instruction = row['instruction']
-                    medicine.relation_with_meal = row['relation_with_meal']
-                    medicine.save()
+        if has_error:
+            context = {
+                'doctor': doctor, 'patient': patient,
+                'prescription': prescription, 'edit_mode': True,
+                'medicine_rows': medicine_rows, 'test_rows': test_rows,
+                'extra_information': extra_information,
+            }
+            return render(request, 'edit-prescription.html', context)
 
-                for test_info, description_value in resolved_tests:
-                    tests = Prescription_test(prescription=prescription)
-                    tests.test_name = test_info.test_name
-                    tests.test_description = description_value
-                    tests.test_info_id = test_info.test_id
-                    tests.test_info_price = test_info.test_price
-                    tests.save()
+        # Update prescription fields
+        prescription.extra_information = extra_information
+        prescription.status = request.POST.get('status', 'completed')
+        prescription.save()
 
-                messages.success(request, 'Prescription Created')
-                if linked_appointment:
-                    return redirect('appointments')
-                return redirect('patient-profile', pk=patient.patient_id)
-             
-            context = {'doctor': doctor, 'patient': patient, 'appointment': linked_appointment, 'appointment_id': appointment_id}  
-        return render(request, 'create-prescription.html',context)
+        # Replace medicines
+        Prescription_medicine.objects.filter(prescription=prescription).delete()
+        for row in valid_medicine_rows:
+            Prescription_medicine.objects.create(
+                prescription=prescription,
+                medicine_name=row['medicine_name'], quantity=row['quantity'],
+                frequency=row['frequency'], duration=row['duration'],
+                instruction=row['instruction'], relation_with_meal=row['relation_with_meal'],
+            )
+
+        # Replace tests
+        Prescription_test.objects.filter(prescription=prescription).delete()
+        for test_info, description_value in resolved_tests:
+            Prescription_test.objects.create(
+                prescription=prescription,
+                test_name=test_info.test_name, test_description=description_value,
+                test_info_id=test_info.test_id, test_info_price=test_info.test_price,
+            )
+
+        messages.success(request, 'Prescription Updated')
+        return redirect('doctor-view-prescription', pk=prescription.prescription_id)
+
+    context = {
+        'doctor': doctor, 'patient': patient,
+        'prescription': prescription, 'edit_mode': True,
+        'medicine_rows': medicine_rows, 'test_rows': test_rows,
+        'extra_information': extra_information,
+    }
+    return render(request, 'edit-prescription.html', context)
 
         
 @csrf_exempt      
@@ -924,6 +1110,35 @@ def doctor_view_prescription(request, pk):
         context = {'prescription': prescriptions, 'medicines': medicines, 'tests': tests, 'doctor': doctor}
         return render(request, 'doctor-view-prescription.html', context)
 
+
+@csrf_exempt
+@login_required(login_url="login")
+def doctor_prescription_pdf(request, pk):
+    """Generate and return a PDF of a prescription (doctor access)."""
+    if request.user.is_authenticated and request.user.is_doctor:
+        doctor = Doctor_Information.objects.get(user=request.user)
+        prescription = get_object_or_404(Prescription, prescription_id=pk)
+        prescription_medicine = Prescription_medicine.objects.filter(prescription=prescription)
+        prescription_test = Prescription_test.objects.filter(prescription=prescription)
+        context = {
+            'prescription': prescription,
+            'prescription_medicine': prescription_medicine,
+            'prescription_test': prescription_test,
+            'patient': prescription.patient,
+        }
+        template = get_template('prescription_pdf.html')
+        html = template.render(context)
+        result = BytesIO()
+        pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+        if not pdf.err:
+            response = HttpResponse(result.getvalue(), content_type='application/pdf')
+            response['Content-Disposition'] = 'inline; filename=prescription.pdf'
+            return response
+        return HttpResponse("Error generating PDF", status=500)
+    else:
+        return redirect('doctor-login')
+
+
 @csrf_exempt
 @login_required(login_url="login")
 def doctor_view_report(request, pk):
@@ -938,6 +1153,42 @@ def doctor_view_report(request, pk):
         logout(request)
         messages.info(request, 'Not Authorized')
         return render(request, 'doctor-login.html')
+
+
+# -------------------------------------------------------------------
+# Doctor Lab Reports — view all uploaded lab test reports for patients
+# -------------------------------------------------------------------
+@csrf_exempt
+@login_required(login_url="login")
+def doctor_lab_reports(request):
+    """Show all lab test reports for the logged-in doctor's patients, grouped by prescription."""
+    if not request.user.is_doctor:
+        logout(request)
+        messages.info(request, 'Not Authorized')
+        return redirect('doctor-login')
+
+    doctor = Doctor_Information.objects.get(user=request.user)
+
+    prescriptions = (
+        Prescription.objects
+        .filter(doctor=doctor)
+        .order_by('-create_date')
+    )
+
+    prescription_data = []
+    for pres in prescriptions:
+        tests = Prescription_test.objects.filter(prescription=pres).order_by('test_id')
+        if tests.exists():
+            prescription_data.append({
+                'prescription': pres,
+                'tests': tests,
+            })
+
+    context = {
+        'doctor': doctor,
+        'prescription_data': prescription_data,
+    }
+    return render(request, 'doctor-lab-reports.html', context)
 
 
 @csrf_exempt
