@@ -164,8 +164,16 @@
                                             <button type="button" class="btn btn-sm lab-btn-detail"
                                                     onclick="openTestDetail({{ item.test.test_id }})"
                                                     title="View Details">
-                                                <i class="fas fa-eye"></i> View
+                                                <i class="fas fa-eye"></i> Details
                                             </button>
+
+                                            {% if item.test.report_file %}
+                                            <!-- View Report File -->
+                                            <a href="{{ item.test.report_file.url }}" target="_blank"
+                                               class="btn btn-sm lab-view-btn" title="View Report">
+                                                <i class="fas fa-file-alt"></i> View
+                                            </a>
+                                            {% endif %}
 
                                             {% if item.test.test_status == 'Pending' %}
                                             <!-- Start Test -->
@@ -178,21 +186,19 @@
                                             {% endif %}
 
                                             {% if item.test.test_status == 'Processing' %}
-                                            <!-- Complete Test -->
+                                            <!-- Complete Test — disabled if no report uploaded -->
                                             <form method="POST" action="{% url 'lab-complete-test' pk=item.test.test_id %}" class="d-inline">
                                                 {% csrf_token %}
-                                                <button type="submit" class="btn btn-sm lab-btn-complete" title="Complete Test">
+                                                <button type="submit"
+                                                        class="btn btn-sm lab-btn-complete"
+                                                        title="{% if item.test.report_file %}Complete Test{% else %}Please upload report file before completing{% endif %}"
+                                                        {% if not item.test.report_file %}disabled{% endif %}>
                                                     <i class="fas fa-check"></i> Complete
                                                 </button>
                                             </form>
+                                            {% if not item.test.report_file %}
+                                            <small class="text-danger d-block mt-1"><i class="fas fa-exclamation-triangle"></i> Upload report first</small>
                                             {% endif %}
-
-                                            {% if item.test.report_file %}
-                                            <!-- View Report -->
-                                            <a href="{{ item.test.report_file.url }}" target="_blank"
-                                               class="btn btn-sm lab-view-btn" title="View Report">
-                                                <i class="fas fa-file-alt"></i> Report
-                                            </a>
                                             {% endif %}
 
                                             <!-- Upload / Re-upload Report (per-row inline form) -->

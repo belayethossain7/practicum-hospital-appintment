@@ -2,6 +2,7 @@ import email
 from email.mime import image
 from multiprocessing import context
 from unicodedata import name
+from itertools import chain
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
@@ -12,6 +13,7 @@ from django.contrib import messages
 from hospital.models import Hospital_Information, User, Patient
 from django.db.models import Q
 from django.db import transaction
+from django.core.paginator import Paginator
 from pharmacy.models import Medicine, Pharmacist
 from doctor.models import Doctor_Information, Prescription, Prescription_test, Report, Appointment, Experience , Education,Specimen,Test
 from pharmacy.models import Order, Cart
@@ -25,6 +27,10 @@ from .forms import (
     PharmacistCreationForm,
     DoctorAccountCreationForm,
     DoctorAdminUpdateForm,
+    LabWorkerAdminCreationForm,
+    LabWorkerAdminUpdateForm,
+    PatientAdminCreationForm,
+    PatientAdminUpdateForm,
 )
 
 from .models import Admin_Information,specialization,service,hospital_department, Clinical_Laboratory_Technician, Test_Information
@@ -40,7 +46,7 @@ from django.core.mail import BadHeaderError, send_mail
 from django.template.loader import render_to_string
 from django.http import HttpResponse
 from django.utils.html import strip_tags
-from .utils import searchMedicines
+from .utils import searchMedicines, generate_secure_password, generate_unique_user_id, send_account_credentials_email
 
 # Create your views here.
 
@@ -51,17 +57,16 @@ def admin_dashboard(request):
     # admin = Admin_Information.objects.get(user_id=pk)
     if request.user.is_hospital_admin:
         user = Admin_Information.objects.get(user=request.user)
-        total_patient_count = Patient.objects.annotate(count=Count('patient_id'))
-        total_doctor_count = Doctor_Information.objects.annotate(count=Count('doctor_id'))
-        total_pharmacist_count = Pharmacist.objects.annotate(count=Count('pharmacist_id'))
-        total_hospital_count = Hospital_Information.objects.annotate(count=Count('hospital_id'))
-        total_labworker_count = Clinical_Laboratory_Technician.objects.annotate(count=Count('technician_id'))
+        total_patient_count = Patient.objects.count()
+        total_doctor_count = Doctor_Information.objects.count()
+        total_hospital_count = Hospital_Information.objects.count()
+        total_labworker_count = Clinical_Laboratory_Technician.objects.count()
+        total_appointment_count = Appointment.objects.count()
         pending_appointment = Appointment.objects.filter(appointment_status='pending').count()
-        doctors = Doctor_Information.objects.all()
-        patients = Patient.objects.all()
-        hospitals = Hospital_Information.objects.all()
-        lab_workers = Clinical_Laboratory_Technician.objects.all()
-        pharmacists = Pharmacist.objects.all()
+        doctors = Doctor_Information.objects.select_related('hospital_name', 'specialization').order_by('-doctor_id')[:5]
+        patients = Patient.objects.order_by('-patient_id')[:5]
+        hospitals = Hospital_Information.objects.order_by('-hospital_id')[:5]
+        lab_workers = Clinical_Laboratory_Technician.objects.select_related('hospital').order_by('-technician_id')[:5]
         
         sat_date = datetime.date.today()
         sat_date_str = str(sat_date)
@@ -99,7 +104,92 @@ def admin_dashboard(request):
         thurs_count = Appointment.objects.filter(date=thurs_date_str).filter(Q(appointment_status='pending') | Q(appointment_status='confirmed')).count()
         fri_count = Appointment.objects.filter(date=fri_date_str).filter(Q(appointment_status='pending') | Q(appointment_status='confirmed')).count()
 
-        context = {'admin': user,'total_patient_count': total_patient_count,'total_doctor_count':total_doctor_count,'pending_appointment':pending_appointment,'doctors':doctors,'patients':patients,'hospitals':hospitals,'lab_workers':lab_workers,'total_pharmacist_count':total_pharmacist_count,'total_hospital_count':total_hospital_count,'total_labworker_count':total_labworker_count,'sat_count': sat_count, 'sun_count': sun_count, 'mon_count': mon_count, 'tues_count': tues_count, 'wed_count': wed_count, 'thurs_count': thurs_count, 'fri_count': fri_count, 'sat': sat, 'sun': sun, 'mon': mon, 'tues': tues, 'wed': wed, 'thurs': thurs, 'fri': fri, 'pharmacists': pharmacists}
+        recent_activity = []
+        for item in chain(doctors, patients, lab_workers, Appointment.objects.select_related('doctor', 'patient').order_by('-id')[:8]):
+            if isinstance(item, Doctor_Information):
+                recent_activity.append({'sort_key': item.doctor_id, 'icon': 'user-md', 'title': item.name or item.username, 'subtitle': 'Doctor added', 'badge': 'Doctor'})
+            elif isinstance(item, Patient):
+                recent_activity.append({'sort_key': item.patient_id, 'icon': 'user-injured', 'title': item.name or item.username, 'subtitle': 'Patient added', 'badge': 'Patient'})
+            elif isinstance(item, Clinical_Laboratory_Technician):
+                recent_activity.append({'sort_key': item.technician_id, 'icon': 'flask', 'title': item.name or item.username, 'subtitle': 'Lab technologist added', 'badge': 'Lab'})
+            elif isinstance(item, Appointment):
+                recent_activity.append({'sort_key': item.id, 'icon': 'calendar-check', 'title': f"{getattr(item.patient, 'name', 'Patient')} with {getattr(item.doctor, 'name', 'Doctor')}", 'subtitle': f"Appointment {item.appointment_status}", 'badge': 'Appointment'})
+
+        recent_activity = sorted(recent_activity, key=lambda entry: entry['sort_key'], reverse=True)[:8]
+
+        # ── Financial summary for dashboard ──────────────────────────────────
+        _dash_today      = datetime.date.today()
+        _dash_month_str  = _dash_today.strftime('%Y-%m')
+        _dash_valid      = list(Payment.objects.filter(status='VALID').all())
+
+        def _ds(p):
+            try:
+                return float(p.currency_amount or 0)
+            except (ValueError, TypeError):
+                return 0.0
+
+        dash_total_revenue   = round(sum(_ds(p) for p in _dash_valid), 2)
+        dash_today_revenue   = round(sum(_ds(p) for p in _dash_valid
+                                         if p.transaction_date and str(p.transaction_date).startswith(str(_dash_today))), 2)
+        dash_monthly_revenue = round(sum(_ds(p) for p in _dash_valid
+                                         if p.transaction_date and str(p.transaction_date).startswith(_dash_month_str)), 2)
+        dash_recent_payments = sorted(_dash_valid, key=lambda p: p.payment_id, reverse=True)[:5]
+
+        # Last 6 months revenue for mini-chart
+        _dash_monthly = {}
+        for p in _dash_valid:
+            if p.transaction_date:
+                m = str(p.transaction_date)[:7]
+                if len(m) == 7 and '-' in m:
+                    _dash_monthly[m] = _dash_monthly.get(m, 0) + _ds(p)
+        _dash_sorted = sorted(_dash_monthly.keys())[-6:]
+        dash_rev_labels = [m for m in _dash_sorted]
+        dash_rev_data   = [round(_dash_monthly.get(m, 0), 2) for m in _dash_sorted]
+        # ─────────────────────────────────────────────────────────────────────
+
+        context = {
+            'admin': user,
+            'total_patient_count': total_patient_count,
+            'total_doctor_count': total_doctor_count,
+            'total_hospital_count': total_hospital_count,
+            'total_labworker_count': total_labworker_count,
+            'total_appointment_count': total_appointment_count,
+            'pending_appointment': pending_appointment,
+            'doctors': doctors,
+            'patients': patients,
+            'hospitals': hospitals,
+            'lab_workers': lab_workers,
+            'sat_count': sat_count,
+            'sun_count': sun_count,
+            'mon_count': mon_count,
+            'tues_count': tues_count,
+            'wed_count': wed_count,
+            'thurs_count': thurs_count,
+            'fri_count': fri_count,
+            'sat': sat,
+            'sun': sun,
+            'mon': mon,
+            'tues': tues,
+            'wed': wed,
+            'thurs': thurs,
+            'fri': fri,
+            'chart_labels': [sat, sun, mon, tues, wed, thurs, fri],
+            'chart_counts': [sat_count, sun_count, mon_count, tues_count, wed_count, thurs_count, fri_count],
+            'recent_activity': recent_activity,
+            'quick_actions': [
+                {'label': 'Add Doctor', 'url_name': 'admin-add-doctor', 'icon': 'user-md'},
+                {'label': 'Add Patient', 'url_name': 'admin-add-patient', 'icon': 'user-plus'},
+                {'label': 'Add Lab Technologist', 'url_name': 'add-lab-worker', 'icon': 'flask'},
+                {'label': 'Manage Appointments', 'url_name': 'appointment-list', 'icon': 'calendar-check'},
+            ],
+            # Financial
+            'dash_total_revenue':   dash_total_revenue,
+            'dash_today_revenue':   dash_today_revenue,
+            'dash_monthly_revenue': dash_monthly_revenue,
+            'dash_recent_payments': dash_recent_payments,
+            'dash_rev_labels':      dash_rev_labels,
+            'dash_rev_data':        dash_rev_data,
+        }
         return render(request, 'hospital_admin/admin-dashboard.html', context)
     elif request.user.is_labworker:
         # messages.error(request, 'You are not authorized to access this page')
@@ -205,8 +295,19 @@ def lock_screen(request):
 def patient_list(request):
     if request.user.is_hospital_admin:
         user = Admin_Information.objects.get(user=request.user)
-    patients = Patient.objects.all()
-    return render(request, 'hospital_admin/patient-list.html', {'all': patients, 'admin': user})
+    search_query = (request.GET.get('q') or '').strip()
+    patients = Patient.objects.all().order_by('-patient_id')
+    if search_query:
+        patients = patients.filter(
+            Q(name__icontains=search_query)
+            | Q(username__icontains=search_query)
+            | Q(email__icontains=search_query)
+            | Q(phone_number__icontains=search_query)
+        )
+
+    paginator = Paginator(patients, 10)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    return render(request, 'hospital_admin/patient-list.html', {'all': page_obj.object_list, 'page_obj': page_obj, 'admin': user, 'search_query': search_query})
 
 @csrf_exempt
 @login_required(login_url='admin_login')
@@ -216,11 +317,87 @@ def specialitites(request):
 @csrf_exempt
 @login_required(login_url='admin_login')
 def appointment_list(request):
-    return render(request, 'hospital_admin/appointment-list.html')
+    if not request.user.is_hospital_admin:
+        return redirect('admin-logout')
+
+    admin = Admin_Information.objects.get(user=request.user)
+    search_query = (request.GET.get('q') or '').strip()
+    status_filter = (request.GET.get('status') or '').strip()
+    appointments = Appointment.objects.select_related('doctor', 'patient').order_by('-id')
+    if search_query:
+        appointments = appointments.filter(
+            Q(patient__name__icontains=search_query)
+            | Q(doctor__name__icontains=search_query)
+            | Q(serial_number__icontains=search_query)
+            | Q(transaction_id__icontains=search_query)
+        )
+    if status_filter:
+        appointments = appointments.filter(appointment_status=status_filter)
+
+    paginator = Paginator(appointments, 10)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    return render(request, 'hospital_admin/appointment-list.html', {
+        'admin': admin,
+        'appointments': page_obj.object_list,
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'status_filter': status_filter,
+        'status_choices': Appointment.APPOINTMENT_STATUS,
+    })
 
 @login_required(login_url='admin_login')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def transactions_list(request):
-    return render(request, 'hospital_admin/transactions-list.html')
+    if not request.user.is_hospital_admin:
+        return redirect('admin-logout')
+    admin = Admin_Information.objects.get(user=request.user)
+
+    payments = Payment.objects.select_related(
+        'patient', 'appointment', 'appointment__doctor'
+    ).order_by('-payment_id')
+
+    search_q = (request.GET.get('q') or '').strip()
+    status_f = (request.GET.get('status') or '').strip()
+    ptype_f  = (request.GET.get('ptype') or '').strip()
+
+    if search_q:
+        payments = payments.filter(
+            Q(name__icontains=search_q) |
+            Q(transaction_id__icontains=search_q) |
+            Q(invoice_number__icontains=search_q) |
+            Q(patient__name__icontains=search_q)
+        )
+    if status_f:
+        payments = payments.filter(status=status_f)
+    if ptype_f:
+        payments = payments.filter(payment_type=ptype_f)
+
+    def _safe(p):
+        try:
+            return float(p.currency_amount or 0)
+        except (ValueError, TypeError):
+            return 0.0
+
+    all_payments   = list(Payment.objects.all())
+    valid_payments = [p for p in all_payments if p.status == 'VALID']
+    total_revenue  = sum(_safe(p) for p in valid_payments)
+
+    paginator = Paginator(payments, 15)
+    page_obj  = paginator.get_page(request.GET.get('page'))
+
+    context = {
+        'admin': admin,
+        'payments': page_obj.object_list,
+        'page_obj': page_obj,
+        'search_query': search_q,
+        'status_filter': status_f,
+        'ptype_filter': ptype_f,
+        'total_revenue': round(total_revenue, 2),
+        'total_transactions': len(all_payments),
+        'paid_count': len(valid_payments),
+        'failed_count': sum(1 for p in all_payments if p.status not in ('VALID', 'VALIDATED', None, '')),
+    }
+    return render(request, 'hospital_admin/transactions-list.html', context)
 
 @csrf_exempt
 @login_required(login_url='admin_login')
@@ -241,7 +418,33 @@ def hospital_list(request):
 @csrf_exempt
 @login_required(login_url='admin_login')
 def appointment_list(request):
-    return render(request, 'hospital_admin/appointment-list.html')
+    if not request.user.is_hospital_admin:
+        return redirect('admin-logout')
+
+    admin = Admin_Information.objects.get(user=request.user)
+    search_query = (request.GET.get('q') or '').strip()
+    status_filter = (request.GET.get('status') or '').strip()
+    appointments = Appointment.objects.select_related('doctor', 'patient').order_by('-id')
+    if search_query:
+        appointments = appointments.filter(
+            Q(patient__name__icontains=search_query)
+            | Q(doctor__name__icontains=search_query)
+            | Q(serial_number__icontains=search_query)
+            | Q(transaction_id__icontains=search_query)
+        )
+    if status_filter:
+        appointments = appointments.filter(appointment_status=status_filter)
+
+    paginator = Paginator(appointments, 10)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    return render(request, 'hospital_admin/appointment-list.html', {
+        'admin': admin,
+        'appointments': page_obj.object_list,
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'status_filter': status_filter,
+        'status_choices': Appointment.APPOINTMENT_STATUS,
+    })
 
 @csrf_exempt
 @login_required(login_url='admin_login')
@@ -731,27 +934,58 @@ def delete_medicine(request, pk):
 @login_required(login_url='admin_login')
 def add_lab_worker(request):
     if request.user.is_hospital_admin:
-        user = Admin_Information.objects.get(user=request.user)
-        
-        form = LabWorkerCreationForm()
+        admin = Admin_Information.objects.get(user=request.user)
+        form = LabWorkerAdminCreationForm(request.POST or None, request.FILES or None)
      
-        if request.method == 'POST':
-            form = LabWorkerCreationForm(request.POST)
-            if form.is_valid():
-                # form.save(), commit=False --> don't save to database yet (we have a chance to modify object)
-                user = form.save(commit=False)
-                user.is_labworker = True
-                user.save()
+        if request.method == 'POST' and form.is_valid():
+            username = (form.cleaned_data.get('username') or '').strip() or generate_unique_user_id('LAB')
+            email_addr = form.cleaned_data['email'].strip()
+            password = form.cleaned_data.get('password1') or generate_secure_password()
 
-                messages.success(request, 'Clinical Laboratory Technician account was created!')
+            if User.objects.filter(username=username).exists():
+                messages.error(request, 'User ID already exists.')
+                return render(request, 'hospital_admin/add-lab-worker.html', {'form': form, 'admin': admin})
+            if User.objects.filter(email=email_addr).exists():
+                messages.error(request, 'Email already exists.')
+                return render(request, 'hospital_admin/add-lab-worker.html', {'form': form, 'admin': admin})
 
-                # After user is created, we can log them in
-                #login(request, user)
-                return redirect('lab-worker-list')
-            else:
-                messages.error(request, 'An error has occurred during registration')
+            try:
+                with transaction.atomic():
+                    lab_user = User.objects.create_user(username=username, email=email_addr, password=password, is_labworker=True)
+                    lab_worker, _created = Clinical_Laboratory_Technician.objects.get_or_create(user=lab_user, defaults={'username': username, 'email': email_addr})
+                    lab_worker.username = username
+                    lab_worker.name = form.cleaned_data['name']
+                    lab_worker.email = email_addr
+                    lab_worker.age = form.cleaned_data.get('age') or None
+                    lab_worker.phone_number = form.cleaned_data.get('phone_number') or None
+                    lab_worker.hospital = form.cleaned_data.get('hospital') or None
+                    if form.cleaned_data.get('featured_image'):
+                        lab_worker.featured_image = form.cleaned_data['featured_image']
+                    lab_worker.save()
+            except Exception:
+                messages.error(request, 'Could not create lab technologist account. Please try again.')
+                return render(request, 'hospital_admin/add-lab-worker.html', {'form': form, 'admin': admin})
+
+            sent, reason = send_account_credentials_email(
+                role_label='Lab Technologist',
+                recipient_name=lab_worker.name or username,
+                recipient_email=email_addr,
+                user_id=username,
+                password=password,
+                extra_context={'hospital': str(lab_worker.hospital) if lab_worker.hospital else ''},
+            )
+            if not sent:
+                if reason == 'bad-header':
+                    messages.warning(request, 'Lab technologist account created, but email could not be sent (bad header).')
+                else:
+                    messages.warning(request, 'Lab technologist account created, but email could not be sent.')
+
+            messages.success(request, 'Clinical Laboratory Technician account was created!')
+            return redirect('lab-worker-list')
+        elif request.method == 'POST':
+            messages.error(request, 'An error has occurred during registration')
     
-    context = {'form': form, 'admin': user}
+    context = {'form': form, 'admin': admin}
     return render(request, 'hospital_admin/add-lab-worker.html', context)  
 
 @csrf_exempt
@@ -759,9 +993,19 @@ def add_lab_worker(request):
 def view_lab_worker(request):
     if request.user.is_hospital_admin:
         user = Admin_Information.objects.get(user=request.user)
-        lab_workers = Clinical_Laboratory_Technician.objects.all()
+        search_query = (request.GET.get('q') or '').strip()
+        lab_workers = Clinical_Laboratory_Technician.objects.select_related('hospital').all().order_by('-technician_id')
+        if search_query:
+            lab_workers = lab_workers.filter(
+                Q(name__icontains=search_query)
+                | Q(username__icontains=search_query)
+                | Q(email__icontains=search_query)
+                | Q(phone_number__icontains=search_query)
+            )
+        paginator = Paginator(lab_workers, 10)
+        page_obj = paginator.get_page(request.GET.get('page'))
         
-    return render(request, 'hospital_admin/lab-worker-list.html', {'lab_workers': lab_workers, 'admin': user})
+    return render(request, 'hospital_admin/lab-worker-list.html', {'lab_workers': page_obj.object_list, 'page_obj': page_obj, 'admin': user, 'search_query': search_query})
 
 @csrf_exempt
 @login_required(login_url='admin_login')
@@ -778,30 +1022,123 @@ def edit_lab_worker(request, pk):
     if request.user.is_hospital_admin:
         user = Admin_Information.objects.get(user=request.user)
         lab_worker = Clinical_Laboratory_Technician.objects.get(technician_id=pk)
-        
-        if request.method == 'POST':
-            if 'featured_image' in request.FILES:
-                featured_image = request.FILES['featured_image']
-            else:
-                featured_image = "technician/user-default.png"
-                
-            name = request.POST.get('name')
-            email = request.POST.get('email')     
-            phone_number = request.POST.get('phone_number')
-            age = request.POST.get('age')  
-    
-            lab_worker.name = name
-            lab_worker.email = email
-            lab_worker.phone_number = phone_number
-            lab_worker.age = age
-            lab_worker.featured_image = featured_image
-    
-            lab_worker.save()
-            
+        form = LabWorkerAdminUpdateForm(request.POST or None, request.FILES or None, instance=lab_worker)
+
+        if request.method == 'POST' and form.is_valid():
+            lab_worker = form.save()
+            if lab_worker.user:
+                lab_worker.user.email = lab_worker.email or lab_worker.user.email
+                lab_worker.user.save(update_fields=['email'])
             messages.success(request, 'Clinical Laboratory Technician account updated!')
             return redirect('lab-worker-list')
         
-    return render(request, 'hospital_admin/edit-lab-worker.html', {'lab_worker': lab_worker, 'admin': user})
+    return render(request, 'hospital_admin/edit-lab-worker.html', {'lab_worker': lab_worker, 'admin': user, 'form': form})
+
+@csrf_exempt
+@login_required(login_url='admin_login')
+def delete_lab_worker(request, pk):
+    if request.method != 'POST' or not request.user.is_hospital_admin:
+        return redirect('lab-worker-list')
+
+    lab_worker = get_object_or_404(Clinical_Laboratory_Technician, technician_id=pk)
+    if lab_worker.user:
+        lab_worker.user.delete()
+    else:
+        lab_worker.delete()
+    messages.success(request, 'Clinical Laboratory Technician account deleted.')
+    return redirect('lab-worker-list')
+
+@csrf_exempt
+@login_required(login_url='admin_login')
+def add_patient(request):
+    if not request.user.is_hospital_admin:
+        return redirect('admin-logout')
+
+    admin = Admin_Information.objects.get(user=request.user)
+    form = PatientAdminCreationForm(request.POST or None, request.FILES or None)
+    if request.method == 'POST' and form.is_valid():
+        username = (form.cleaned_data.get('username') or '').strip() or generate_unique_user_id('PAT')
+        email_addr = form.cleaned_data['email'].strip()
+        password = form.cleaned_data.get('password1') or generate_secure_password()
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'User ID already exists.')
+            return render(request, 'hospital_admin/add-patient.html', {'form': form, 'admin': admin})
+        if User.objects.filter(email=email_addr).exists():
+            messages.error(request, 'Email already exists.')
+            return render(request, 'hospital_admin/add-patient.html', {'form': form, 'admin': admin})
+
+        try:
+            with transaction.atomic():
+                patient_user = User.objects.create_user(username=username, email=email_addr, password=password, is_patient=True)
+                patient, _created = Patient.objects.get_or_create(user=patient_user, defaults={'username': username, 'email': email_addr})
+                patient.username = username
+                patient.name = form.cleaned_data['name']
+                patient.email = email_addr
+                patient.age = form.cleaned_data.get('age') or None
+                patient.phone_number = form.cleaned_data.get('phone_number') or None
+                patient.address = form.cleaned_data.get('address') or ''
+                patient.blood_group = form.cleaned_data.get('blood_group') or ''
+                patient.history = form.cleaned_data.get('history') or ''
+                patient.dob = form.cleaned_data.get('dob') or ''
+                patient.nid = form.cleaned_data.get('nid') or ''
+                if form.cleaned_data.get('featured_image'):
+                    patient.featured_image = form.cleaned_data['featured_image']
+                patient.save()
+        except Exception:
+            messages.error(request, 'Could not create patient account. Please try again.')
+            return render(request, 'hospital_admin/add-patient.html', {'form': form, 'admin': admin})
+
+        sent, reason = send_account_credentials_email(
+            role_label='Patient',
+            recipient_name=patient.name or username,
+            recipient_email=email_addr,
+            user_id=username,
+            password=password,
+        )
+        if not sent:
+            if reason == 'bad-header':
+                messages.warning(request, 'Patient account created, but email could not be sent (bad header).')
+            else:
+                messages.warning(request, 'Patient account created, but email could not be sent.')
+
+        messages.success(request, 'Patient account created successfully.')
+        return redirect('patient-list')
+
+    return render(request, 'hospital_admin/add-patient.html', {'form': form, 'admin': admin})
+
+@csrf_exempt
+@login_required(login_url='admin_login')
+def edit_patient(request, pk):
+    if not request.user.is_hospital_admin:
+        return redirect('admin-logout')
+
+    admin = Admin_Information.objects.get(user=request.user)
+    patient = get_object_or_404(Patient, patient_id=pk)
+    form = PatientAdminUpdateForm(request.POST or None, request.FILES or None, instance=patient)
+    if request.method == 'POST' and form.is_valid():
+        patient = form.save()
+        if patient.user:
+            patient.user.email = patient.email or patient.user.email
+            patient.user.save(update_fields=['email'])
+        messages.success(request, 'Patient updated successfully.')
+        return redirect('patient-list')
+
+    return render(request, 'hospital_admin/edit-patient.html', {'form': form, 'admin': admin, 'patient': patient})
+
+@csrf_exempt
+@login_required(login_url='admin_login')
+def delete_patient(request, pk):
+    if request.method != 'POST' or not request.user.is_hospital_admin:
+        return redirect('patient-list')
+
+    patient = get_object_or_404(Patient, patient_id=pk)
+    if patient.user:
+        patient.user.delete()
+    else:
+        patient.delete()
+    messages.success(request, 'Patient account deleted.')
+    return redirect('patient-list')
 
 @csrf_exempt
 @login_required(login_url='admin_login')
@@ -861,8 +1198,18 @@ def register_doctor_list(request):
                 profile.register_status = 'Accepted'
                 profile.save(update_fields=['register_status'])
 
-        doctors = Doctor_Information.objects.filter(register_status='Accepted')
-    return render(request, 'hospital_admin/register-doctor-list.html', {'doctors': doctors, 'admin': user})
+        search_query = (request.GET.get('q') or '').strip()
+        doctors = Doctor_Information.objects.filter(register_status='Accepted').select_related('hospital_name', 'specialization').order_by('-doctor_id')
+        if search_query:
+            doctors = doctors.filter(
+                Q(name__icontains=search_query)
+                | Q(username__icontains=search_query)
+                | Q(email__icontains=search_query)
+                | Q(hospital_name__name__icontains=search_query)
+            )
+        paginator = Paginator(doctors, 10)
+        page_obj = paginator.get_page(request.GET.get('page'))
+    return render(request, 'hospital_admin/register-doctor-list.html', {'doctors': page_obj.object_list, 'page_obj': page_obj, 'admin': user, 'search_query': search_query})
 
 @csrf_exempt
 @login_required(login_url='admin_login')
@@ -883,14 +1230,16 @@ def add_doctor(request):
     form = DoctorAccountCreationForm(request.POST or None, request.FILES or None)
 
     if request.method == 'POST' and form.is_valid():
-        username = form.cleaned_data['username'].strip()
+        username = (form.cleaned_data.get('username') or '').strip()
         email_addr = form.cleaned_data['email'].strip()
         password = form.cleaned_data.get('password1')
         if not password:
-            password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+            password = generate_secure_password()
+        if not username:
+            username = generate_unique_user_id('DOC')
 
         if User.objects.filter(username=username).exists():
-            messages.error(request, 'Username already exists.')
+            messages.error(request, 'User ID already exists.')
             return render(request, 'hospital_admin/add-doctor.html', {'form': form, 'admin': admin})
         if User.objects.filter(email=email_addr).exists():
             messages.error(request, 'Email already exists.')
@@ -953,31 +1302,19 @@ def add_doctor(request):
             messages.error(request, 'Could not create doctor account. Please try again.')
             return render(request, 'hospital_admin/add-doctor.html', {'form': form, 'admin': admin})
 
-        subject = 'Doctor Account Created'
-        values = {
-            'doctor_name': doctor.name,
-            'doctor_email': doctor.email,
-            'username': username,
-            'password': password,
-            'hospital': str(doctor.hospital_name) if doctor.hospital_name else '',
-        }
-        html_message = render_to_string('hospital_admin/doctor-account-created-mail.html', {'values': values})
-        plain_message = (
-            f"Hello {values['doctor_name']},\n\n"
-            "Your doctor account has been created by the hospital admin.\n\n"
-            "Login details:\n"
-            f"Username: {values['username']}\n"
-            f"Password: {values['password']}\n\n"
-            f"Hospital appointed: {values['hospital']}\n\n"
-            "Please log in and change your password after your first login.\n\n"
-            "Thanks,\nHealthStack Admin\n"
+        sent, reason = send_account_credentials_email(
+            role_label='Doctor',
+            recipient_name=doctor.name or username,
+            recipient_email=email_addr,
+            user_id=username,
+            password=password,
+            extra_context={'hospital': str(doctor.hospital_name) if doctor.hospital_name else ''},
         )
-        try:
-            send_mail(subject, plain_message, 'hospital_admin@gmail.com', [email_addr], html_message=html_message, fail_silently=False)
-        except BadHeaderError:
-            messages.warning(request, 'Doctor account created, but email could not be sent (bad header).')
-        except Exception:
-            messages.warning(request, 'Doctor account created, but email could not be sent.')
+        if not sent:
+            if reason == 'bad-header':
+                messages.warning(request, 'Doctor account created, but email could not be sent (bad header).')
+            else:
+                messages.warning(request, 'Doctor account created, but email could not be sent.')
 
         messages.success(request, 'Doctor account created successfully.')
         return redirect('register-doctor-list')
@@ -1050,11 +1387,46 @@ def edit_doctor(request, pk):
         if form.cleaned_data.get('certificate_image'):
             doctor.certificate_image = form.cleaned_data['certificate_image']
         doctor.save()
+        if doctor.user:
+            doctor.user.email = doctor.email or doctor.user.email
+            doctor.user.save(update_fields=['email'])
 
         messages.success(request, 'Doctor updated successfully.')
         return redirect('admin-doctor-profile', pk=doctor.doctor_id)
 
     return render(request, 'hospital_admin/edit-doctor.html', {'form': form, 'admin': admin, 'doctor': doctor})
+
+@csrf_exempt
+@login_required(login_url='admin_login')
+def delete_doctor(request, pk):
+    if request.method != 'POST' or not request.user.is_hospital_admin:
+        return redirect('register-doctor-list')
+
+    doctor = get_object_or_404(Doctor_Information, doctor_id=pk)
+    if doctor.user:
+        doctor.user.delete()
+    else:
+        doctor.delete()
+    messages.success(request, 'Doctor account deleted.')
+    return redirect('register-doctor-list')
+
+@csrf_exempt
+@login_required(login_url='admin_login')
+def update_appointment_status(request, pk):
+    if request.method != 'POST' or not request.user.is_hospital_admin:
+        return redirect('appointment-list')
+
+    appointment = get_object_or_404(Appointment, id=pk)
+    new_status = (request.POST.get('appointment_status') or '').strip()
+    allowed_statuses = {choice[0] for choice in Appointment.APPOINTMENT_STATUS}
+    if new_status not in allowed_statuses:
+        messages.error(request, 'Invalid appointment status.')
+        return redirect('appointment-list')
+
+    appointment.appointment_status = new_status
+    appointment.save(update_fields=['appointment_status'])
+    messages.success(request, 'Appointment status updated successfully.')
+    return redirect('appointment-list')
 
 @csrf_exempt
 @login_required(login_url='admin_login')
@@ -1277,4 +1649,175 @@ def report_history(request):
             report = Report.objects.all()
             context = {'report':report,'lab_workers':lab_workers}
             return render(request, 'hospital_admin/report-list.html',context)
+
+
+# ── Finance Module ────────────────────────────────────────────────────────────
+
+def _finance_safe_amount(p):
+    """Return float value of a Payment.currency_amount safely."""
+    try:
+        return float(p.currency_amount or 0)
+    except (ValueError, TypeError):
+        return 0.0
+
+
+def _month_label(m):
+    """Convert 'YYYY-MM' string to 'Mon YYYY' label."""
+    from calendar import month_abbr
+    try:
+        y, mo = m.split('-')
+        return month_abbr[int(mo)] + ' ' + y
+    except Exception:
+        return m
+
+
+@login_required(login_url='admin_login')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def payment_overview(request):
+    if not request.user.is_hospital_admin:
+        return redirect('admin-logout')
+    admin = Admin_Information.objects.get(user=request.user)
+
+    today      = datetime.date.today()
+    month_str  = today.strftime('%Y-%m')
+    week_start = today - datetime.timedelta(days=today.weekday())
+
+    all_payments   = list(Payment.objects.select_related(
+        'patient', 'appointment', 'appointment__doctor'
+    ).all())
+    valid_payments = [p for p in all_payments if p.status == 'VALID']
+
+    def _date_starts(p, prefix):
+        return p.transaction_date and str(p.transaction_date).startswith(str(prefix))
+
+    total_revenue   = sum(_finance_safe_amount(p) for p in valid_payments)
+    today_revenue   = sum(_finance_safe_amount(p) for p in valid_payments if _date_starts(p, today))
+    monthly_revenue = sum(_finance_safe_amount(p) for p in valid_payments if _date_starts(p, month_str))
+
+    weekly_revenue = 0.0
+    for p in valid_payments:
+        if p.transaction_date:
+            try:
+                d = datetime.datetime.strptime(str(p.transaction_date)[:10], '%Y-%m-%d').date()
+                if week_start <= d <= today:
+                    weekly_revenue += _finance_safe_amount(p)
+            except (ValueError, TypeError):
+                pass
+
+    # Monthly revenue chart (last 6 months)
+    monthly_data = {}
+    for p in valid_payments:
+        if p.transaction_date:
+            m = str(p.transaction_date)[:7]
+            if len(m) == 7 and '-' in m:
+                monthly_data[m] = monthly_data.get(m, 0) + _finance_safe_amount(p)
+    sorted_months = sorted(monthly_data.keys())[-6:]
+    revenue_chart_labels = [_month_label(m) for m in sorted_months]
+    revenue_chart_data   = [round(monthly_data.get(m, 0), 2) for m in sorted_months]
+
+    # Payment type distribution (doughnut)
+    ptype_data = {}
+    for p in valid_payments:
+        ptype = (p.payment_type or 'Other').replace('_', ' ').title()
+        ptype_data[ptype] = ptype_data.get(ptype, 0) + _finance_safe_amount(p)
+
+    # Recent 8 valid transactions
+    recent_transactions = sorted(valid_payments, key=lambda p: p.payment_id, reverse=True)[:8]
+
+    # Appointment payment stats
+    total_appointments  = Appointment.objects.count()
+    paid_appointments   = Appointment.objects.filter(payment_status='Paid').count()
+
+    context = {
+        'admin': admin,
+        'total_revenue':     round(total_revenue, 2),
+        'today_revenue':     round(today_revenue, 2),
+        'monthly_revenue':   round(monthly_revenue, 2),
+        'weekly_revenue':    round(weekly_revenue, 2),
+        'total_transactions': len(all_payments),
+        'paid_count':        sum(1 for p in all_payments if p.status == 'VALID'),
+        'pending_count':     sum(1 for p in all_payments if p.status not in ('VALID', 'VALIDATED', None, '')),
+        'recent_transactions': recent_transactions,
+        'revenue_chart_labels': revenue_chart_labels,
+        'revenue_chart_data':   revenue_chart_data,
+        'ptype_labels':  list(ptype_data.keys()),
+        'ptype_data':    [round(v, 2) for v in ptype_data.values()],
+        'total_appointments':  total_appointments,
+        'paid_appointments':   paid_appointments,
+        'unpaid_appointments': total_appointments - paid_appointments,
+    }
+    return render(request, 'hospital_admin/finance-overview.html', context)
+
+
+@login_required(login_url='admin_login')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def revenue_reports(request):
+    if not request.user.is_hospital_admin:
+        return redirect('admin-logout')
+    admin = Admin_Information.objects.get(user=request.user)
+
+    today     = datetime.date.today()
+    month_str = today.strftime('%Y-%m')
+
+    all_payments   = list(Payment.objects.select_related(
+        'patient', 'appointment', 'appointment__doctor'
+    ).all())
+    valid_payments = [p for p in all_payments if p.status == 'VALID']
+
+    # Monthly aggregation
+    monthly_data   = {}
+    monthly_counts = {}
+    for p in valid_payments:
+        if p.transaction_date:
+            m = str(p.transaction_date)[:7]
+            if len(m) == 7 and '-' in m:
+                monthly_data[m]   = monthly_data.get(m, 0)   + _finance_safe_amount(p)
+                monthly_counts[m] = monthly_counts.get(m, 0) + 1
+
+    sorted_months    = sorted(monthly_data.keys())
+    monthly_summary  = [
+        {
+            'month':   _month_label(m),
+            'revenue': round(monthly_data[m], 2),
+            'count':   monthly_counts.get(m, 0),
+        }
+        for m in sorted_months
+    ]
+
+    # Bar chart: last 12 months
+    chart_months = sorted_months[-12:]
+    bar_labels   = [_month_label(m) for m in chart_months]
+    bar_data     = [round(monthly_data.get(m, 0), 2) for m in chart_months]
+
+    # Daily earnings for current month (line chart)
+    daily_data = {}
+    for p in valid_payments:
+        if p.transaction_date and str(p.transaction_date).startswith(month_str):
+            d = str(p.transaction_date)[:10]
+            daily_data[d] = daily_data.get(d, 0) + _finance_safe_amount(p)
+    sorted_days  = sorted(daily_data.keys())
+    daily_labels = [d[8:] for d in sorted_days]   # day number within month
+    daily_values = [round(daily_data[d], 2) for d in sorted_days]
+
+    # Doctor-wise revenue (top 8)
+    doctor_revenue = {}
+    for p in valid_payments:
+        if p.appointment and p.appointment.doctor:
+            doc_name = p.appointment.doctor.name or 'Unknown'
+            doctor_revenue[doc_name] = doctor_revenue.get(doc_name, 0) + _finance_safe_amount(p)
+    top_doctors = sorted(doctor_revenue.items(), key=lambda x: x[1], reverse=True)[:8]
+
+    context = {
+        'admin':            admin,
+        'monthly_summary':  monthly_summary,
+        'bar_labels':       bar_labels,
+        'bar_data':         bar_data,
+        'daily_labels':     daily_labels,
+        'daily_values':     daily_values,
+        'top_doctor_labels': [d[0] for d in top_doctors],
+        'top_doctor_data':   [round(d[1], 2) for d in top_doctors],
+        'total_revenue':     round(sum(_finance_safe_amount(p) for p in valid_payments), 2),
+        'current_month':     today.strftime('%B %Y'),
+    }
+    return render(request, 'hospital_admin/revenue-reports.html', context)
 

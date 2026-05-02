@@ -91,7 +91,7 @@ def lab_dashboard(request):
         Prescription_test.objects
         .filter(test_info_pay_status='Paid')
         .select_related('prescription', 'prescription__doctor', 'prescription__patient')
-        .order_by('-prescription__create_date', '-test_id')
+        .order_by('prescription__patient__patient_id', 'test_id')
     )
 
     # Apply filters from GET params
@@ -190,6 +190,11 @@ def complete_test(request, pk):
     test = get_object_or_404(Prescription_test, test_id=pk, test_info_pay_status='Paid')
     if test.test_status != 'Processing':
         messages.warning(request, 'This test is not in Processing status.')
+        return redirect('lab-dashboard')
+
+    # Validate that report file is uploaded before completing
+    if not test.report_file:
+        messages.error(request, 'Please upload report file before completing.')
         return redirect('lab-dashboard')
 
     test.test_status = 'Completed'

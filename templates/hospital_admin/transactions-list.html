@@ -1,352 +1,158 @@
-{%load static%}
-<!DOCTYPE html>
-<html lang="en">
-    
-<!-- Mirrored from dreamguys.co.in/demo/doccure/admin/transactions-list.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 30 Nov 2019 04:12:52 GMT -->
-<head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
-		<title>HealthStack</title>
+﻿{% extends 'hospital_admin/base.html' %}
+{% load static %}
 
-    	<!-- Favicon -->
+{% block title %}Transactions{% endblock %}
+{% block page_title %}Transaction History{% endblock %}
+{% block page_subtitle %}Browse all payment transactions, filter by status or type, and track revenue in real time.{% endblock %}
+{% block page_actions %}
+    <a href="{% url 'finance-overview' %}" class="ha-btn-secondary"><i class="fas fa-chart-pie"></i>Finance Overview</a>
+    <a href="{% url 'revenue-reports' %}" class="ha-btn"><i class="fas fa-chart-bar"></i>Revenue Reports</a>
+{% endblock %}
 
-    	<link rel="shortcut icon" type="image/x-icon" href="{% static 'HealthStack-System/images/Normal/favicon.png' %}"/>
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'HealthStack-System/css/hospital_admin/finance.css' %}">
+{% endblock %}
 
-		<!-- Bootstrap CSS -->
-        <link rel="stylesheet" href="{% static 'HealthStack-System/css/admin/bootstrap.min.css'%}"> 
-		
-		<!-- Fontawesome CSS -->
-        <link rel="stylesheet" href="{% static 'HealthStack-System/css/admin/font-awesome.min.css'%}">
-		
-		<!-- Feathericon CSS -->
-		<link rel="stylesheet" href="{% static 'HealthStack-System/admin_assets/css/feathericon.min.css'%}">
-		
-		<!-- Datatables CSS -->
-		<link rel="stylesheet" href="{% static 'HealthStack-System/plugins/admin/datatables/datatables.min.css'%}"> 
-		
-		<!-- Main CSS -->
-        <link rel="stylesheet" href="{% static 'HealthStack-System/css/admin/style.css'%}">
-		
-		<!--[if lt IE 9]>
-			<script src="assets/js/html5shiv.min.js"></script>
-			<script src="assets/js/respond.min.js"></script>
-		<![endif]-->
-    </head>
-    <body>
-	
-		<!-- Main Wrapper -->
-        <div class="main-wrapper">
-		
-			<!-- Header -->
-            <div class="main-wrapper">
-				<header class="header">{% include 'hospital_admin/hospital-admin-navbar.html' %}</header>
-			<!-- /Header -->
-			
-			<!-- Sidebar -->
-            <aside class="sidebar" id="sidebar">
-				{% include 'hospital_admin/hospital-admin-sidebar.html' %} </aside>
-			<!-- /Sidebar -->
-			
-			<!-- Page Wrapper -->
-            <div class="page-wrapper">
-                <div class="content container-fluid">
-				
-					<!-- Page Header -->
-					<div class="page-header">
-						<div class="row">
-							<div class="col-sm-12">
-								<h3 class="page-title">Transactions</h3>
-								<ul class="breadcrumb">
-									<li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
-									<li class="breadcrumb-item active">Transactions</li>
-								</ul>
-							</div>
-						</div>
-					</div>
-					<!-- /Page Header -->
-					
-					<div class="row">
-						<div class="col-sm-12">
-							<div class="card">
-								<div class="card-body">
-									<div class="table-responsive">
-										<table class="datatable table table-hover table-center mb-0">
-											<thead>
-												<tr>
-													<th>Invoice Number</th>
-													<th>Patient ID</th>
-													<th>Patient Name</th>
-													<th>Total Amount</th>
-													<th class="text-center">Status</th>
-													<th class="text-right">Actions</th>
-												</tr>
-											</thead>
-											<tbody>
-												<tr>
-													<td><a href="invoice.html">#IN0001</td>
-													<td>#PT001</td>
-													<td>
-														<h2 class="table-avatar">
-															<a href="profile.html" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" src="assets/img/patients/patient1.jpg" alt="User Image"></a>
-															<a href="profile.html">Charlene Reed </a>
-														</h2>
-													</td>
-													<td>$100.00</td>
-													<td class="text-center">
-														<span class="badge badge-pill bg-success inv-badge">Paid</span>
-													</td>
-													<td class="text-right">
-														<div class="actions">
-															<a class="btn btn-sm bg-danger-light" data-toggle="modal" href="#delete_modal">
-																<i class="fe fe-trash"></i> Delete
-															</a>
-														</div>
-													</td>
-												</tr>
-												<tr>
-													<td><a href="invoice.html">#IN0002</td>
-													<td>#PT002</td>
-													<td>
-														<h2 class="table-avatar">
-															<a href="profile.html" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" src="assets/img/patients/patient2.jpg" alt="User Image"></a>
-															<a href="profile.html">Travis Trimble </a>
-														</h2>
-													</td>
-													<td>$200.00</td>
-													<td class="text-center">
-														<span class="badge badge-pill bg-success inv-badge">Paid</span>
-													</td>
-													<td class="text-right">
-														<div class="actions">
-															<a class="btn btn-sm bg-danger-light" data-toggle="modal" href="#delete_modal">
-																<i class="fe fe-trash"></i> Delete
-															</a>
-														</div>
-													</td>
-												</tr>
-												<tr>
-													<td><a href="invoice.html">#IN0003</td>
-													<td>#PT003</td>
-													<td>
-														<h2 class="table-avatar">
-															<a href="profile.html" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" src="assets/img/patients/patient3.jpg" alt="User Image"></a>
-															<a href="profile.html">Carl Kelly</a>
-														</h2>
-													</td>
-													<td>$250.00</td>
-													<td class="text-center">
-														<span class="badge badge-pill bg-success inv-badge">Paid</span>
-													</td>
-													<td class="text-right">
-														<div class="actions">
-															<a class="btn btn-sm bg-danger-light" data-toggle="modal" href="#delete_modal">
-																<i class="fe fe-trash"></i> Delete
-															</a>
-														</div>
-													</td>
-												</tr>
-												<tr>
-													<td><a href="invoice.html">#IN0004</td>
-													<td>#PT004</td>
-													<td>
-														<h2 class="table-avatar">
-															<a href="profile.html" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" src="assets/img/patients/patient4.jpg" alt="User Image"></a>
-															<a href="profile.html"> Michelle Fairfax</a>
-														</h2>
-													</td>
-													<td>$150.00</td>
-													<td class="text-center">
-														<span class="badge badge-pill bg-success inv-badge">Paid</span>
-													</td>
-													<td class="text-right">
-														<div class="actions">
-															<a class="btn btn-sm bg-danger-light" data-toggle="modal" href="#delete_modal">
-																<i class="fe fe-trash"></i> Delete
-															</a>
-														</div>
-													</td>
-												</tr>
-												<tr>
-													<td><a href="invoice.html">#IN0005</td>
-													<td>#PT005</td>
-													<td>
-														<h2 class="table-avatar">
-															<a href="profile.html" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" src="assets/img/patients/patient5.jpg" alt="User Image"></a>
-															<a href="profile.html">Gina Moore</a>
-														</h2>
-													</td>
-													<td>$350.00</td>
-													<td class="text-center">
-														<span class="badge badge-pill bg-success inv-badge">Paid</span>
-													</td>
-													<td class="text-right">
-														<div class="actions">
-															<a class="btn btn-sm bg-danger-light" data-toggle="modal" href="#delete_modal">
-																<i class="fe fe-trash"></i> Delete
-															</a>
-														</div>
-													</td>
-												</tr>
-												<tr>
-													<td><a href="invoice.html">#IN0006</td>
-													<td>#PT006</td>
-													<td>
-														<h2 class="table-avatar">
-															<a href="profile.html" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" src="assets/img/patients/patient6.jpg" alt="User Image"></a>
-															<a href="profile.html">Elsie Gilley</a>
-														</h2>
-													</td>
-													<td>$300.00</td>
-													<td class="text-center">
-														<span class="badge badge-pill bg-success inv-badge">Paid</span>
-													</td>
-													<td class="text-right">
-														<div class="actions">
-															<a class="btn btn-sm bg-danger-light" data-toggle="modal" href="#delete_modal">
-																<i class="fe fe-trash"></i> Delete
-															</a>
-														</div>
-													</td>
-												</tr>
-												<tr>
-													<td><a href="invoice.html">#IN0007</td>
-													<td>#PT007</td>
-													<td>
-														<h2 class="table-avatar">
-															<a href="profile.html" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" src="assets/img/patients/patient7.jpg" alt="User Image"></a>
-															<a href="profile.html"> Joan Gardner</a>
-														</h2>
-													</td>
-													<td>$250.00</td>
-													<td class="text-center">
-														<span class="badge badge-pill bg-success inv-badge">Paid</span>
-													</td>
-													<td class="text-right">
-														<div class="actions">
-															<a class="btn btn-sm bg-danger-light" data-toggle="modal" href="#delete_modal">
-																<i class="fe fe-trash"></i> Delete
-															</a>
-														</div>
-													</td>
-												</tr>
-												<tr>
-													<td><a href="invoice.html">#IN0008</td>
-													<td>#PT008</td>
-													<td>
-														<h2 class="table-avatar">
-															<a href="profile.html" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" src="assets/img/patients/patient8.jpg" alt="User Image"></a>
-															<a href="profile.html"> Daniel Griffing</a>
-														</h2>
-													</td>
-													<td>$150.00</td>
-													<td class="text-center">
-														<span class="badge badge-pill bg-success inv-badge">Paid</span>
-													</td>
-													<td class="text-right">
-														<div class="actions">
-															<a class="btn btn-sm bg-danger-light" data-toggle="modal" href="#delete_modal">
-																<i class="fe fe-trash"></i> Delete
-															</a>
-														</div>
-													</td>
-												</tr>
-												<tr>
-													<td><a href="invoice.html">#IN0009</td>
-													<td>#PT009</td>
-													<td>
-														<h2 class="table-avatar">
-															<a href="profile.html" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" src="assets/img/patients/patient9.jpg" alt="User Image"></a>
-															<a href="profile.html">Walter Roberson</a>
-														</h2>
-													</td>
-													<td>$100.00</td>
-													<td class="text-center">
-														<span class="badge badge-pill bg-success inv-badge">Paid</span>
-													</td>
-													<td class="text-right">
-														<div class="actions">
-															<a class="btn btn-sm bg-danger-light" data-toggle="modal" href="#delete_modal">
-																<i class="fe fe-trash"></i> Delete
-															</a>
-														</div>
-													</td>
-												</tr>
-												<tr>
-													<td><a href="invoice.html">#IN0010</td>
-													<td>#PT010</td>
-													<td>
-														<h2 class="table-avatar">
-															<a href="profile.html" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" src="assets/img/patients/patient10.jpg" alt="User Image"></a>
-															<a href="profile.html">Robert Rhodes </a>
-														</h2>
-													</td>
-													<td>$120.00</td>
-													<td class="text-center">
-														<span class="badge badge-pill bg-success inv-badge">Paid</span>
-													</td>
-													<td class="text-right">
-														<div class="actions">
-															<a class="btn btn-sm bg-danger-light" data-toggle="modal" href="#delete_modal">
-																<i class="fe fe-trash"></i> Delete
-															</a>
-														</div>
-													</td>
-												</tr>
-											</tbody>
-										</table>
-									</div>
-								</div>
-							</div>
-						</div>			
-					</div>
-				</div>			
-			</div>
-			<!-- /Page Wrapper -->
-		
-		<!-- Delete Modal -->
-			<div class="modal fade" id="delete_modal" aria-hidden="true" role="dialog">
-				<div class="modal-dialog modal-dialog-centered" role="document" >
-					<div class="modal-content">
-					<!--	<div class="modal-header">
-							<h5 class="modal-title">Delete</h5>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-								<span aria-hidden="true">&times;</span>
-							</button>
-						</div>-->
-						<div class="modal-body">
-							<div class="form-content p-2">
-								<h4 class="modal-title">Delete</h4>
-								<p class="mb-4">Are you sure want to delete?</p>
-								<button type="button" class="btn btn-primary">Save </button>
-								<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-			<!-- /Delete Modal -->
-		
+{% block content %}
+
+<!-- Summary Cards -->
+<div class="hf-stat-grid">
+    <div class="hf-stat-card hf-blue">
+        <div class="hf-stat-head">
+            <div>
+                <div class="hf-stat-label">Total Transactions</div>
+                <div class="hf-stat-value">{{ total_transactions }}</div>
+            </div>
+            <span class="hf-stat-icon"><i class="fas fa-exchange-alt"></i></span>
         </div>
-		<!-- /Main Wrapper -->
-		
-		<!-- jQuery -->
-        <script src="{% static 'HealthStack-System/js/admin/jquery-3.2.1.min.js' %}"></script> 
-		
-		<!-- Bootstrap Core JS -->
-        <script src="{% static 'HealthStack-System/js/admin/popper.min.js' %}"></script> 
-        <script src="{% static 'HealthStack-System/js/admin/bootstrap.min.js' %}"></script> 
-		
-		<!-- Slimscroll JS -->
-        <script src="{% static 'HealthStack-System/plugins/admin/slimscroll/jquery.slimscroll.min.js' %}"></script>
-		
-		<!-- Datatables JS -->
-		<script src="{% static 'HealthStack-System/plugins/admin/datatables/jquery.dataTables.min.js'%}"></script> 
-		<script src="{% static 'HealthStack-System/plugins/admin/datatables/datatables.min.js'%}"></script>
-		
-		<!-- Custom JS -->
-		<script src="{% static 'HealthStack-System/js/admin/script.js' %}"></script>
-		
-    </body>
+        <div class="hf-stat-trend">All payment records in the system</div>
+    </div>
+    <div class="hf-stat-card hf-green">
+        <div class="hf-stat-head">
+            <div>
+                <div class="hf-stat-label">Successful Payments</div>
+                <div class="hf-stat-value">{{ paid_count }}</div>
+            </div>
+            <span class="hf-stat-icon"><i class="fas fa-check-circle"></i></span>
+        </div>
+        <div class="hf-stat-trend">Verified VALID transactions</div>
+    </div>
+    <div class="hf-stat-card hf-red">
+        <div class="hf-stat-head">
+            <div>
+                <div class="hf-stat-label">Failed / Other</div>
+                <div class="hf-stat-value">{{ failed_count }}</div>
+            </div>
+            <span class="hf-stat-icon"><i class="fas fa-times-circle"></i></span>
+        </div>
+        <div class="hf-stat-trend">Non-valid payment attempts</div>
+    </div>
+    <div class="hf-stat-card hf-teal">
+        <div class="hf-stat-head">
+            <div>
+                <div class="hf-stat-label">Total Revenue</div>
+                <div class="hf-stat-value">&#2547; {{ total_revenue|floatformat:2 }}</div>
+            </div>
+            <span class="hf-stat-icon"><i class="fas fa-coins"></i></span>
+        </div>
+        <div class="hf-stat-trend">Cumulative from all valid payments</div>
+    </div>
+</div>
 
-<!-- Mirrored from dreamguys.co.in/demo/doccure/admin/transactions-list.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 30 Nov 2019 04:12:53 GMT -->
-</html>
+<!-- Filter + Table -->
+<div class="hf-table-card">
+    <div class="hf-table-header">
+        <h4><i class="fas fa-list-alt" style="color:var(--ha-accent);margin-right:8px;"></i>All Transactions</h4>
+        <form method="get" class="hf-filter-bar">
+            <input type="text" name="q" placeholder="Search invoice, patient, tx ID" value="{{ search_query }}">
+            <select name="status">
+                <option value="">All Statuses</option>
+                <option value="VALID"   {% if status_filter == 'VALID'   %}selected{% endif %}>Paid (VALID)</option>
+                <option value="FAILED"  {% if status_filter == 'FAILED'  %}selected{% endif %}>Failed</option>
+                <option value="INVALID" {% if status_filter == 'INVALID' %}selected{% endif %}>Invalid</option>
+            </select>
+            <select name="ptype">
+                <option value="">All Types</option>
+                <option value="appointment" {% if ptype_filter == 'appointment' %}selected{% endif %}>Appointment</option>
+                <option value="medicine"    {% if ptype_filter == 'medicine'    %}selected{% endif %}>Medicine</option>
+                <option value="test"        {% if ptype_filter == 'test'        %}selected{% endif %}>Test</option>
+            </select>
+            <button type="submit" class="hf-btn-filter"><i class="fas fa-search"></i> Filter</button>
+            <a href="{% url 'transactions_list' %}" class="hf-btn-reset"><i class="fas fa-times"></i> Reset</a>
+        </form>
+    </div>
+
+    <div style="overflow-x:auto;">
+        <table class="hf-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Invoice</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Transaction ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in payments %}
+                <tr>
+                    <td class="hf-muted">{{ page_obj.start_index }}</td>
+                    <td><span style="font-weight:600;color:var(--ha-primary);">{{ p.invoice_number|default:'-' }}</span></td>
+                    <td>
+                        <div style="font-weight:600;">{{ p.name|default:p.patient.name|default:'-' }}</div>
+                        {% if p.patient %}<div class="hf-muted" style="font-size:11.5px;">ID #{{ p.patient.patient_id }}</div>{% endif %}
+                    </td>
+                    <td>
+                        {% if p.appointment and p.appointment.doctor %}{{ p.appointment.doctor.name|default:'-' }}
+                        {% else %}<span class="hf-muted">-</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if p.payment_type %}
+                        <span style="font-size:12px;background:rgba(58,160,181,.12);color:#0f6e8c;padding:2px 9px;border-radius:20px;font-weight:600;">{{ p.payment_type|title }}</span>
+                        {% else %}<span class="hf-muted">-</span>{% endif %}
+                    </td>
+                    <td style="font-weight:700;">&#2547; {{ p.currency_amount|default:'0' }}</td>
+                    <td>
+                        {% if p.status == 'VALID' %}<span class="hf-badge hf-badge-paid"><i class="fas fa-check-circle"></i> Paid</span>
+                        {% elif p.status == 'FAILED' %}<span class="hf-badge hf-badge-failed"><i class="fas fa-times-circle"></i> Failed</span>
+                        {% elif p.status == 'INVALID' %}<span class="hf-badge hf-badge-failed"><i class="fas fa-exclamation-circle"></i> Invalid</span>
+                        {% else %}<span class="hf-badge hf-badge-other">{{ p.status|default:'Pending' }}</span>{% endif %}
+                    </td>
+                    <td class="hf-muted">{{ p.transaction_date|default:'-' }}</td>
+                    <td class="hf-muted" style="font-size:11.5px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ p.transaction_id }}">{{ p.transaction_id|default:'-' }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9">
+                    <div class="hf-empty"><i class="fas fa-inbox"></i>No transactions found{% if search_query or status_filter or ptype_filter %} matching your filters{% endif %}.</div>
+                </td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="hf-pagination">
+        <span>Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</span>
+        <div class="hf-page-links">
+            {% if page_obj.has_previous %}
+                <a class="hf-page-link" href="?q={{ search_query }}&status={{ status_filter }}&ptype={{ ptype_filter }}&page={{ page_obj.previous_page_number }}"><i class="fas fa-chevron-left"></i></a>
+            {% else %}<span class="hf-page-link disabled"><i class="fas fa-chevron-left"></i></span>{% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}<span class="hf-page-link active">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a class="hf-page-link" href="?q={{ search_query }}&status={{ status_filter }}&ptype={{ ptype_filter }}&page={{ num }}">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <a class="hf-page-link" href="?q={{ search_query }}&status={{ status_filter }}&ptype={{ ptype_filter }}&page={{ page_obj.next_page_number }}"><i class="fas fa-chevron-right"></i></a>
+            {% else %}<span class="hf-page-link disabled"><i class="fas fa-chevron-right"></i></span>{% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

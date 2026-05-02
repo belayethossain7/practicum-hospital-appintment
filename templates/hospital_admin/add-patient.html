@@ -1,10 +1,10 @@
 {% extends 'hospital_admin/base.html' %}
 
-{% block title %}Add Lab Technologist{% endblock %}
-{% block page_title %}Create lab technologist account{% endblock %}
-{% block page_subtitle %}Create a laboratory staff account with optional credential auto-generation and a linked technician profile.{% endblock %}
+{% block title %}Add Patient{% endblock %}
+{% block page_title %}Create patient account{% endblock %}
+{% block page_subtitle %}Create a patient user and linked profile while preserving the existing patient authentication and signal flow.{% endblock %}
 {% block page_actions %}
-    <a href="{% url 'lab-worker-list' %}" class="ha-btn-ghost"><i class="fas fa-arrow-left"></i>Back to Lab Technologists</a>
+    <a href="{% url 'patient-list' %}" class="ha-btn-ghost"><i class="fas fa-arrow-left"></i>Back to Patients</a>
 {% endblock %}
 
 {% block content %}
@@ -15,10 +15,10 @@
 </section>
 {% endif %}
 
-<form action="{% url 'add-lab-worker' %}" method="post" enctype="multipart/form-data" class="ha-grid cols-2">
+<form action="{% url 'admin-add-patient' %}" method="post" enctype="multipart/form-data" class="ha-grid cols-2">
     {% csrf_token %}
     <section class="ha-card ha-form-card">
-        <div class="ha-card-header"><div><h4>Account credentials</h4><div class="ha-card-muted">Leave credentials blank to generate them automatically.</div></div></div>
+        <div class="ha-card-header"><div><h4>Account credentials</h4><div class="ha-card-muted">User ID and password can be generated automatically if left blank.</div></div></div>
         <div class="ha-card-body">
             <div class="ha-form-grid">
                 <div class="ha-form-group"><label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>{{ form.username }}<div class="ha-form-help">{{ form.username.help_text }}</div></div>
@@ -30,21 +30,25 @@
     </section>
 
     <section class="ha-card ha-form-card">
-        <div class="ha-card-header"><div><h4>Profile details</h4><div class="ha-card-muted">Technician information that feeds the existing lab module.</div></div></div>
+        <div class="ha-card-header"><div><h4>Patient profile</h4><div class="ha-card-muted">Administrative details used across appointments, invoices, and patient records.</div></div></div>
         <div class="ha-card-body">
-            <div class="ha-form-grid">
+            <div class="ha-form-grid cols-3">
                 <div class="ha-form-group"><label for="{{ form.name.id_for_label }}">Name</label>{{ form.name }}</div>
                 <div class="ha-form-group"><label for="{{ form.age.id_for_label }}">Age</label>{{ form.age }}</div>
                 <div class="ha-form-group"><label for="{{ form.phone_number.id_for_label }}">Phone Number</label>{{ form.phone_number }}</div>
-                <div class="ha-form-group"><label for="{{ form.hospital.id_for_label }}">Hospital</label>{{ form.hospital }}</div>
+                <div class="ha-form-group ha-span-2"><label for="{{ form.address.id_for_label }}">Address</label>{{ form.address }}</div>
+                <div class="ha-form-group"><label for="{{ form.blood_group.id_for_label }}">Blood Group</label>{{ form.blood_group }}</div>
+                <div class="ha-form-group"><label for="{{ form.history.id_for_label }}">Medical History</label>{{ form.history }}</div>
+                <div class="ha-form-group"><label for="{{ form.dob.id_for_label }}">Date of Birth</label>{{ form.dob }}</div>
+                <div class="ha-form-group"><label for="{{ form.nid.id_for_label }}">NID</label>{{ form.nid }}</div>
                 <div class="ha-form-group ha-span-2"><label for="{{ form.featured_image.id_for_label }}">Profile Image</label>{{ form.featured_image }}</div>
             </div>
         </div>
     </section>
 
     <div class="d-flex justify-content-end ha-span-2" style="gap: 12px;">
-        <a href="{% url 'lab-worker-list' %}" class="ha-btn-ghost">Cancel</a>
-        <button type="submit" class="ha-btn"><i class="fas fa-check"></i>Create Lab Technologist</button>
+        <a href="{% url 'patient-list' %}" class="ha-btn-ghost">Cancel</a>
+        <button type="submit" class="ha-btn"><i class="fas fa-check"></i>Create Patient</button>
     </div>
 </form>
 {% endblock %}

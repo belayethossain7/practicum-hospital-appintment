@@ -3,8 +3,20 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from hospital.models import User, Hospital_Information
 from .models import Admin_Information, Clinical_Laboratory_Technician
+from hospital.models import Patient
 from doctor.models import Doctor_Information
 from hospital_admin.models import hospital_department, specialization
+
+
+class AdminStyledFormMixin:
+    def _apply_admin_styles(self):
+        for name, field in self.fields.items():
+            if isinstance(field.widget, (forms.CheckboxInput,)):
+                continue
+            css = 'form-control'
+            if isinstance(field.widget, (forms.FileInput, forms.ClearableFileInput)):
+                css = 'form-control-file'
+            field.widget.attrs.update({'class': css})
 
 class AdminUserCreationForm(UserCreationForm):
     class Meta:
@@ -116,7 +128,7 @@ class AdminForm(ModelForm):
 
 
 class DoctorAccountCreationForm(forms.Form):
-    username = forms.CharField(max_length=150)
+    username = forms.CharField(max_length=150, required=False, label='User ID')
     email = forms.EmailField()
     password1 = forms.CharField(required=False, widget=forms.PasswordInput)
     password2 = forms.CharField(required=False, widget=forms.PasswordInput)
@@ -156,16 +168,11 @@ class DoctorAccountCreationForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for name, field in self.fields.items():
-            if isinstance(field.widget, (forms.CheckboxInput,)):
-                continue
-            css = 'form-control'
-            if isinstance(field.widget, (forms.FileInput, forms.ClearableFileInput)):
-                css = 'form-control-file'
-            field.widget.attrs.update({'class': css})
+        AdminStyledFormMixin._apply_admin_styles(self)
 
         self.fields['password1'].help_text = 'Leave blank to auto-generate a password.'
         self.fields['password2'].help_text = 'Leave blank to auto-generate a password.'
+        self.fields['username'].help_text = 'Leave blank to auto-generate a unique User ID.'
 
     def clean(self):
         cleaned = super().clean()
@@ -212,9 +219,83 @@ class DoctorAdminUpdateForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for name, field in self.fields.items():
-            css = 'form-control'
-            if isinstance(field.widget, (forms.FileInput, forms.ClearableFileInput)):
-                css = 'form-control-file'
-            field.widget.attrs.update({'class': css})
+        AdminStyledFormMixin._apply_admin_styles(self)
+
+
+class LabWorkerAdminCreationForm(forms.Form):
+    username = forms.CharField(max_length=150, required=False, label='User ID')
+    email = forms.EmailField()
+    password1 = forms.CharField(required=False, widget=forms.PasswordInput)
+    password2 = forms.CharField(required=False, widget=forms.PasswordInput)
+    name = forms.CharField(max_length=200)
+    age = forms.IntegerField(required=False)
+    phone_number = forms.CharField(max_length=50, required=False)
+    hospital = forms.ModelChoiceField(queryset=Hospital_Information.objects.all(), required=False)
+    featured_image = forms.ImageField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        AdminStyledFormMixin._apply_admin_styles(self)
+        self.fields['password1'].help_text = 'Leave blank to auto-generate a password.'
+        self.fields['password2'].help_text = 'Leave blank to auto-generate a password.'
+        self.fields['username'].help_text = 'Leave blank to auto-generate a unique User ID.'
+
+    def clean(self):
+        cleaned = super().clean()
+        p1 = cleaned.get('password1')
+        p2 = cleaned.get('password2')
+        if (p1 or p2) and p1 != p2:
+            raise forms.ValidationError('Passwords do not match.')
+        return cleaned
+
+
+class LabWorkerAdminUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Clinical_Laboratory_Technician
+        fields = ['name', 'email', 'phone_number', 'age', 'hospital', 'featured_image']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        AdminStyledFormMixin._apply_admin_styles(self)
+
+
+class PatientAdminCreationForm(forms.Form):
+    username = forms.CharField(max_length=150, required=False, label='User ID')
+    email = forms.EmailField()
+    password1 = forms.CharField(required=False, widget=forms.PasswordInput)
+    password2 = forms.CharField(required=False, widget=forms.PasswordInput)
+    name = forms.CharField(max_length=200)
+    age = forms.IntegerField(required=False)
+    phone_number = forms.CharField(max_length=50, required=False)
+    address = forms.CharField(max_length=200, required=False)
+    blood_group = forms.CharField(max_length=200, required=False)
+    history = forms.CharField(max_length=200, required=False)
+    dob = forms.CharField(max_length=200, required=False)
+    nid = forms.CharField(max_length=200, required=False)
+    featured_image = forms.ImageField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        AdminStyledFormMixin._apply_admin_styles(self)
+        self.fields['password1'].help_text = 'Leave blank to auto-generate a password.'
+        self.fields['password2'].help_text = 'Leave blank to auto-generate a password.'
+        self.fields['username'].help_text = 'Leave blank to auto-generate a unique User ID.'
+
+    def clean(self):
+        cleaned = super().clean()
+        p1 = cleaned.get('password1')
+        p2 = cleaned.get('password2')
+        if (p1 or p2) and p1 != p2:
+            raise forms.ValidationError('Passwords do not match.')
+        return cleaned
+
+
+class PatientAdminUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Patient
+        fields = ['name', 'email', 'age', 'phone_number', 'address', 'blood_group', 'history', 'dob', 'nid', 'featured_image']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        AdminStyledFormMixin._apply_admin_styles(self)
 

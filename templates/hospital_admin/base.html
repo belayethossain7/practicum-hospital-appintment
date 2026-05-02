@@ -1,0 +1,92 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+    <title>{% block title %}Hospital Admin{% endblock %} | HealthStack</title>
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'HealthStack-System/images/Normal/favicon.png' %}">
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="{% static 'HealthStack-System/css/admin/bootstrap.min.css' %}">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="{% static 'HealthStack-System/plugins/Normal/fontawesome/css/all.min.css' %}">
+    <!-- Admin skin -->
+    <link rel="stylesheet" href="{% static 'HealthStack-System/css/hospital_admin/admin_custom.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="ha-body">
+
+    <!--  Fixed Top Navigation  -->
+    {% include 'hospital_admin/hospital-admin-navbar.html' %}
+
+    <!--  Fixed Sidebar  -->
+    <aside class="ha-sidebar" id="haSidebar">
+        {% include 'hospital_admin/hospital-admin-sidebar.html' %}
+    </aside>
+
+    <!-- Mobile backdrop -->
+    <button class="ha-overlay" id="haOverlay" aria-label="Close sidebar" type="button"></button>
+
+    <!--  Scrollable Main Content  -->
+    <main class="ha-main">
+        <div class="ha-inner">
+
+            <!-- Page Hero (title + subtitle + actions) -->
+            <div class="ha-page-hero mb-4">
+                <div class="ha-page-hero-inner">
+                    <div>
+                        <div class="ha-page-kicker">
+                            <i class="fas fa-shield-heart"></i>
+                            Admin Panel
+                        </div>
+                        <h1 class="ha-page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                        <p class="ha-page-subtitle">{% block page_subtitle %}Operational control for doctors, patients, lab technologists, and appointments.{% endblock %}</p>
+                    </div>
+                    <div class="ha-page-actions">
+                        {% block page_actions %}{% endblock %}
+                    </div>
+                </div>
+            </div>
+
+            {% include 'message.html' %}
+
+            {% block content %}{% endblock %}
+
+        </div>
+    </main>
+
+    <!--  Shared Delete-Confirm Modal  -->
+    <div class="modal fade" id="haDeleteModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content ha-card">
+                <div class="ha-card-header">
+                    <h5 class="mb-0">Confirm Delete</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="ha-card-body">
+                    <p class="mb-2">Delete <strong data-ha-delete-target>this record</strong>?</p>
+                    <p class="ha-modal-copy mb-0" data-ha-delete-hint>This action cannot be undone.</p>
+                </div>
+                <div class="ha-card-footer d-flex justify-content-end" style="gap:10px">
+                    <button type="button" class="ha-btn-ghost" data-dismiss="modal">Cancel</button>
+                    <form method="post" id="haDeleteForm" action="#">
+                        {% csrf_token %}
+                        <button type="submit" class="ha-btn ha-btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static 'HealthStack-System/js/admin/jquery-3.2.1.min.js' %}"></script>
+    <script src="{% static 'HealthStack-System/js/admin/popper.min.js' %}"></script>
+    <script src="{% static 'HealthStack-System/js/admin/bootstrap.min.js' %}"></script>
+    <script src="{% static 'HealthStack-System/js/admin/Chart.bundle.min.js' %}"></script>
+    <script src="{% static 'HealthStack-System/js/hospital_admin/admin_custom.js' %}"></script>
+    {% block extra_scripts %}{% endblock %}
+
+</body>
+</html>

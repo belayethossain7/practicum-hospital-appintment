@@ -1,190 +1,67 @@
-{%load static%}
-<!DOCTYPE html>
-<html lang="en">
-    
-<!-- Mirrored from dreamguys.co.in/demo/doccure/admin/doctor-list.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 30 Nov 2019 04:12:51 GMT -->
-<head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
-        <title>HealthStack</title>
+{% extends 'hospital_admin/base.html' %}
 
-    	<!-- Favicon -->
+{% block title %}Hospitals{% endblock %}
+{% block page_title %}Hospital directory{% endblock %}
+{% block page_subtitle %}Manage hospital records, emergency capacity, and department assets from a stable admin layout without changing any backend workflows.{% endblock %}
+{% block page_actions %}
+    <a href="{% url 'emergency' %}" class="ha-btn-secondary"><i class="fas fa-ambulance"></i>Emergency Overview</a>
+    <a href="{% url 'add-hospital' %}" class="ha-btn"><i class="fas fa-plus"></i>Add Hospital</a>
+{% endblock %}
 
-    	<link rel="shortcut icon" type="image/x-icon" href="{% static 'HealthStack-System/images/Normal/favicon.png' %}"/>
-
-		<!-- Bootstrap CSS -->
-        <link rel="stylesheet" href="{% static 'HealthStack-System/css/admin/bootstrap.min.css'%}"> 
-		
-		<!-- Fontawesome CSS -->
-        <link rel="stylesheet" href="{% static 'HealthStack-System/css/admin/font-awesome.min.css'%}">
-		
-		<!-- Feathericon CSS -->
-        <link rel="stylesheet" href="{% static 'HealthStack-System/admin_assets/css/feathericon.min.css'%}">
-		
-		<!-- Datatables CSS -->
-		<link rel="stylesheet" href="{% static 'HealthStack-System/plugins/admin/datatables/datatables.min.css'%}"> 
-		
-		<!-- Main CSS -->
-        <link rel="stylesheet" href="{% static 'HealthStack-System/css/admin/style.css'%}"> 
-		
-		<!--[if lt IE 9]>
-			<script src="assets/js/html5shiv.min.js"></script>
-			<script src="assets/js/respond.min.js"></script>
-		<![endif]-->
-    </head>
-    <body>
-	
-		<!-- Main Wrapper -->
-        <div class="main-wrapper">
-			<header class="header">{% include 'hospital_admin/hospital-admin-navbar.html' %}</header>
-				<!-- Logo -->
-
-            
-			<!-- /Header -->
-			
-			<!-- Sidebar -->
-			<aside class="sidebar" id="sidebar">
-				{% include 'hospital_admin/hospital-admin-sidebar.html' %} </aside>
-			<!-- /Sidebar -->
-			
-			<!-- Page Wrapper -->
-			
-			<!-- Page Wrapper -->
-            <div class="page-wrapper">
-
-                <div class="content container-fluid">
-					<div class="">
-						<a href="{% url 'add-hospital' %}"  class="fe fe-plus btn btn-primary float-right mt-2 ">Add hospital</a>
-					</div>
-					<!-- Page Header -->
-					<div class="page-header">
-						<div class="row">
-							<div class="col-sm-12">
-								<h3 class="page-title">List of Hospital</h3>
-								<ul class="breadcrumb">
-									<li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
-									<li class="breadcrumb-item"><a href="javascript:(0);">Users</a></li>
-									<li class="breadcrumb-item active">Hospital</li>
-								</ul>
-								{% include 'message.html' %}
-							</div>
-							
-						</div>
-					</div>
-					<!-- /Page Header -->
-					
-					<div class="row">
-						 <div class="col-sm-12">
-							 <div class="card">
-								 <div class="card-body">
-									 <div class="table-responsive">
-										<table class="datatable table table-hover table-center mb-0">
-										
-											 
-											 
-												<tr style="text-align: center;">
-													<th style="text-align: left;">Hospital Name</th>
-													<th>Address</th>
-													<th>Email</th>
-													<th>Phone Number</th>
-													<th>Hospital Type</th>
-													<th>Edit Hospital</th>
-													<th>Department List</th>
-													<th>Delete Hospital</th>
-													
-													
-												</tr>
-											 
-											 {% for hospital in hospitals %}
-												<tr style="text-align: center;">
-													<td style="text-align: left;">
-														<h2 class="table-avatar">
-															<a href="#" class="avatar avatar-sm mr-2"><img class="avatar-img rounded-circle" src="{{hospital.featured_image.url}}" alt="User Image"></a>															
-															<a href="#">{{hospital.name}}</a>
-														</h2>
-													</td>
-													<td>{{hospital.address}}</td>
-													
-													<td>{{hospital.email}}<br>
-													
-													<td>{{hospital.phone_number}}</td>
-
-													<td>{{hospital.hospital_type}}</td>
-													<td><a href="{% url 'edit-hospital' pk=hospital.hospital_id %}" class="btn btn-primary">Edit</a></td>
-													<td><a href="{% url 'department-image-list' pk=hospital.hospital_id%}" class="btn btn-primary">Edit</a></td>
-													<td class="text-center">
-														<div class="actions">
-															<a  data-toggle="modal" data-target="#delete_modal{{hospital.hospital_id}}" class="btn btn-sm bg-danger-light">
-																<i class="fe fe-trash"></i> Delete
-															</a>
-															
-														</div>
-													</td>
-												</tr>
-												<div class="modal fade" id="delete_modal{{hospital.hospital_id}}" aria-hidden="true" role="dialog">
-													<form method="POST" action="{% url 'delete-hospital' pk=hospital.hospital_id %}">
-													<div class="modal-dialog modal-dialog-centered" role="document" >
-														<div class="modal-content">
-															{% csrf_token %}
-																<div class="modal-body">
-																<div class="form-content p-2">
-																	<h4 class="modal-title" style="display:flex;justify-content: center;align-items: center;">Delete</h4>
-																	<p class="mb-4"  style="display:flex;justify-content: center;align-items: center;">Are you sure want to delete?</p>
-																	<div style="display:flex;justify-content: center">
-																		<button type="submit" class="btn btn-primary" style="margin-right: 5px;">Save</button>
-																		<button type="button" class="btn btn-danger" style="margin-left: 5px;" data-dismiss="modal">Close</button>
-																	</div>
-																</div>
-															</div>
-														</div>
-													</div>
-													</form>
-												</div>	
-		                                 {% endfor %}
-
-	</tbody>
-</table>
-</div>
-</div>
-</div>
-</div>			
-</div>
-</div>			
-</div>
-</div>
-
-		
-
-		<!-- /Main Wrapper -->
-		
-		<!-- jQuery -->
-        <script src="{% static 'HealthStack-System/js/admin/jquery-3.2.1.min.js' %}"></script> 
-		
-		<!-- Bootstrap Core JS -->
-        <script src="{% static 'HealthStack-System/js/admin/popper.min.js' %}"></script> 
-        <script src="{% static 'HealthStack-System/js/admin/bootstrap.min.js' %}"></script> 
-		
-		<!-- Slimscroll JS -->
-        <script src="{% static 'HealthStack-System/plugins/admin/slimscroll/jquery.slimscroll.min.js' %}"></script>
-		
-		<!-- Datatables JS -->
-		<script src="{% static 'HealthStack-System/plugins/admin/datatables/jquery.dataTables.min.js'%}"></script> 
-		<script src="{% static 'HealthStack-System/plugins/admin/datatables/datatables.min.js'%}"></script>
-		
-		<!-- Custom JS -->
-		<script src="{% static 'HealthStack-System/js/admin/script.js' %}"></script>
-
-		{% if messages %}
-		<script>
-			{% for message in messages %}
-				$(document).ready(function () {
-					$('.toast').toast('show');
-				});
-			{% endfor %}
-		</script>
-	  {% endif %}
-		
-    </body>
-
-<!-- Mirrored from dreamguys.co.in/demo/doccure/admin/doctor-list.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 30 Nov 2019 04:12:51 GMT -->
-</html>
+{% block content %}
+<section class="ha-card">
+    <div class="ha-card-header">
+        <div>
+            <h4>All hospitals</h4>
+            <div class="ha-card-muted">{{ hospitals|length }} hospital record{{ hospitals|length|pluralize }} currently available.</div>
+        </div>
+    </div>
+    <div class="ha-card-body">
+        <div class="ha-table-wrap">
+            <table class="table ha-table">
+                <thead>
+                    <tr>
+                        <th>Hospital</th>
+                        <th>Address</th>
+                        <th>Contact</th>
+                        <th>Type</th>
+                        <th class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hospital in hospitals %}
+                        <tr>
+                            <td>
+                                <div class="ha-avatar-row">
+                                    <img src="{{ hospital.featured_image.url }}" alt="{{ hospital.name }}">
+                                    <div>
+                                        <strong>{{ hospital.name|default:'Unnamed hospital' }}</strong>
+                                        <div class="ha-card-muted">General beds: {{ hospital.general_bed_no|default:'-' }} | ICU: {{ hospital.available_icu_no|default:'-' }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ hospital.address|default:'Address not added' }}</td>
+                            <td>
+                                <strong>{{ hospital.email|default:'No email added' }}</strong>
+                                <div class="ha-card-muted">{{ hospital.phone_number|default:'No phone number' }}</div>
+                            </td>
+                            <td><span class="ha-badge-soft">{{ hospital.hospital_type|capfirst }}</span></td>
+                            <td>
+                                <div class="ha-table-actions justify-content-end">
+                                    <a href="{% url 'edit-hospital' pk=hospital.hospital_id %}" class="btn btn-info btn-sm text-white">Edit</a>
+                                    <a href="{% url 'department-image-list' pk=hospital.hospital_id %}" class="btn btn-outline-secondary btn-sm">Departments</a>
+                                    <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#haDeleteModal" data-ha-delete-url="{% url 'delete-hospital' pk=hospital.hospital_id %}" data-ha-delete-name="{{ hospital.name|default:'this hospital' }}" data-ha-delete-hint="Deleting a hospital removes the hospital record from the admin directory.">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5"><div class="ha-empty-state">No hospital records are available yet.</div></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

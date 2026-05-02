@@ -1,0 +1,291 @@
+{% extends 'hospital_admin/base.html' %}
+{% load static %}
+
+{% block title %}Revenue Reports{% endblock %}
+{% block page_title %}Revenue Reports{% endblock %}
+{% block page_subtitle %}Monthly revenue breakdown, daily earnings trends, and doctor-wise income analysis for {{ current_month }}.{% endblock %}
+{% block page_actions %}
+    <a href="{% url 'finance-overview' %}" class="ha-btn-secondary"><i class="fas fa-chart-pie"></i>Overview</a>
+    <a href="{% url 'transactions_list' %}" class="ha-btn-secondary"><i class="fas fa-exchange-alt"></i>Transactions</a>
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'HealthStack-System/css/hospital_admin/finance.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- Total Revenue Hero -->
+<div class="hf-stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));">
+    <div class="hf-stat-card hf-teal">
+        <div class="hf-stat-head">
+            <div>
+                <div class="hf-stat-label">Lifetime Revenue</div>
+                <div class="hf-stat-value">&#2547; {{ total_revenue|floatformat:2 }}</div>
+            </div>
+            <span class="hf-stat-icon"><i class="fas fa-coins"></i></span>
+        </div>
+        <div class="hf-stat-trend">All verified (VALID) payments combined</div>
+    </div>
+    <div class="hf-stat-card hf-blue">
+        <div class="hf-stat-head">
+            <div>
+                <div class="hf-stat-label">Current Month</div>
+                <div class="hf-stat-value">{{ current_month }}</div>
+            </div>
+            <span class="hf-stat-icon"><i class="fas fa-calendar"></i></span>
+        </div>
+        <div class="hf-stat-trend">Daily breakdown available below</div>
+    </div>
+    <div class="hf-stat-card hf-green">
+        <div class="hf-stat-head">
+            <div>
+                <div class="hf-stat-label">Top Earning Doctors</div>
+                <div class="hf-stat-value">{{ top_doctor_labels|length }}</div>
+            </div>
+            <span class="hf-stat-icon"><i class="fas fa-user-md"></i></span>
+        </div>
+        <div class="hf-stat-trend">Ranked by appointment revenue</div>
+    </div>
+</div>
+
+<!-- Monthly Revenue Bar + Daily Line -->
+<div class="hf-two-col">
+    <div class="hf-chart-card">
+        <div class="hf-chart-header">
+            <div>
+                <h4 class="hf-chart-title"><i class="fas fa-chart-bar" style="color:var(--ha-accent);margin-right:6px;"></i>Monthly Revenue (Last 12 Months)</h4>
+                <p class="hf-chart-sub">Bar chart comparing verified revenue month over month</p>
+            </div>
+        </div>
+        <div class="hf-canvas-wrap">
+            <canvas id="hfMonthlyBarChart"></canvas>
+        </div>
+    </div>
+
+    <div class="hf-chart-card">
+        <div class="hf-chart-header">
+            <div>
+                <h4 class="hf-chart-title"><i class="fas fa-chart-line" style="color:var(--ha-accent);margin-right:6px;"></i>Daily Earnings – {{ current_month }}</h4>
+                <p class="hf-chart-sub">Day-by-day revenue for the current month</p>
+            </div>
+        </div>
+        <div class="hf-canvas-wrap">
+            <canvas id="hfDailyLineChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Doctor Revenue Chart + Table -->
+{% if top_doctor_labels %}
+<div class="hf-two-col">
+    <div class="hf-chart-card">
+        <div class="hf-chart-header">
+            <div>
+                <h4 class="hf-chart-title"><i class="fas fa-user-md" style="color:var(--ha-accent);margin-right:6px;"></i>Top Doctors by Revenue</h4>
+                <p class="hf-chart-sub">Appointment income contribution per doctor</p>
+            </div>
+        </div>
+        <div class="hf-canvas-wrap">
+            <canvas id="hfDoctorBarChart"></canvas>
+        </div>
+    </div>
+
+    <div class="hf-chart-card">
+        <div class="hf-chart-header">
+            <div>
+                <h4 class="hf-chart-title"><i class="fas fa-trophy" style="color:var(--ha-accent);margin-right:6px;"></i>Doctor Revenue Leaderboard</h4>
+                <p class="hf-chart-sub">Ranked list with revenue bar indicators</p>
+            </div>
+        </div>
+        <div style="overflow-y:auto;max-height:240px;">
+            <table class="hf-rev-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Doctor</th>
+                        <th>Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for label in top_doctor_labels %}
+                    <tr>
+                        <td style="font-weight:700;color:var(--ha-muted);">
+                            {% if forloop.counter == 1 %}<i class="fas fa-medal" style="color:#d48b1f;"></i>
+                            {% elif forloop.counter == 2 %}<i class="fas fa-medal" style="color:#678197;"></i>
+                            {% elif forloop.counter == 3 %}<i class="fas fa-medal" style="color:#a56336;"></i>
+                            {% else %}#{{ forloop.counter }}{% endif %}
+                        </td>
+                        <td style="font-weight:600;">{{ label }}</td>
+                        <td>
+                            <div style="font-weight:700;color:var(--ha-primary);">&#2547; {{ top_doctor_data|slice:forloop.counter0|last|floatformat:2 }}</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Monthly Summary Table -->
+<div class="hf-table-card">
+    <div class="hf-table-header">
+        <h4><i class="fas fa-table" style="color:var(--ha-accent);margin-right:8px;"></i>Monthly Revenue Breakdown</h4>
+        <span class="ha-badge-soft">{{ monthly_summary|length }} months recorded</span>
+    </div>
+    <div style="overflow-x:auto;">
+        {% if monthly_summary %}
+        {% with max_rev=monthly_summary.0.revenue %}
+        <table class="hf-rev-table">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Transactions</th>
+                    <th>Revenue</th>
+                    <th style="min-width:160px;">Revenue Bar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in monthly_summary reversed %}
+                <tr>
+                    <td style="font-weight:600;">{{ row.month }}</td>
+                    <td>
+                        <span style="background:rgba(58,160,181,.12);color:#0f6e8c;padding:2px 9px;border-radius:20px;font-size:12px;font-weight:700;">{{ row.count }}</span>
+                    </td>
+                    <td style="font-weight:700;color:var(--ha-primary);">&#2547; {{ row.revenue|floatformat:2 }}</td>
+                    <td>
+                        <div class="hf-rev-bar-wrap">
+                            {% if max_rev and max_rev > 0 %}
+                            <div class="hf-rev-bar" style="width:{% widthratio row.revenue max_rev 100 %}%;"></div>
+                            {% else %}
+                            <div class="hf-rev-bar" style="width:0%;"></div>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endwith %}
+        {% else %}
+        <div class="hf-empty"><i class="fas fa-chart-bar"></i>No revenue data available yet. Payments will appear here once processed.</div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+window.hfReportConfig = {
+    barLabels:    {{ bar_labels|safe }},
+    barData:      {{ bar_data|safe }},
+    dailyLabels:  {{ daily_labels|safe }},
+    dailyValues:  {{ daily_values|safe }},
+    doctorLabels: {{ top_doctor_labels|safe }},
+    doctorData:   {{ top_doctor_data|safe }}
+};
+</script>
+<script>
+(function () {
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof Chart === 'undefined' || !window.hfReportConfig) return;
+        var cfg = window.hfReportConfig;
+        var COLORS = ['#0f6e8c','#3aa0b5','#1f9d70','#d48b1f','#6f42c1','#c44949','#20a8d8','#4caf50'];
+
+        function currLabel(v) { return ' ৳' + v.toLocaleString(); }
+
+        /* Monthly Bar */
+        var barCtx = document.getElementById('hfMonthlyBarChart');
+        if (barCtx && cfg.barLabels.length) {
+            new Chart(barCtx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: cfg.barLabels,
+                    datasets: [{
+                        label: 'Revenue',
+                        data: cfg.barData,
+                        backgroundColor: cfg.barLabels.map(function(_, i){ return COLORS[i % COLORS.length] + 'cc'; }),
+                        borderColor:     cfg.barLabels.map(function(_, i){ return COLORS[i % COLORS.length]; }),
+                        borderWidth: 1.5,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    legend: { display: false },
+                    scales: {
+                        yAxes: [{ ticks: { beginAtZero: true, callback: currLabel }, gridLines: { color: 'rgba(219,231,240,0.8)' } }],
+                        xAxes: [{ gridLines: { display: false } }]
+                    },
+                    tooltips: { callbacks: { label: function(ti){ return currLabel(ti.yLabel); } } }
+                }
+            });
+        }
+
+        /* Daily Line */
+        var lineCtx = document.getElementById('hfDailyLineChart');
+        if (lineCtx) {
+            var hasData = cfg.dailyLabels && cfg.dailyLabels.length;
+            new Chart(lineCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: hasData ? cfg.dailyLabels : ['No data'],
+                    datasets: [{
+                        label: 'Daily Revenue',
+                        data: hasData ? cfg.dailyValues : [0],
+                        borderColor: '#1f9d70',
+                        backgroundColor: 'rgba(31,157,112,0.12)',
+                        fill: true,
+                        borderWidth: 2.5,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#1f9d70',
+                        pointBorderWidth: 2,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    legend: { display: false },
+                    scales: {
+                        yAxes: [{ ticks: { beginAtZero: true, callback: currLabel }, gridLines: { color: 'rgba(219,231,240,0.8)' } }],
+                        xAxes: [{ gridLines: { display: false } }]
+                    },
+                    tooltips: { callbacks: { label: function(ti){ return currLabel(ti.yLabel); } } }
+                }
+            });
+        }
+
+        /* Doctor Horizontal Bar */
+        var docCtx = document.getElementById('hfDoctorBarChart');
+        if (docCtx && cfg.doctorLabels.length) {
+            new Chart(docCtx.getContext('2d'), {
+                type: 'horizontalBar',
+                data: {
+                    labels: cfg.doctorLabels,
+                    datasets: [{
+                        label: 'Revenue',
+                        data: cfg.doctorData,
+                        backgroundColor: COLORS.map(function(c){ return c + 'cc'; }),
+                        borderColor: COLORS,
+                        borderWidth: 1.5
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    legend: { display: false },
+                    scales: {
+                        xAxes: [{ ticks: { beginAtZero: true, callback: currLabel }, gridLines: { color: 'rgba(219,231,240,0.8)' } }],
+                        yAxes: [{ gridLines: { display: false } }]
+                    },
+                    tooltips: { callbacks: { label: function(ti){ return currLabel(ti.xLabel); } } }
+                }
+            });
+        }
+    });
+}());
+</script>
+{% endblock %}

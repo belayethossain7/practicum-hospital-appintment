@@ -1,93 +1,63 @@
-{% load static %}
-		
-    <!-- Logo -->
-    <div class="header-left">
-        <a href="{% url 'admin-dashboard' %}" class="logo">
-            <img src="{% static 'HealthStack-System/images/Normal/logo.jpg' %}" alt="Logo">
-        </a>
-        <a href="{% url 'admin-dashboard' %}" class="logo logo-small">
-            <img src="{% static 'HealthStack-System/images/Normal/favicon.png' %}" alt="Logo" width="30" height="30">
+﻿{% load static %}
+<nav class="ha-topnav" role="navigation" aria-label="Admin top navigation">
+
+    <!-- Left: sidebar toggle + brand -->
+    <div class="ha-topnav-left">
+        <button class="ha-toggler" id="haToggler" type="button" aria-label="Toggle sidebar" aria-controls="haSidebar" aria-expanded="false">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <a class="ha-brand" href="{% url 'admin-dashboard' %}">
+            <span class="ha-brand-icon"><i class="fas fa-heartbeat"></i></span>
+            <span class="ha-brand-text">
+                <span class="ha-brand-name">HealthStack</span>
+                <span class="ha-brand-sub">Administration</span>
+            </span>
         </a>
     </div>
-    <!-- /Logo -->
-    
-    <a href="javascript:void(0);" id="toggle_btn">
-        <i class="fe fe-text-align-left"></i>
-    </a>
-    
-    <!-- <div class="top-nav-search">
-        <form>
-            <input type="text" class="form-control" placeholder="Search here">
-            <button class="btn" type="submit"><i class="fa fa-search"></i></button>
-        </form>
-    </div> -->
-    
-    <!-- Mobile Menu Toggle -->
-    <a class="mobile_btn" id="mobile_btn">
-        <i class="fe fe-text-align-left"></i>
-    </a>
-    <!-- /Mobile Menu Toggle -->
-    
-    <!-- Header Right Menu -->
-    <ul class="nav user-menu">
 
-        {% comment %} <!-- Notifications -->
-        <li class="nav-item dropdown noti-dropdown">
-            <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
-                <i class="fe fe-bell"></i> <span class="badge badge-pill">3</span>
-            </a>
-            <div class="dropdown-menu notifications">
-                <div class="topnav-dropdown-header">
-                    <span class="notification-title">Notifications</span>
-                    <a href="javascript:void(0)" class="clear-noti"> Clear All </a>
-                </div>
-                <div class="noti-content">
-                    <ul class="notification-list">
-                        <li class="notification-message">
-                            <a href="#">
-                                <div class="media">
-                                    <span class="avatar avatar-sm">
-                                        <img class="avatar-img rounded-circle" alt="User Image" src="assets/img/doctors/doctor-thumb-01.jpg">
-                                    </span>
-                                    <div class="media-body">
-                                        <p class="noti-details"><span class="noti-title">Dr. Ruby Perrin</span> Schedule <span class="noti-title">her appointment</span></p>
-                                        <p class="noti-time"><span class="notification-time">4 mins ago</span></p>
-                                    </div>
-                                </div>
-                            </a>
-                        </li>
-                       
-                    </ul>
-                </div>
-                <div class="topnav-dropdown-footer">
-                    <a href="#">View all Notifications</a>
-                </div>
-            </div> 
-        </li>
-        <!-- /Notifications --> {% endcomment %}
-        
-        <!-- User Menu -->
-        <li class="nav-item dropdown has-arrow">
-            <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
-                <span class="user-img"><img class="rounded-circle" src="{{admin.featured_image.url}}" width="31" alt="{{admin.name}}"></span>
-            </a>
-            <div class="dropdown-menu">
-                <div class="user-header">
-                    <div class="avatar avatar-sm">
-                        <img src="{{admin.featured_image.url}}" alt="User Image" class="avatar-img rounded-circle">
-                    </div>
-                    <div class="user-text">
-                        <h6>{{admin.name}}</h6>
-                        <p class="text-muted mb-0">Administrator</p>
-                    </div>
-                </div>
-                <a class="dropdown-item" href="{%url 'hospital-admin-profile' pk=user.id %}">My Profile</a>
-                {% comment %} <a class="dropdown-item" href="settings.html">Settings</a> {% endcomment %}
-                <a class="dropdown-item" href="{% url 'admin-logout' %}">Logout</a>
+    <!-- Right: hospital directory link + user dropdown -->
+    <div class="ha-topnav-right">
+
+        <a href="{% url 'hospital-list' %}" class="ha-nav-chip" aria-label="Hospital Directory">
+            <i class="fas fa-hospital"></i>
+            Hospital Directory
+        </a>
+
+        <div class="ha-user-dd" id="haUserDd">
+            <button class="ha-user-btn" id="haUserBtn" type="button"
+                    aria-haspopup="true" aria-expanded="false" aria-controls="haUserMenu">
+                {% if admin and admin.featured_image %}
+                    <img src="{{ admin.featured_image.url }}"
+                         alt="{{ admin.name|default:'Administrator' }}"
+                         class="ha-avatar"
+                         onerror="this.style.display='none';document.getElementById('haAvatarInit').style.display='inline-flex'">
+                    <span class="ha-avatar-init" id="haAvatarInit" style="display:none" aria-hidden="true">
+                        {{ admin.name|default:'A'|first|upper }}
+                    </span>
+                {% else %}
+                    <span class="ha-avatar-init" aria-hidden="true">
+                        {{ admin.name|default:'A'|first|upper }}
+                    </span>
+                {% endif %}
+                <span class="ha-user-info">
+                    <span class="ha-user-name">{{ admin.name|default:'Administrator' }}</span>
+                    <span class="ha-user-role">Hospital Admin</span>
+                </span>
+                <i class="fas fa-chevron-down ha-user-caret" aria-hidden="true"></i>
+            </button>
+
+            <div class="ha-dd-menu" id="haUserMenu" role="menu">
+                <a class="ha-dd-item" href="{% url 'hospital-admin-profile' pk=user.id %}" role="menuitem">
+                    <i class="fas fa-user-circle" aria-hidden="true"></i>
+                    My Profile
+                </a>
+                <a class="ha-dd-item ha-dd-item--danger" href="{% url 'admin-logout' %}" role="menuitem">
+                    <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                    Logout
+                </a>
             </div>
-        </li>
-        <!-- /User Menu -->
-        
-    </ul>
-    <!-- /Header Right Menu -->
-    
+        </div>
+
+    </div>
+</nav>

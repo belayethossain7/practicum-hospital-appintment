@@ -1,68 +1,100 @@
-<div class="sidebar" id="sidebar">
-    <div class="sidebar-inner slimscroll">
-        <div id="sidebar-menu" class="sidebar-menu">
-            <ul>
-                <li class="menu-title"> 
-                    <span>Menu</span>
-                </li>
-                <li class=""> 
-                    <a href="{%url 'admin-dashboard' %}"><i class="fe fe-home"></i> <span>Dashboard</span></a>
-                </li>
-                
-                <li class="submenu">
-                    <a href="#"><i class="fe fe-building"></i> <span> Hospitals</span></a>
-                    <ul style="display:none;">
-                        <li><a href="{% url 'hospital-list' %}"><i class="fe fe-edit"></i> <span>Add Hospital</span></a></li>
-                        <li><a href="{% url 'emergency' %}"><i class="fe fe-edit"></i> <span>Add Emergency Info</span></a></li>
-                    </ul>
-                </li>
+﻿{% with current=request.resolver_match.url_name %}
+<div class="ha-sidebar-panel">
 
-                
-
-                <li class="submenu"> 
-                    <a href="#"><i class="fe fe-user-plus"></i> <span>Doctors</span></a>
-                    <ul style="display:none;">
-                        <li><a href="{% url 'admin-add-doctor' %}"><i class="fe fe-user-plus"></i> <span>Add Doctor</span></a></li>
-                        <li><a href="{%url 'register-doctor-list'%}"><i class="fe fe-users"></i> <span>Registered</span></a></li>
-                    </ul>
-                </li>
-                
-                
-
-                <li class="submenu">
-                    <a href="#"><i class="fe fe-user"></i> <span> Lab Worker</span></a>
-                    <ul style="display:none;">
-                        <li><a href="{% url 'add-lab-worker' %}"><i class="fe fe-user-plus"></i> <span>Add Lab Worker</span></a></li>
-                        <li><a href="{% url 'lab-worker-list' %}"><i class="fe fe-users"></i> <span>View Lab Worker</span></a></li>
-                    </ul>
-                </li>
-
-                <li class="submenu">
-                    <a href="#"><i class="fe fe-user"></i> <span> Pharmacist</span></a>
-                    <ul style="display:none;">
-                        <li><a href="{% url 'add-pharmacist' %}"><i class="fe fe-user-plus"></i> <span>Add Pharmacist</span></a></li>
-                        
-                        <li><a href="{%url 'pharmacist-list'%}"><i class="fe fe-users"></i> <span>View Pharmacist</span></a></li>
-                    </ul>
-                </li>
-                
-                {% comment %} <li class="submenu">
-                    <a href="#"><i class="fe fe-document"></i> <span> Reports</span></a>
-                    <ul style="display: none;">
-                        <li><a href="invoice-report.html">Invoice Reports</a></li>
-                    </ul>
-                </li> {% endcomment %}
-
-                
-
-                
-                
-                <li> 
-                    <a href="{%url 'hospital-admin-profile' pk=user.id %}"><i class="fe fe-user-plus"></i> <span>Profile</span></a>
-                </li>
-
-                
-            </ul>
-        </div>
+    <div class="ha-sidebar-title">
+        <h6>Navigation</h6>
+        <span class="ha-badge-soft" style="background:rgba(58,160,181,.20);color:#7dd4e3;">Admin</span>
     </div>
+
+    <ul class="ha-sidebar-list" role="menubar">
+
+        <li class="ha-sidebar-item {% if current == 'admin-dashboard' %}is-active{% endif %}" role="none">
+            <a class="ha-sidebar-link" href="{% url 'admin-dashboard' %}" role="menuitem">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+
+        <li class="ha-sidebar-item {% if current == 'appointment-list' %}is-active{% endif %}" role="none">
+            <a class="ha-sidebar-link" href="{% url 'appointment-list' %}" role="menuitem">
+                <i class="fas fa-calendar-check"></i>
+                <span>Appointments</span>
+            </a>
+        </li>
+
+        <li class="ha-sidebar-item {% if current == 'admin-add-doctor' or current == 'register-doctor-list' or current == 'admin-edit-doctor' or current == 'admin-doctor-profile' %}is-open{% endif %}" role="none">
+            <button class="ha-sidebar-toggle" type="button"
+                    aria-expanded="{% if current == 'admin-add-doctor' or current == 'register-doctor-list' or current == 'admin-edit-doctor' or current == 'admin-doctor-profile' %}true{% else %}false{% endif %}">
+                <i class="fas fa-user-md"></i>
+                <span>Doctors</span>
+            </button>
+            <ul class="ha-sidebar-sublist" role="menu">
+                <li class="ha-sidebar-subitem {% if current == 'admin-add-doctor' %}is-active{% endif %}">
+                    <a href="{% url 'admin-add-doctor' %}" role="menuitem"><i class="fas fa-plus"></i><span>Add Doctor</span></a>
+                </li>
+                <li class="ha-sidebar-subitem {% if current == 'register-doctor-list' or current == 'admin-edit-doctor' or current == 'admin-doctor-profile' %}is-active{% endif %}">
+                    <a href="{% url 'register-doctor-list' %}" role="menuitem"><i class="fas fa-list"></i><span>Manage Doctors</span></a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="ha-sidebar-item {% if current == 'admin-add-patient' or current == 'patient-list' or current == 'admin-edit-patient' %}is-open{% endif %}" role="none">
+            <button class="ha-sidebar-toggle" type="button"
+                    aria-expanded="{% if current == 'admin-add-patient' or current == 'patient-list' or current == 'admin-edit-patient' %}true{% else %}false{% endif %}">
+                <i class="fas fa-user-injured"></i>
+                <span>Patients</span>
+            </button>
+            <ul class="ha-sidebar-sublist" role="menu">
+                <li class="ha-sidebar-subitem {% if current == 'admin-add-patient' %}is-active{% endif %}">
+                    <a href="{% url 'admin-add-patient' %}" role="menuitem"><i class="fas fa-plus"></i><span>Add Patient</span></a>
+                </li>
+                <li class="ha-sidebar-subitem {% if current == 'patient-list' or current == 'admin-edit-patient' %}is-active{% endif %}">
+                    <a href="{% url 'patient-list' %}" role="menuitem"><i class="fas fa-list"></i><span>Manage Patients</span></a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="ha-sidebar-item {% if current == 'add-lab-worker' or current == 'lab-worker-list' or current == 'edit-lab-worker' %}is-open{% endif %}" role="none">
+            <button class="ha-sidebar-toggle" type="button"
+                    aria-expanded="{% if current == 'add-lab-worker' or current == 'lab-worker-list' or current == 'edit-lab-worker' %}true{% else %}false{% endif %}">
+                <i class="fas fa-flask"></i>
+                <span>Lab Technologists</span>
+            </button>
+            <ul class="ha-sidebar-sublist" role="menu">
+                <li class="ha-sidebar-subitem {% if current == 'add-lab-worker' %}is-active{% endif %}">
+                    <a href="{% url 'add-lab-worker' %}" role="menuitem"><i class="fas fa-plus"></i><span>Add Technologist</span></a>
+                </li>
+                <li class="ha-sidebar-subitem {% if current == 'lab-worker-list' or current == 'edit-lab-worker' %}is-active{% endif %}">
+                    <a href="{% url 'lab-worker-list' %}" role="menuitem"><i class="fas fa-list"></i><span>Manage Technologists</span></a>
+                </li>
+            </ul>
+        </li>
+
+        <!-- Finance / Payments -->
+        <li class="ha-sidebar-item {% if current == 'finance-overview' or current == 'transactions_list' or current == 'revenue-reports' %}is-open{% endif %}" role="none">
+            <button class="ha-sidebar-toggle" type="button"
+                    aria-expanded="{% if current == 'finance-overview' or current == 'transactions_list' or current == 'revenue-reports' %}true{% else %}false{% endif %}">
+                <i class="fas fa-wallet"></i>
+                <span>Finance</span>
+            </button>
+            <ul class="ha-sidebar-sublist" role="menu">
+                <li class="ha-sidebar-subitem {% if current == 'finance-overview' %}is-active{% endif %}">
+                    <a href="{% url 'finance-overview' %}" role="menuitem"><i class="fas fa-chart-pie"></i><span>Payment Overview</span></a>
+                </li>
+                <li class="ha-sidebar-subitem {% if current == 'transactions_list' %}is-active{% endif %}">
+                    <a href="{% url 'transactions_list' %}" role="menuitem"><i class="fas fa-exchange-alt"></i><span>Transactions</span></a>
+                </li>
+                <li class="ha-sidebar-subitem {% if current == 'revenue-reports' %}is-active{% endif %}">
+                    <a href="{% url 'revenue-reports' %}" role="menuitem"><i class="fas fa-chart-bar"></i><span>Revenue Reports</span></a>
+                </li>
+            </ul>
+        </li>
+
+    </ul>
+
+    <div class="ha-sidebar-footer">
+        <p>Sidebar is limited to Dashboard, Doctors, Patients, Lab Technologists, and Appointments. Hospital management is accessible via the Hospital Directory link in the top navigation.</p>
+    </div>
+
 </div>
+{% endwith %}

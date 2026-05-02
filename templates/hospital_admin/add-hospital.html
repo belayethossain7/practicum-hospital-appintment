@@ -1,389 +1,56 @@
-{%load static%}
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'hospital_admin/base.html' %}
+{% load static %}
 
-<head>
-	<meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=0"
-    />
-    <title>HealthStack - Dashboard</title>
+{% block title %}Add Hospital{% endblock %}
+{% block page_title %}Create hospital record{% endblock %}
+{% block page_subtitle %}Add hospital details, services, specializations, and departments while keeping the existing POST contract exactly the same.{% endblock %}
+{% block page_actions %}
+    <a href="{% url 'hospital-list' %}" class="ha-btn-ghost"><i class="fas fa-arrow-left"></i>Back to Hospitals</a>
+{% endblock %}
 
-    <!-- Favicon -->
+{% block content %}
+<form action="{% url 'add-hospital' %}" method="post" enctype="multipart/form-data" class="ha-stack">
+    {% csrf_token %}
+    <section class="ha-card ha-form-card">
+        <div class="ha-card-header"><div><h4>Hospital details</h4><div class="ha-card-muted">Primary hospital information used across the platform.</div></div></div>
+        <div class="ha-card-body ha-stack">
+            <div class="ha-media-banner">
+                <img src="{% static 'HealthStack-System/images/Normal/favicon.png' %}" alt="Hospital placeholder" class="ha-media-thumb">
+                <div class="ha-form-grid cols-3">
+                    <div class="ha-form-group"><label>Hospital Name</label><input class="form-control" type="text" name="hospital_name"></div>
+                    <div class="ha-form-group"><label>Email</label><input class="form-control" type="email" name="email"></div>
+                    <div class="ha-form-group"><label>Phone Number</label><input class="form-control" type="text" name="phone_number"></div>
+                    <div class="ha-form-group ha-span-2"><label>Address</label><input class="form-control" type="text" name="address"></div>
+                    <div class="ha-form-group"><label>Hospital Type</label><select id="type" name="type" class="form-control"><option value="public">Public</option><option value="private">Private</option></select></div>
+                    <div class="ha-form-group ha-span-2"><label>Featured Image</label><input type="file" class="form-control-file" name="featured_image"><div class="ha-form-help">Allowed JPG, GIF, or PNG.</div></div>
+                    <div class="ha-form-group ha-span-2"><label>Description</label><textarea class="form-control" rows="5" name="description"></textarea></div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <link
-      rel="shortcut icon"
-      type="image/x-icon"
-      href="{% static 'HealthStack-System/images/Normal/favicon.png' %}"
-    />
+    <section class="ha-card ha-form-card">
+        <div class="ha-card-header"><div><h4>Departments</h4><div class="ha-card-muted">Add one or more department names using the existing dynamic field pattern.</div></div><a href="javascript:void(0);" class="ha-btn-secondary add-department"><i class="fas fa-plus-circle"></i>Add More</a></div>
+        <div class="ha-card-body"><div class="department-info ha-repeat-list"><div class="department-cont ha-repeat-item"><div class="ha-repeat-head"><strong>Department</strong><a href="#" class="btn btn-danger btn-sm trash"><i class="far fa-trash-alt"></i></a></div><input type="text" class="form-control" id="departments" name="department"></div></div></div>
+    </section>
 
+    <section class="ha-card ha-form-card">
+        <div class="ha-card-header"><div><h4>Services</h4><div class="ha-card-muted">Keep the service field names unchanged for the existing create flow.</div></div><a href="javascript:void(0);" class="ha-btn-secondary add-service"><i class="fas fa-plus-circle"></i>Add More</a></div>
+        <div class="ha-card-body"><div class="service-info ha-repeat-list"><div class="service-cont ha-repeat-item"><div class="ha-repeat-head"><strong>Service</strong><a href="#" class="btn btn-danger btn-sm trash"><i class="far fa-trash-alt"></i></a></div><input type="text" class="form-control" id="service" name="service"></div></div></div>
+    </section>
 
-	<!-- Bootstrap CSS -->
-	<link rel="stylesheet" href="{% static 'HealthStack-System/css/admin/bootstrap.min.css'%}">
+    <section class="ha-card ha-form-card">
+        <div class="ha-card-header"><div><h4>Specializations</h4><div class="ha-card-muted">Preserve the existing list-style specialization submission.</div></div><a href="javascript:void(0);" class="ha-btn-secondary add-specialization"><i class="fas fa-plus-circle"></i>Add More</a></div>
+        <div class="ha-card-body"><div class="specialization-info ha-repeat-list"><div class="specialization-cont ha-repeat-item"><div class="ha-repeat-head"><strong>Specialization</strong><a href="#" class="btn btn-danger btn-sm trash"><i class="far fa-trash-alt"></i></a></div><input type="text" class="form-control" id="specialization" name="specialization"></div></div></div>
+    </section>
 
-	<!-- Fontawesome CSS -->
-	<link rel="stylesheet" href="{% static 'HealthStack-System/css/admin/font-awesome.min.css'%}">
-	<link rel="stylesheet" href="{% static 'HealthStack-System/plugins/Normal/fontawesome/css/all.min.css' %}">
+    <div class="d-flex justify-content-end" style="gap: 12px;">
+        <a href="{% url 'hospital-list' %}" class="ha-btn-ghost">Cancel</a>
+        <button type="submit" class="ha-btn"><i class="fas fa-save"></i>Save Hospital</button>
+    </div>
+</form>
+{% endblock %}
 
-	<!-- Feathericon CSS -->
-	<link rel="stylesheet" href="{% static 'HealthStack-System/admin_assets/css/feathericon.min.css'%}">
-
-	<!-- Datatables CSS -->
-	<link rel="stylesheet" href="{% static 'HealthStack-System/plugins/admin/datatables/datatables.min.css'%}">
-
-	<!-- Main CSS -->
-	<link rel="stylesheet" href="{% static 'HealthStack-System/css/admin/style.css'%}">
-
-	<link rel="stylesheet" href="{% static 'HealthStack-System/css/admin/add-hospital.css'%}">
-
-	<!--[if lt IE 9]>
-			<script src="assets/js/html5shiv.min.js"></script>
-			<script src="assets/js/respond.min.js"></script>
-		<![endif]-->
-</head>
-
-<body>
-
-	<!-- Main Wrapper -->
-	<div class="main-wrapper">
-		<header class="header">{% include 'hospital_admin/hospital-admin-navbar.html' %}</header>
-		<!-- Logo -->
-
-
-		<!-- /Header -->
-
-		<!-- Sidebar -->
-		<aside class="sidebar" id="sidebar">
-			{% include 'hospital_admin/hospital-admin-sidebar.html' %}
-		</aside>
-		<!-- /Sidebar -->
-
-		<!-- Page Wrapper -->
-
-		<!-- Page Wrapper -->
-		<div class="page-wrapper">
-
-			<div class="content container-fluid">
-
-				<!-- Breadcrumb -->
-				<div class="breadcrumb-bar">
-					<div class="container-fluid">
-						<div class="row align-items-center">
-							<div class="col-md-12 col-12">
-								<nav aria-label="breadcrumb" class="page-breadcrumb">
-									<ol class="breadcrumb">
-										<li class="breadcrumb-item"><a href="index-2.html">Home</a></li>
-										<li class="breadcrumb-item active" aria-current="page">Add hopital information
-										</li>
-									</ol>
-								</nav>
-								<h2 class="breadcrumb-title">Adding Hospital Information</h2>
-							</div>
-						</div>
-					</div>
-				</div>
-				<!-- /Breadcrumb -->
-
-				<!-- Page Content -->
-				<div class="call-content-full">
-					<div class="container-lg">
-						<div class="row-cols-6">
-							<div class="col-md-7 col-lg-8 col-xl-12">
-								<div class="card">
-									<div class="card-body">
-
-										<!-- Profile Settings Form -->
-										<form action="{% url 'add-hospital' %}" method="POST" enctype="multipart/form-data">
-											{% csrf_token %}
-											<div class="row form-row">
-												<div class="col-md-6">
-													<div class="form-group">
-														<div class="change-avatar">
-															<div class="profile-img">
-																<img src="{% static 'images/hospitals/default.png' %}"
-																	alt="Admin Profile Image">
-															</div>
-															<div class="upload-img">
-																<div class="change-photo-btn">
-																	<span><i class="fa fa-upload"></i> Upload
-																		Photo</span>
-																	<input type="file" class="upload"
-																		name="featured_image">
-																</div>
-																<small class="form-text text-muted">Allowed JPG, GIF or
-																	PNG. Max size of 2MB</small>
-															</div>
-														</div>
-													</div>
-												</div>
-												<div class="col-12 col-md-12">
-													<div class="card card-table">
-														<div class="card-body">
-															<div class="table-responsive">
-																<table class="table table-hover table-center">
-																	<thead>
-																		<tr>
-																			<th style="min-width: 300px">Hospital Name
-																			</th>
-																			<th style="min-width: 50px;"></th>
-																		</tr>
-																	</thead>
-																	<tbody>
-																		<tr>
-																			<td>
-																				<input class="form-control" type="text"
-																					name="hospital_name">
-																			</td>
-																		</tr>
-																	</tbody>
-																</table>
-															</div>
-														</div>
-													</div>
-													<div class="card card-table">
-														<div class="card-body">
-															<div class="table-responsive">
-																<table class="table table-hover table-center">
-																	<thead>
-																		<tr>
-																			<th style="min-width: 300px">Address</th>
-																			<th style="min-width: 50px;"></th>
-																		</tr>
-																	</thead>
-																	<tbody>
-																		<tr>
-																			<td>
-																				<input class="form-control" type="text"
-																					name="address">
-																			</td>
-																		</tr>
-																	</tbody>
-																</table>
-															</div>
-														</div>
-													</div>
-													<div class="card card-table">
-														<div class="card-body">
-															<div class="table-responsive">
-																<table class="table table-hover table-center">
-																	<thead>
-																		<tr>
-																			<th style="min-width: 300px">Email</th>
-																			<th style="min-width: 300px">Phone number
-																			</th>
-																			<th style="min-width: 50px;"></th>
-																		</tr>
-																	</thead>
-																	<tbody>
-																		<tr>
-																			<td>
-																				<input class="form-control" type="email"
-																					name="email">
-																			</td>
-																			<td>
-																				<input class="form-control" type="text"
-																					name="phone_number">
-																			</td>
-																		</tr>
-																	</tbody>
-																</table>
-															</div>
-														</div>
-													</div>
-													<div class="card card-table">
-														<div class="card-body">
-															<div class="table-responsive">
-																<table class="table table-hover table-center">
-																	<thead>
-																		<tr>
-																			<th style="min-width: 300px">Hospital Type
-																			</th>
-																			{% comment %} <th style="min-width: 300px">
-																				Upload Image</th> {% endcomment %}
-																			<th style="min-width: 50px;"></th>
-																		</tr>
-																	</thead>
-																	<tbody>
-																		<tr>
-																			<td>
-																				<label for="cars">Choose Hospital Type:
-																				</label>
-																				<select id="type" name="type">
-																					<option value="public">Public
-																					</option>
-																					<option value="private">Private
-																					</option>
-																				</select>
-																			</td>
-																			{% comment %} <td>
-																				<input class="form-control" type="file"
-																					name="image">
-																			</td> {% endcomment %}
-																		</tr>
-																	</tbody>
-																</table>
-															</div>
-														</div>
-													</div>
-													<div class="card">
-														<div class="card-body">
-															<h4 class="card-title">Departments</h4>
-															<div class="department-info">
-																<div class="row form-row department-cont">
-																	<div class="col-12 col-md-10 col-lg-5">
-																		<div class="form-group">
-																			<label>Add New Departments</label>
-																			<input type="text" class="form-control"
-																				id="departments" name="department">
-																		</div>
-																	</div>
-																	<div class="col-12 col-md-2 col-lg-2">
-																		<label
-																			class="d-md-block d-sm-none d-none">&nbsp;</label>
-																		<a href="#" class="btn btn-danger trash"><i
-																				class="far fa-trash-alt"></i></a>
-																	</div>
-																</div>
-															</div>
-															<div class="add-more">
-																<a href="javascript:void(0);" class="add-department"><i
-																		class="fa fa-plus-circle"></i> Add More</a>
-															</div>
-														</div>
-													</div>
-													<div class="card">
-														<div class="card-body">
-															<h4 class="card-title">Services</h4>
-															<div class="service-info">
-																<div class="row form-row service-cont">
-																	<div class="col-12 col-md-10 col-lg-5">
-																		<div class="form-group">
-																			<label>Add New Services</label>
-																			<input type="text" class="form-control"
-																				id="service" name="service">
-																		</div>
-																	</div>
-																	<div class="col-12 col-md-2 col-lg-2">
-																		<label
-																			class="d-md-block d-sm-none d-none">&nbsp;</label>
-																		<a href="#" class="btn btn-danger trash"><i
-																				class="far fa-trash-alt"></i></a>
-																	</div>
-																</div>
-															</div>
-															<div class="add-more">
-																<a href="javascript:void(0);" class="add-service"
-																	style="color: #20c0f3"><i
-																		class="fa fa-plus-circle"></i> Add More</a>
-															</div>
-														</div>
-													</div>
-													<div class="card">
-														<div class="card-body">
-															<h4 class="card-title">Specialization</h4>
-															<div class="specialization-info">
-																<div class="row form-row specialization-cont">
-																	<div class="col-12 col-md-10 col-lg-5">
-																		<div class="form-group">
-																			<label>Add New Specialization</label>
-																			<input type="text" class="form-control"
-																				id="specialization"
-																				name="specialization">
-																		</div>
-																	</div>
-																	<div class="col-12 col-md-2 col-lg-2">
-																		<label
-																			class="d-md-block d-sm-none d-none">&nbsp;</label>
-																		<a href="#" class="btn btn-danger trash"><i
-																				class="far fa-trash-alt"></i></a>
-																	</div>
-																</div>
-															</div>
-															<div class="add-more">
-																<a href="javascript:void(0);"
-																	class="add-specialization"><i
-																		class="fa fa-plus-circle"></i> Add More</a>
-															</div>
-														</div>
-													</div>
-													<div class="card card-table">
-														<div class="card-body">
-															<div class="table-responsive">
-																<table class="table table-hover table-center">
-																	<thead>
-																		<tr>
-																			<th style="min-width: 300px">Description
-																			</th>
-																			<th style="min-width: 50px;"></th>
-																		</tr>
-																	</thead>
-																	<tbody>
-																		<tr>
-																			<td>
-																				<textarea class="form-control" rows="4"
-																					cols="50" type="text"
-																					name="description"></textarea>
-																			</td>
-																		</tr>
-																	</tbody>
-																</table>
-															</div>
-														</div>
-													</div>
-												</div>
-												<div class="submit-section">
-													<button type="submit" class="btn btn-primary submit-btn">
-														Save Changes
-													</button>
-												</div>
-											</div>
-										</form>
-
-										<!-- /Profile Settings Form -->
-
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-
-				</div>
-				<!-- /Page Content -->
-
-
-
-
-
-
-			</div>
-		</div>
-		<!-- /Page Wrapper -->
-
-	</div>
-	<!-- /Main Wrapper -->
-
-	<!-- jQuery -->
-	<script src="{% static 'HealthStack-System/js/admin/jquery-3.2.1.min.js' %}"></script>
-
-	<!-- Bootstrap Core JS -->
-	<script src="{% static 'HealthStack-System/js/admin/popper.min.js' %}"></script>
-	<script src="{% static 'HealthStack-System/js/admin/bootstrap.min.js' %}"></script>
-
-	<!-- Slimscroll JS -->
-	<script src="{% static 'HealthStack-System/plugins/admin/slimscroll/jquery.slimscroll.min.js' %}"></script>
-
-	<!-- Datatables JS -->
-	<script src="{% static 'HealthStack-System/plugins/admin/datatables/jquery.dataTables.min.js'%}"></script>
-	<script src="{% static 'HealthStack-System/plugins/admin/datatables/datatables.min.js'%}"></script>
-
-	<!-- Custom JS -->
-	<script src="{% static 'HealthStack-System/js/admin/script.js' %}"></script>
-
-	<script src="{% static 'HealthStack-System/js/Normal/add-more.js' %}"></script>
-
-
-</body>
-
-
-</html>
+{% block extra_scripts %}
+<script src="{% static 'HealthStack-System/js/Normal/add-more.js' %}"></script>
+{% endblock %}

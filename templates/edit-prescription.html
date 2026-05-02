@@ -215,22 +215,21 @@
                   <div class="row form-row test-cont">
                       <div class="col-12 col-md-10 col-lg-11">
                           <div class="row form-row">
-                <div class="col-12 col-md-2 col-lg-2">
-                <div class="form-group">
-                  <label>Test ID</label>
-                  <input type="number" class="form-control test-id" name="id" placeholder="e.g. 12" value="{{ trow.test_info_id }}">
-                  <div class="invalid-feedback">Invalid Test ID</div>
-                </div>
-                </div>
-                <div class="col-12 col-md-4 col-lg-4">
+                <!-- Test dropdown selection loaded from Test_Information -->
+                <div class="col-12 col-md-6 col-lg-6">
                   <div class="form-group">
-                      <label>Test Name</label>
-                      <input type="text" class="form-control test-name" name="test_name" value="{{ trow.test_name }}" placeholder="Auto-filled from Test ID" readonly>
+                      <label>Select Test</label>
+                      <select class="form-control test-select" name="id">
+                        <option value="">-- Select a Test --</option>
+                        {% for t in all_tests %}
+                        <option value="{{ t.test_id }}" {% if trow.test_info_id|stringformat:"s" == t.test_id|stringformat:"s" %}selected{% endif %}>{{ t.test_name }} (৳{{ t.test_price }})</option>
+                        {% endfor %}
+                      </select>
                   </div>
                 </div>
                 <div class="col-12 col-md-6 col-lg-6">
                     <div class="form-group">
-                        <label>Description</label>
+                        <label>Description (Optional)</label>
                       <input type="text" class="form-control" name="description" value="{{ trow.test_description }}">
                     </div>
                 </div>
@@ -308,109 +307,39 @@
 
     <script>
       (function () {
-        var lookupUrl = "{% url 'test-info-lookup' %}";
+        // Build test options HTML from server-side data for dynamic row addition
+        var testOptionsHtml = '<option value="">-- Select a Test --</option>';
+        {% for t in all_tests %}
+        testOptionsHtml += '<option value="{{ t.test_id }}">{{ t.test_name }} (৳{{ t.test_price }})</option>';
+        {% endfor %}
 
-        function setRowState($row, state, testName) {
-          var $idInput = $row.find('input[name="id"]');
-          var $nameInput = $row.find('input[name="test_name"]');
-
-          if (state === 'empty') {
-            $idInput.removeClass('is-valid is-invalid');
-            $nameInput.val('');
-            return;
-          }
-          if (state === 'loading') {
-            $idInput.removeClass('is-valid is-invalid');
-            $nameInput.val('');
-            return;
-          }
-          if (state === 'valid') {
-            $idInput.removeClass('is-invalid').addClass('is-valid');
-            $nameInput.val(testName || '');
-            return;
-          }
-          if (state === 'invalid') {
-            $idInput.removeClass('is-valid').addClass('is-invalid');
-            $nameInput.val('');
-          }
-        }
-
-        function lookupTestInfo($row, testId) {
-          setRowState($row, 'loading');
-          $.getJSON(lookupUrl, { test_id: testId })
-            .done(function (data) {
-              if (data && data.found) {
-                setRowState($row, 'valid', data.test_name);
-              } else {
-                setRowState($row, 'invalid');
-              }
-            })
-            .fail(function () {
-              setRowState($row, 'invalid');
-            });
-        }
-
-        $(document).on('input', '.test-cont input[name="id"]', function () {
-          var $input = $(this);
-          var $row = $input.closest('.test-cont');
-          var value = ($input.val() || '').toString().trim();
-
-          if (!value) {
-            setRowState($row, 'empty');
-            return;
-          }
-
-          var timerId = $input.data('lookupTimer');
-          if (timerId) {
-            clearTimeout(timerId);
-          }
-
-          timerId = setTimeout(function () {
-            lookupTestInfo($row, value);
-          }, 250);
-
-          $input.data('lookupTimer', timerId);
+        // Override the "Add Test" button to use dropdown instead of text inputs
+        $(".add-test").off('click').on('click', function () {
+          var testcontent = '<div class="row form-row test-cont">' +
+            '<div class="col-12 col-md-10 col-lg-11">' +
+              '<div class="row form-row">' +
+                '<div class="col-12 col-md-6 col-lg-6">' +
+                  '<div class="form-group">' +
+                    '<label>Select Test</label>' +
+                    '<select class="form-control test-select" name="id">' + testOptionsHtml + '</select>' +
+                  '</div>' +
+                '</div>' +
+                '<div class="col-12 col-md-6 col-lg-6">' +
+                  '<div class="form-group">' +
+                    '<label>Description (Optional)</label>' +
+                    '<input type="text" name="description" class="form-control">' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="col-12 col-md-2 col-lg-1"><label class="d-md-block d-sm-none d-none">&nbsp;</label><a href="#" class="btn btn-danger trash"><i class="far fa-trash-alt"></i></a></div>' +
+          '</div>';
+          $(".test-info").append(testcontent);
+          return false;
         });
 
-        function applyConditionalRequired() {
-          $('.medicine-cont').each(function () {
-            var $row = $(this);
-            var $inputs = $row.find('input[name="medicine_name"], input[name="quantity"], input[name="frequency"], input[name="relation_with_meal"], input[name="duration"], input[name="instruction"]');
-            var anyFilled = false;
-            $inputs.each(function () {
-              if (($(this).val() || '').toString().trim()) {
-                anyFilled = true;
-                return false;
-              }
-            });
-            $inputs.prop('required', anyFilled);
-          });
-
-          $('.test-cont').each(function () {
-            var $row = $(this);
-            var $id = $row.find('input[name="id"]');
-            var $desc = $row.find('input[name="description"]');
-
-            var anyFilled = false;
-            [$id, $desc].forEach(function ($el) {
-              if (($el.val() || '').toString().trim()) {
-                anyFilled = true;
-              }
-            });
-
-            $id.prop('required', anyFilled);
-            $desc.prop('required', anyFilled);
-          });
-        }
-
-        // Apply required on input changes so HTML5 validation works before submit event
-        $(document).on('input change', '.medicine-cont input, .test-cont input[name="id"], .test-cont input[name="description"]', function () {
-          applyConditionalRequired();
-        });
-
+        // All prescription fields are optional — no conditional required validation
         $('#prescription-form').on('submit', function (e) {
-          applyConditionalRequired();
-
           // Capture clicked button's status value into a hidden input
           var $form = $(this);
           var $clicked = $form.find('button[type="submit"]:focus');

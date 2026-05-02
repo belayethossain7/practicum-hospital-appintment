@@ -11,10 +11,12 @@ urlpatterns = [
     path('admin-dashboard/',views.admin_dashboard, name='admin-dashboard'),
     path('hospital-admin-profile/<int:pk>/', views.hospital_admin_profile,name='hospital-admin-profile'),
     path('appointment-list',views.appointment_list, name='appointment-list'),
+    path('appointment-status/<int:pk>/', views.update_appointment_status, name='admin-appointment-status'),
     path('register-doctor-list/', views.register_doctor_list,name='register-doctor-list'),
     path('pending-doctor-list/', views.pending_doctor_list,name='pending-doctor-list'),
     path('add-doctor/', views.add_doctor, name='admin-add-doctor'),
     path('edit-doctor/<int:pk>/', views.edit_doctor, name='admin-edit-doctor'),
+    path('delete-doctor/<int:pk>/', views.delete_doctor, name='admin-delete-doctor'),
     path('forgot-password/', views.admin_forgot_password,name='admin_forgot_password'),
     path('hospital-list/', views.hospital_list,name='hospital-list'),
     path('add-hospital/', views.add_hospital,name='add-hospital'),
@@ -28,6 +30,9 @@ urlpatterns = [
     path('lock-screen/', views.lock_screen,name='lock_screen'),
     path('login/',views.admin_login,name='admin_login'),
     path('patient-list/',views.patient_list, name='patient-list'),
+    path('add-patient/', views.add_patient, name='admin-add-patient'),
+    path('edit-patient/<int:pk>/', views.edit_patient, name='admin-edit-patient'),
+    path('delete-patient/<int:pk>/', views.delete_patient, name='admin-delete-patient'),
     # path('register/', views.register,name='register'),
     path('admin_register/',views.admin_register,name='admin_register'),
     path('transactions-list/',views.transactions_list, name='transactions_list'),
@@ -41,6 +46,7 @@ urlpatterns = [
     path('add-lab-worker/', views.add_lab_worker,name='add-lab-worker'),
     path('lab-worker-list/', views.view_lab_worker,name='lab-worker-list'),
     path('edit-lab-worker/<int:pk>/', views.edit_lab_worker,name='edit-lab-worker'),
+    path('delete-lab-worker/<int:pk>/', views.delete_lab_worker,name='delete-lab-worker'),
     path('medicine-list/', views.medicine_list,name='medicine-list'),
     path('add-medicine/', views.add_medicine,name='add-medicine'),
     path('edit-medicine/<int:pk>/', views.edit_medicine,name='edit-medicine'),
@@ -63,7 +69,9 @@ urlpatterns = [
     path('delete-test/<int:pk>/', views.delete_test,name='delete-test'),
     path('pharmacist-dashboard/', views.pharmacist_dashboard,name='pharmacist-dashboard'),
     path('report-history/', views.report_history,name='report-history'),
-    
+    path('finance/', views.payment_overview, name='finance-overview'),
+    path('finance/transactions/', views.transactions_list, name='transactions_list'),
+    path('finance/revenue-reports/', views.revenue_reports, name='revenue-reports'),
     
 ]
   

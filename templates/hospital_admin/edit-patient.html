@@ -1,0 +1,40 @@
+{% extends 'hospital_admin/base.html' %}
+
+{% block title %}Edit Patient{% endblock %}
+{% block page_title %}Edit patient profile{% endblock %}
+{% block page_subtitle %}Update patient details without breaking the linked user account or existing invoice and appointment relationships.{% endblock %}
+
+{% block content %}
+{% if form.non_field_errors or form.errors %}
+<section class="alert alert-danger">
+    <strong>Please correct the highlighted form issues.</strong>
+    {{ form.non_field_errors }}
+</section>
+{% endif %}
+
+<form action="{% url 'admin-edit-patient' pk=patient.patient_id %}" method="post" enctype="multipart/form-data" class="ha-grid cols-2">
+    {% csrf_token %}
+    <section class="ha-card ha-form-card">
+        <div class="ha-card-header"><div><h4>Identity</h4><div class="ha-card-muted">User ID stays fixed for compatibility with existing patient login flows.</div></div></div>
+        <div class="ha-card-body">
+            <div class="ha-kv-item mb-3"><span>User ID</span>{{ patient.username|default:'-' }}</div>
+            <div class="ha-form-grid cols-3">
+                <div class="ha-form-group"><label for="{{ form.name.id_for_label }}">Name</label>{{ form.name }}</div>
+                <div class="ha-form-group"><label for="{{ form.email.id_for_label }}">Email</label>{{ form.email }}</div>
+                <div class="ha-form-group"><label for="{{ form.age.id_for_label }}">Age</label>{{ form.age }}</div>
+                <div class="ha-form-group"><label for="{{ form.phone_number.id_for_label }}">Phone Number</label>{{ form.phone_number }}</div>
+                <div class="ha-form-group ha-span-2"><label for="{{ form.address.id_for_label }}">Address</label>{{ form.address }}</div>
+                <div class="ha-form-group"><label for="{{ form.blood_group.id_for_label }}">Blood Group</label>{{ form.blood_group }}</div>
+                <div class="ha-form-group"><label for="{{ form.history.id_for_label }}">Medical History</label>{{ form.history }}</div>
+                <div class="ha-form-group"><label for="{{ form.dob.id_for_label }}">Date of Birth</label>{{ form.dob }}</div>
+                <div class="ha-form-group"><label for="{{ form.nid.id_for_label }}">NID</label>{{ form.nid }}</div>
+                <div class="ha-form-group ha-span-2"><label for="{{ form.featured_image.id_for_label }}">Profile Image</label>{{ form.featured_image }}</div>
+            </div>
+        </div>
+    </section>
+    <div class="d-flex justify-content-end ha-span-2" style="gap: 12px;">
+        <a href="{% url 'patient-list' %}" class="ha-btn-ghost">Cancel</a>
+        <button type="submit" class="ha-btn"><i class="fas fa-save"></i>Save Changes</button>
+    </div>
+</form>
+{% endblock %}

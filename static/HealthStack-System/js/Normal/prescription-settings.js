@@ -65,7 +65,8 @@ Version      : 1.0
     });	
 	
 	
-	// Test Add More
+	// Test Add More — dynamically added rows use dropdown (overridden in template JS)
+	// This is a fallback; the template-level JS overrides this with proper options.
 
 	$(".test-info").on('click','.trash', function () {
 		$(this).closest('.test-cont').remove();
@@ -77,22 +78,15 @@ Version      : 1.0
 		var testcontent = '<div class="row form-row test-cont">' +
 			'<div class="col-12 col-md-10 col-lg-11">' +
 				'<div class="row form-row">' +
-					'<div class="col-12 col-md-2 col-lg-2">' +
+					'<div class="col-12 col-md-6 col-lg-6">' +
 						'<div class="form-group">' +
-							'<label>Test ID</label>' +
-							'<input type="number" name="id" class="form-control test-id" placeholder="e.g. 12">' +
-							'<div class="invalid-feedback">Invalid Test ID</div>' +
-						'</div>' +
-					'</div>' +
-					'<div class="col-12 col-md-4 col-lg-4">' +
-						'<div class="form-group">' +
-							'<label>Test Name</label>' +
-							'<input type="text" name="test_name" class="form-control test-name" placeholder="Auto-filled from Test ID" readonly>' +
+							'<label>Select Test</label>' +
+							'<select class="form-control test-select" name="id"><option value="">-- Select a Test --</option></select>' +
 						'</div>' +
 					'</div>' +
 					'<div class="col-12 col-md-6 col-lg-6">' +
 						'<div class="form-group">' +
-							'<label>Description</label>' +
+							'<label>Description (Optional)</label>' +
 							'<input type="text" name="description" class="form-control">' +
 						'</div>' +
 					'</div>' +

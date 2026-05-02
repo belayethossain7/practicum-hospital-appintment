@@ -594,6 +594,17 @@ def booking(request, pk):
             messages.error(request, 'This time slot is already booked. Please choose another slot.')
             return render(request, 'booking.html', {'patient': patient, 'doctor': doctor})
 
+        # Prevent patient from booking multiple doctors at same date & time
+        patient_conflict = Appointment.objects.filter(
+            patient=patient,
+            date=parsed_date,
+            time=normalized_time,
+            appointment_status__in=['pending', 'confirmed'],
+        )
+        if patient_conflict.exists():
+            messages.error(request, 'You already have an appointment at this time.')
+            return render(request, 'booking.html', {'patient': patient, 'doctor': doctor})
+
         appointment.date = parsed_date
         appointment.time = normalized_time
         appointment.appointment_status = 'confirmed'
@@ -698,6 +709,8 @@ def create_prescription(request, pk):
     medicine_rows = [{'medicine_name': '', 'quantity': '', 'frequency': '', 'relation_with_meal': '', 'duration': '', 'instruction': ''}]
     test_rows = [{'test_info_id': '', 'test_name': '', 'test_description': ''}]
     extra_information = ''
+    # Load all available tests for dropdown selection
+    all_tests = Test_Information.objects.all().order_by('test_name')
 
     if request.method == 'POST':
         if appointment_id and linked_appointment is None:
@@ -755,30 +768,23 @@ def create_prescription(request, pk):
         if not test_rows:
             test_rows = [{'test_info_id': '', 'test_name': '', 'test_description': ''}]
 
-        # Validate medicine rows
+        # Validate medicine rows — all fields optional, skip partially filled rows
         valid_medicine_rows = []
         has_error = False
         for row in medicine_rows:
             if all(not v for v in row.values()):
                 continue
-            if any(not v for v in row.values()):
-                messages.error(request, 'All medicine fields are required. Please fill or remove empty medicine rows.')
-                has_error = True
-                break
+            # Accept rows with any filled fields (all fields optional)
             valid_medicine_rows.append(row)
 
-        # Validate test rows
+        # Validate test rows — selected from dropdown, description is optional
         resolved_tests = []
         if not has_error:
             for trow in test_rows:
                 raw_test_id = trow['test_info_id']
                 raw_description = trow['test_description']
-                if not raw_test_id and not raw_description:
+                if not raw_test_id:
                     continue
-                if not raw_test_id or not raw_description:
-                    messages.error(request, 'All test fields are required. Please fill or remove empty test rows.')
-                    has_error = True
-                    break
                 try:
                     parsed_test_id = int(raw_test_id)
                 except ValueError:
@@ -799,6 +805,7 @@ def create_prescription(request, pk):
                 'appointment': linked_appointment, 'appointment_id': appointment_id,
                 'medicine_rows': medicine_rows, 'test_rows': test_rows,
                 'extra_information': extra_information,
+                'all_tests': all_tests,
             }
             return render(request, 'create-prescription.html', context)
 
@@ -826,13 +833,14 @@ def create_prescription(request, pk):
             )
 
         messages.success(request, 'Prescription Created')
-        return redirect('doctor-view-prescription', pk=prescription.prescription_id)
+        return redirect('doctor-view-prescription', pk=reverse.prescription.prescription_id)
 
     context = {
         'doctor': doctor, 'patient': patient,
         'appointment': linked_appointment, 'appointment_id': appointment_id,
         'medicine_rows': medicine_rows, 'test_rows': test_rows,
         'extra_information': extra_information,
+        'all_tests': all_tests,
     }
     return render(request, 'create-prescription.html', context)
 
@@ -847,6 +855,8 @@ def edit_prescription(request, pk):
     doctor = Doctor_Information.objects.get(user=request.user)
     prescription = get_object_or_404(Prescription, prescription_id=pk, doctor=doctor)
     patient = prescription.patient
+    # Load all available tests for dropdown selection
+    all_tests = Test_Information.objects.all().order_by('test_name')
 
     # Build initial medicine/test rows from existing DB data
     medicines_qs = Prescription_medicine.objects.filter(prescription=prescription)
@@ -915,30 +925,23 @@ def edit_prescription(request, pk):
         if not test_rows:
             test_rows = [{'test_info_id': '', 'test_name': '', 'test_description': ''}]
 
-        # Validate medicine rows
+        # Validate medicine rows — all fields optional, skip partially filled rows
         valid_medicine_rows = []
         has_error = False
         for row in medicine_rows:
             if all(not v for v in row.values()):
                 continue
-            if any(not v for v in row.values()):
-                messages.error(request, 'All medicine fields are required. Please fill or remove empty medicine rows.')
-                has_error = True
-                break
+            # Accept rows with any filled fields (all fields optional)
             valid_medicine_rows.append(row)
 
-        # Validate test rows
+        # Validate test rows — selected from dropdown, description is optional
         resolved_tests = []
         if not has_error:
             for trow in test_rows:
                 raw_test_id = trow['test_info_id']
                 raw_description = trow['test_description']
-                if not raw_test_id and not raw_description:
+                if not raw_test_id:
                     continue
-                if not raw_test_id or not raw_description:
-                    messages.error(request, 'All test fields are required. Please fill or remove empty test rows.')
-                    has_error = True
-                    break
                 try:
                     parsed_test_id = int(raw_test_id)
                 except ValueError:
@@ -958,6 +961,7 @@ def edit_prescription(request, pk):
                 'prescription': prescription, 'edit_mode': True,
                 'medicine_rows': medicine_rows, 'test_rows': test_rows,
                 'extra_information': extra_information,
+                'all_tests': all_tests,
             }
             return render(request, 'edit-prescription.html', context)
 
@@ -993,6 +997,7 @@ def edit_prescription(request, pk):
         'prescription': prescription, 'edit_mode': True,
         'medicine_rows': medicine_rows, 'test_rows': test_rows,
         'extra_information': extra_information,
+        'all_tests': all_tests,
     }
     return render(request, 'edit-prescription.html', context)
 

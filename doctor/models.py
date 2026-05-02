@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 
 import uuid
 
@@ -106,7 +107,19 @@ class Appointment(models.Model):
     payment_status = models.CharField(max_length=200, null=True, blank=True, default='pending')
     transaction_id = models.CharField(max_length=255, null=True, blank=True)
     message = models.CharField(max_length=255, null=True, blank=True)
-    
+
+    # Prevent patient from booking multiple doctors at the same date & time
+    def clean(self):
+        super().clean()
+        if self.patient and self.date and self.time:
+            conflict = Appointment.objects.filter(
+                patient=self.patient,
+                date=self.date,
+                time=self.time,
+                appointment_status__in=['pending', 'confirmed'],
+            ).exclude(pk=self.pk)
+            if conflict.exists():
+                raise ValidationError('You already have an appointment at this time.')
 
     def __str__(self):
         return str(self.patient.username)

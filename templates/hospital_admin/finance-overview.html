@@ -1,0 +1,309 @@
+{% extends 'hospital_admin/base.html' %}
+{% load static %}
+
+{% block title %}Payment Overview{% endblock %}
+{% block page_title %}Financial Overview{% endblock %}
+{% block page_subtitle %}Real-time revenue analytics, payment summaries, and appointment payment tracking across the healthcare platform.{% endblock %}
+{% block page_actions %}
+    <a href="{% url 'transactions_list' %}" class="ha-btn-secondary"><i class="fas fa-exchange-alt"></i>All Transactions</a>
+    <a href="{% url 'revenue-reports' %}" class="ha-btn"><i class="fas fa-chart-bar"></i>Revenue Reports</a>
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'HealthStack-System/css/hospital_admin/finance.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- Revenue Summary Cards -->
+<div class="hf-stat-grid">
+    <div class="hf-stat-card hf-teal">
+        <div class="hf-stat-head">
+            <div>
+                <div class="hf-stat-label">Total Revenue</div>
+                <div class="hf-stat-value">&#2547; {{ total_revenue|floatformat:2 }}</div>
+            </div>
+            <span class="hf-stat-icon"><i class="fas fa-coins"></i></span>
+        </div>
+        <div class="hf-stat-trend"><i class="fas fa-info-circle"></i> Cumulative verified payments</div>
+    </div>
+
+    <div class="hf-stat-card hf-green">
+        <div class="hf-stat-head">
+            <div>
+                <div class="hf-stat-label">This Month</div>
+                <div class="hf-stat-value">&#2547; {{ monthly_revenue|floatformat:2 }}</div>
+            </div>
+            <span class="hf-stat-icon"><i class="fas fa-calendar-alt"></i></span>
+        </div>
+        <div class="hf-stat-trend"><i class="fas fa-clock"></i> Current month earnings</div>
+    </div>
+
+    <div class="hf-stat-card hf-blue">
+        <div class="hf-stat-head">
+            <div>
+                <div class="hf-stat-label">This Week</div>
+                <div class="hf-stat-value">&#2547; {{ weekly_revenue|floatformat:2 }}</div>
+            </div>
+            <span class="hf-stat-icon"><i class="fas fa-calendar-week"></i></span>
+        </div>
+        <div class="hf-stat-trend"><i class="fas fa-clock"></i> Current week earnings</div>
+    </div>
+
+    <div class="hf-stat-card hf-amber">
+        <div class="hf-stat-head">
+            <div>
+                <div class="hf-stat-label">Today's Earnings</div>
+                <div class="hf-stat-value">&#2547; {{ today_revenue|floatformat:2 }}</div>
+            </div>
+            <span class="hf-stat-icon"><i class="fas fa-sun"></i></span>
+        </div>
+        <div class="hf-stat-trend"><i class="fas fa-clock"></i> Today's verified payments</div>
+    </div>
+
+    <div class="hf-stat-card hf-green">
+        <div class="hf-stat-head">
+            <div>
+                <div class="hf-stat-label">Successful Payments</div>
+                <div class="hf-stat-value">{{ paid_count }}</div>
+            </div>
+            <span class="hf-stat-icon"><i class="fas fa-check-double"></i></span>
+        </div>
+        <div class="hf-stat-trend">Transactions with VALID status</div>
+    </div>
+
+    <div class="hf-stat-card hf-red">
+        <div class="hf-stat-head">
+            <div>
+                <div class="hf-stat-label">Failed / Other</div>
+                <div class="hf-stat-value">{{ pending_count }}</div>
+            </div>
+            <span class="hf-stat-icon"><i class="fas fa-exclamation-triangle"></i></span>
+        </div>
+        <div class="hf-stat-trend">Unsuccessful or pending transactions</div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="hf-chart-grid">
+    <!-- Monthly Revenue Trend -->
+    <div class="hf-chart-card">
+        <div class="hf-chart-header">
+            <div>
+                <h4 class="hf-chart-title"><i class="fas fa-chart-line" style="color:var(--ha-accent);margin-right:6px;"></i>Monthly Revenue Trend</h4>
+                <p class="hf-chart-sub">Cumulative verified revenue over the last 6 months</p>
+            </div>
+            <a href="{% url 'revenue-reports' %}" style="font-size:12px;color:var(--ha-primary);text-decoration:none;font-weight:600;">
+                Full Report <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        <div class="hf-canvas-wrap">
+            <canvas id="hfRevenueLineChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Payment Type Distribution -->
+    <div class="hf-chart-card">
+        <div class="hf-chart-header">
+            <div>
+                <h4 class="hf-chart-title"><i class="fas fa-chart-pie" style="color:var(--ha-accent);margin-right:6px;"></i>Revenue by Type</h4>
+                <p class="hf-chart-sub">Income distribution across payment categories</p>
+            </div>
+        </div>
+        <div class="hf-canvas-wrap">
+            <canvas id="hfPieChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Appointment Payment Stats -->
+<div class="hf-table-card mb-5" style="margin-bottom:28px;">
+    <div class="hf-table-header">
+        <h4><i class="fas fa-calendar-check" style="color:var(--ha-accent);margin-right:8px;"></i>Appointment Payment Status</h4>
+    </div>
+    <div style="padding:18px 22px;">
+        <div class="hf-appt-row">
+            <div class="hf-appt-pill total">
+                <i class="fas fa-calendar-alt"></i>
+                <div>
+                    <div style="font-size:11px;opacity:.7;margin-bottom:2px;">Total Appointments</div>
+                    <div style="font-size:20px;font-weight:800;">{{ total_appointments }}</div>
+                </div>
+            </div>
+            <div class="hf-appt-pill paid">
+                <i class="fas fa-check-circle"></i>
+                <div>
+                    <div style="font-size:11px;opacity:.7;margin-bottom:2px;">Paid</div>
+                    <div style="font-size:20px;font-weight:800;">{{ paid_appointments }}</div>
+                </div>
+            </div>
+            <div class="hf-appt-pill unpaid">
+                <i class="fas fa-times-circle"></i>
+                <div>
+                    <div style="font-size:11px;opacity:.7;margin-bottom:2px;">Unpaid</div>
+                    <div style="font-size:20px;font-weight:800;">{{ unpaid_appointments }}</div>
+                </div>
+            </div>
+            {% if total_appointments %}
+            <div class="hf-appt-pill" style="background:rgba(58,160,181,.1);color:#0f6e8c;flex-direction:column;align-items:flex-start;min-width:160px;">
+                <div style="font-size:11px;opacity:.7;margin-bottom:4px;font-weight:700;">Payment Rate</div>
+                <div style="font-size:20px;font-weight:800;">
+                    {% widthratio paid_appointments total_appointments 100 %}%
+                </div>
+                <div style="height:5px;background:rgba(15,110,140,.15);border-radius:4px;width:100%;margin-top:6px;overflow:hidden;">
+                    <div style="height:100%;background:var(--ha-primary);border-radius:4px;width:{% widthratio paid_appointments total_appointments 100 %}%;"></div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions -->
+<div class="hf-table-card">
+    <div class="hf-table-header">
+        <h4><i class="fas fa-history" style="color:var(--ha-accent);margin-right:8px;"></i>Recent Transactions</h4>
+        <a href="{% url 'transactions_list' %}" style="font-size:13px;color:var(--ha-primary);text-decoration:none;font-weight:600;">
+            View All <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+    <div style="overflow-x:auto;">
+        <table class="hf-table">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Invoice</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in recent_transactions %}
+                <tr>
+                    <td>
+                        <div style="font-weight:600;">{{ p.name|default:p.patient.name|default:'—' }}</div>
+                        {% if p.phone %}<div class="hf-muted" style="font-size:11.5px;">{{ p.phone }}</div>{% endif %}
+                    </td>
+                    <td>
+                        {% if p.appointment and p.appointment.doctor %}{{ p.appointment.doctor.name|default:'—' }}
+                        {% else %}<span class="hf-muted">—</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if p.payment_type %}
+                        <span style="font-size:11.5px;background:rgba(58,160,181,.12);color:#0f6e8c;padding:2px 8px;border-radius:20px;font-weight:600;">{{ p.payment_type|title }}</span>
+                        {% else %}<span class="hf-muted">—</span>{% endif %}
+                    </td>
+                    <td style="font-weight:700;">&#2547; {{ p.currency_amount|default:'0' }}</td>
+                    <td>
+                        {% if p.status == 'VALID' %}<span class="hf-badge hf-badge-paid"><i class="fas fa-check-circle"></i> Paid</span>
+                        {% elif p.status == 'FAILED' %}<span class="hf-badge hf-badge-failed"><i class="fas fa-times-circle"></i> Failed</span>
+                        {% else %}<span class="hf-badge hf-badge-other">{{ p.status|default:'—' }}</span>{% endif %}
+                    </td>
+                    <td class="hf-muted">{{ p.transaction_date|default:'—' }}</td>
+                    <td style="color:var(--ha-primary);font-weight:600;">{{ p.invoice_number|default:'—' }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7"><div class="hf-empty"><i class="fas fa-inbox"></i>No transactions recorded yet.</div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+window.hfOverviewConfig = {
+    revenueLabels: {{ revenue_chart_labels|safe }},
+    revenueData:   {{ revenue_chart_data|safe }},
+    ptypeLabels:   {{ ptype_labels|safe }},
+    ptypeData:     {{ ptype_data|safe }}
+};
+</script>
+<script>
+(function () {
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof Chart === 'undefined' || !window.hfOverviewConfig) return;
+        var cfg = window.hfOverviewConfig;
+
+        /* Monthly Revenue Line Chart */
+        var lineCtx = document.getElementById('hfRevenueLineChart');
+        if (lineCtx && cfg.revenueLabels.length) {
+            new Chart(lineCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: cfg.revenueLabels,
+                    datasets: [{
+                        label: 'Revenue (BDT)',
+                        data: cfg.revenueData,
+                        borderColor: '#0f6e8c',
+                        backgroundColor: 'rgba(58,160,181,0.15)',
+                        fill: true,
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#0f6e8c',
+                        pointBorderWidth: 2,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    legend: { display: false },
+                    scales: {
+                        yAxes: [{
+                            ticks: { beginAtZero: true, callback: function(v){ return '৳'+v.toLocaleString(); } },
+                            gridLines: { color: 'rgba(219,231,240,0.8)' }
+                        }],
+                        xAxes: [{ gridLines: { display: false } }]
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function(ti, d){ return ' ৳' + ti.yLabel.toLocaleString(); }
+                        }
+                    }
+                }
+            });
+        }
+
+        /* Payment Type Doughnut Chart */
+        var pieCtx = document.getElementById('hfPieChart');
+        if (pieCtx && cfg.ptypeLabels.length) {
+            new Chart(pieCtx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: cfg.ptypeLabels,
+                    datasets: [{
+                        data: cfg.ptypeData,
+                        backgroundColor: ['#0f6e8c','#3aa0b5','#1f9d70','#d48b1f','#6f42c1','#c44949'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutoutPercentage: 62,
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 12, fontSize: 11 }
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function(ti, d){
+                                var val = d.datasets[0].data[ti.index];
+                                return ' ৳' + val.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+}());
+</script>
+{% endblock %}
