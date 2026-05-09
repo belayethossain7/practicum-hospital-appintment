@@ -553,48 +553,53 @@ def booking(request, pk):
     doctor = Doctor_Information.objects.get(doctor_id=pk)
 
     if request.method == 'POST':
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+        def _booking_error(msg, error_type='general'):
+            """Return JSON for AJAX calls, or re-render the page for standard POSTs."""
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'type': error_type, 'message': msg})
+            messages.error(request, msg)
+            return render(request, 'booking.html', {'patient': patient, 'doctor': doctor})
+
         appointment = Appointment(patient=patient, doctor=doctor)
         date = request.POST.get('appoint_date', '')
         time = request.POST.get('appoint_time', '')
-        appointment_type = request.POST['appointment_type']
+        appointment_type = request.POST.get('appointment_type', 'checkup')
         message = request.POST.get('message', '')
 
         try:
             parsed_date = parse_appointment_date(date)
         except ValueError:
-            messages.error(request, 'Invalid appointment date.')
-            return render(request, 'booking.html', {'patient': patient, 'doctor': doctor})
+            return _booking_error('Invalid appointment date. Please select a valid date.')
 
         today_local = timezone.localdate()
         if parsed_date < today_local:
-            messages.error(request, 'You cannot book an appointment in the past.')
-            return render(request, 'booking.html', {'patient': patient, 'doctor': doctor})
+            return _booking_error('You cannot book an appointment in the past.')
 
         try:
             parsed_time = parse_appointment_time(time)
         except ValueError:
-            messages.error(request, 'Invalid appointment time.')
-            return render(request, 'booking.html', {'patient': patient, 'doctor': doctor})
+            return _booking_error('Invalid appointment time. Please select a time slot.')
 
         if not is_time_in_slot_window(parsed_time) or not is_valid_slot_increment(parsed_time):
-            messages.error(request, 'Please select a 30-minute slot between 10:00 AM and 4:00 PM.')
-            return render(request, 'booking.html', {'patient': patient, 'doctor': doctor})
+            return _booking_error('Please select a 30-minute slot between 10:00 AM and 4:00 PM.')
 
         if parsed_date == today_local:
             now_local_time = timezone.localtime(timezone.now()).time()
-            # Do not allow booking for a time slot that has already started or passed.
             if parsed_time <= now_local_time:
-                messages.error(request, 'Please select a future time slot for today.')
-                return render(request, 'booking.html', {'patient': patient, 'doctor': doctor})
+                return _booking_error('Please select a future time slot for today.')
 
         normalized_time = format_time_display(parsed_time)
 
         # Block double-booking for this doctor/date/time (pending or confirmed).
         if normalized_time in get_doctor_booked_time_strings(doctor, parsed_date):
-            messages.error(request, 'This time slot is already booked. Please choose another slot.')
-            return render(request, 'booking.html', {'patient': patient, 'doctor': doctor})
+            return _booking_error(
+                'This time slot is already booked. Please choose another slot.',
+                error_type='slot_taken',
+            )
 
-        # Prevent patient from booking multiple doctors at same date & time
+        # Prevent patient from booking multiple doctors at the same date & time.
         patient_conflict = Appointment.objects.filter(
             patient=patient,
             date=parsed_date,
@@ -602,8 +607,10 @@ def booking(request, pk):
             appointment_status__in=['pending', 'confirmed'],
         )
         if patient_conflict.exists():
-            messages.error(request, 'You already have an appointment at this time.')
-            return render(request, 'booking.html', {'patient': patient, 'doctor': doctor})
+            return _booking_error(
+                'You already have an appointment booked at this time. Please choose another time slot.',
+                error_type='conflict',
+            )
 
         appointment.date = parsed_date
         appointment.time = normalized_time
@@ -613,7 +620,7 @@ def booking(request, pk):
         appointment.message = message
         appointment.save()
 
-        # Email patient immediately (appointment is confirmed on submit)
+        # Email patient immediately (appointment is confirmed on submit).
         patient_email = appointment.patient.email
         patient_name = appointment.patient.name
         patient_username = appointment.patient.username
@@ -621,7 +628,6 @@ def booking(request, pk):
         doctor_name = appointment.doctor.name
 
         subject = "Appointment Confirmed"
-
         values = {
             "email": patient_email,
             "name": patient_name,
@@ -634,19 +640,30 @@ def booking(request, pk):
             "appointment_status": appointment.appointment_status,
         }
 
+        email_warning = None
         html_message = render_to_string('appointment_accept_mail.html', {'values': values})
         plain_message = strip_tags(html_message)
-
         try:
             from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or getattr(settings, 'EMAIL_HOST_USER', None)
             send_mail(subject, plain_message, from_email, [patient_email], html_message=html_message, fail_silently=False)
         except BadHeaderError:
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'message': 'Invalid email header found.'})
             return HttpResponse('Invalid header found')
         except (smtplib.SMTPException, OSError) as exc:
-            messages.warning(request, f'Appointment confirmed, but email could not be sent ({type(exc).__name__}).')
-        
-        
-        messages.success(request, 'Appointment Confirmed')
+            email_warning = f'Appointment confirmed, but confirmation email could not be sent ({type(exc).__name__}).'
+
+        if is_ajax:
+            return JsonResponse({
+                'status': 'ok',
+                'message': 'Your appointment has been confirmed successfully.',
+                'redirect': reverse('patient-dashboard'),
+                'email_warning': email_warning,
+            })
+
+        if email_warning:
+            messages.warning(request, email_warning)
+        messages.success(request, 'Appointment confirmed successfully.')
         return redirect('patient-dashboard')
 
     context = {'patient': patient, 'doctor': doctor}
@@ -832,8 +849,8 @@ def create_prescription(request, pk):
                 test_info_id=test_info.test_id, test_info_price=test_info.test_price,
             )
 
-        messages.success(request, 'Prescription Created')
-        return redirect('doctor-view-prescription', pk=reverse.prescription.prescription_id)
+        messages.success(request, 'Prescription submitted successfully.')
+        return redirect('doctor-view-prescription', pk=prescription.prescription_id)
 
     context = {
         'doctor': doctor, 'patient': patient,
@@ -989,7 +1006,7 @@ def edit_prescription(request, pk):
                 test_info_id=test_info.test_id, test_info_price=test_info.test_price,
             )
 
-        messages.success(request, 'Prescription Updated')
+        messages.success(request, 'Prescription updated successfully.')
         return redirect('doctor-view-prescription', pk=prescription.prescription_id)
 
     context = {

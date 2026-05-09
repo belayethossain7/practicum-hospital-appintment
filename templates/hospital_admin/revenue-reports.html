@@ -3,10 +3,10 @@
 
 {% block title %}Revenue Reports{% endblock %}
 {% block page_title %}Revenue Reports{% endblock %}
-{% block page_subtitle %}Monthly revenue breakdown, daily earnings trends, and doctor-wise income analysis for {{ current_month }}.{% endblock %}
+{% block page_subtitle %}Branch-doctor analytics, monthly trends, and comprehensive revenue breakdown — {{ period_label }}{% endblock %}
 {% block page_actions %}
-    <a href="{% url 'finance-overview' %}" class="ha-btn-secondary"><i class="fas fa-chart-pie"></i>Overview</a>
-    <a href="{% url 'transactions_list' %}" class="ha-btn-secondary"><i class="fas fa-exchange-alt"></i>Transactions</a>
+    <a href="{% url 'finance-overview' %}" class="ha-btn-secondary"><i class="fas fa-chart-pie"></i> Overview</a>
+    <a href="{% url 'transactions_list' %}" class="ha-btn-secondary"><i class="fas fa-exchange-alt"></i> Transactions</a>
 {% endblock %}
 
 {% block extra_head %}
@@ -15,8 +15,131 @@
 
 {% block content %}
 
-<!-- Total Revenue Hero -->
-<div class="hf-stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));">
+<!-- ═══════════════════════════════════════════════════════ FILTER PANEL -->
+<div class="hf-filter-panel">
+    <div class="hf-filter-panel-header">
+        <div class="hf-fp-title">
+            <i class="fas fa-sliders-h"></i>
+            <span>Advanced Filters</span>
+            {% if days or branch_id or doctor_id %}
+            <span class="hf-active-badge">Active</span>
+            {% endif %}
+        </div>
+        <div class="hf-fp-meta">
+            Showing: <strong>{{ period_label }}</strong>
+            {% if branch_id %}&nbsp;·&nbsp; Branch filtered{% endif %}
+            {% if doctor_id %}&nbsp;·&nbsp; Doctor filtered{% endif %}
+            {% if days or branch_id or doctor_id %}
+            <a href="{% url 'revenue-reports' %}" class="hf-clear-all-link">
+                <i class="fas fa-times"></i> Clear all
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <form method="get" action="" id="hfFilterForm">
+        <div class="hf-filter-section">
+            <div class="hf-filter-section-label">
+                <i class="fas fa-calendar-day"></i> Days (1 = Today, 7 = Last 7 Days, ... 30 = Last 30 Days)
+            </div>
+            <input type="hidden" name="days" id="hfDaysInput" value="{{ days|default:0 }}">
+            <div class="hf-day-btns">
+                <button type="button" class="hf-day-btn {% if not days or days == 0 %}active{% endif %}" data-days="0">All</button>
+                {% for d in day_options %}
+                <button type="button" class="hf-day-btn {% if days == d %}active{% endif %}" data-days="{{ d }}">{{ d }}</button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="hf-filter-dropdowns">
+            <div class="hf-filter-group">
+                <label class="hf-filter-group-label" for="hfBranchSelect">
+                    <i class="fas fa-hospital"></i> Diagnostic Centre / Branch
+                </label>
+                <select name="branch" id="hfBranchSelect" class="hf-filter-select">
+                    <option value="">All Branches</option>
+                    {% for h in all_hospitals %}
+                    <option value="{{ h.hospital_id }}" {% if branch_id == h.hospital_id %}selected{% endif %}>
+                        {{ h.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="hf-filter-group">
+                <label class="hf-filter-group-label" for="hfDoctorSelect">
+                    <i class="fas fa-user-md"></i> Doctor
+                </label>
+                <select name="doctor" id="hfDoctorSelect" class="hf-filter-select">
+                    <option value="">All Doctors</option>
+                </select>
+            </div>
+
+            <div class="hf-filter-group hf-filter-actions-group">
+                <div class="hf-filter-group-label">&nbsp;</div>
+                <div class="hf-filter-btns">
+                    <button type="submit" class="hf-btn-apply">
+                        <i class="fas fa-search"></i> Apply
+                    </button>
+                    <a href="{% url 'revenue-reports' %}" class="hf-btn-clear-filter">
+                        <i class="fas fa-undo"></i> Reset
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+{{ doctors_list|json_script:"hfDoctorsData" }}
+
+<!-- ═══════════════════════════════════════════════════════ PERIOD ANALYTICS STRIP -->
+<div class="hf-period-analytics">
+    <div class="hf-pa-card hf-pa-primary">
+        <div class="hf-pa-icon"><i class="fas fa-chart-line"></i></div>
+        <div>
+            <div class="hf-pa-label">Period Revenue</div>
+            <div class="hf-pa-value">&#2547; {{ period_total|floatformat:2 }}</div>
+            <div class="hf-pa-sub">
+                {{ period_count }} payment{{ period_count|pluralize }}
+                {% if revenue_growth is not None %}
+                <span class="hf-growth-inline hf-growth-{{ growth_dir }}">
+                    {% if growth_dir == 'up' %}&#8593;{% else %}&#8595;{% endif %} {{ revenue_growth }}%
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="hf-pa-card hf-pa-green">
+        <div class="hf-pa-icon"><i class="fas fa-stethoscope"></i></div>
+        <div>
+            <div class="hf-pa-label">Consultation Income</div>
+            <div class="hf-pa-value">&#2547; {{ period_consultation|floatformat:2 }}</div>
+            <div class="hf-pa-sub">Appointment payments (period)</div>
+        </div>
+    </div>
+
+    <div class="hf-pa-card hf-pa-amber">
+        <div class="hf-pa-icon"><i class="fas fa-flask"></i></div>
+        <div>
+            <div class="hf-pa-label">Lab / Test Income</div>
+            <div class="hf-pa-value">&#2547; {{ period_test|floatformat:2 }}</div>
+            <div class="hf-pa-sub">Diagnostic test payments</div>
+        </div>
+    </div>
+
+    <div class="hf-pa-card hf-pa-purple">
+        <div class="hf-pa-icon"><i class="fas fa-users"></i></div>
+        <div>
+            <div class="hf-pa-label">Patients Served</div>
+            <div class="hf-pa-value">{{ total_patients_served }}</div>
+            <div class="hf-pa-sub">Unique patients (period)</div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ SUMMARY CARDS -->
+<div class="hf-stat-grid">
     <div class="hf-stat-card hf-teal">
         <div class="hf-stat-head">
             <div>
@@ -27,29 +150,71 @@
         </div>
         <div class="hf-stat-trend">All verified (VALID) payments combined</div>
     </div>
+
+    <div class="hf-stat-card hf-green">
+        <div class="hf-stat-head">
+            <div>
+                <div class="hf-stat-label">Period Revenue</div>
+                <div class="hf-stat-value">&#2547; {{ period_total|floatformat:2 }}</div>
+            </div>
+            <span class="hf-stat-icon"><i class="fas fa-chart-line"></i></span>
+        </div>
+        <div class="hf-stat-trend">
+            {{ period_count }} payment{{ period_count|pluralize }} in selected period
+            {% if revenue_growth is not None %}
+            <span class="hf-growth-inline hf-growth-{{ growth_dir }}">
+                {% if growth_dir == 'up' %}&#8593;{% else %}&#8595;{% endif %} {{ revenue_growth }}%
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="hf-stat-card hf-blue">
+        <div class="hf-stat-head">
+            <div>
+                <div class="hf-stat-label">Consultation Income</div>
+                <div class="hf-stat-value">&#2547; {{ period_consultation|floatformat:2 }}</div>
+            </div>
+            <span class="hf-stat-icon"><i class="fas fa-stethoscope"></i></span>
+        </div>
+        <div class="hf-stat-trend">Appointment payments (period)</div>
+    </div>
+
+    <div class="hf-stat-card hf-amber">
+        <div class="hf-stat-head">
+            <div>
+                <div class="hf-stat-label">Lab / Test Income</div>
+                <div class="hf-stat-value">&#2547; {{ period_test|floatformat:2 }}</div>
+            </div>
+            <span class="hf-stat-icon"><i class="fas fa-flask"></i></span>
+        </div>
+        <div class="hf-stat-trend">Diagnostic test payments (period)</div>
+    </div>
+
+    <div class="hf-stat-card hf-purple">
+        <div class="hf-stat-head">
+            <div>
+                <div class="hf-stat-label">Patients Served</div>
+                <div class="hf-stat-value">{{ total_patients_served }}</div>
+            </div>
+            <span class="hf-stat-icon"><i class="fas fa-users"></i></span>
+        </div>
+        <div class="hf-stat-trend">Unique patients (period)</div>
+    </div>
+
     <div class="hf-stat-card hf-blue">
         <div class="hf-stat-head">
             <div>
                 <div class="hf-stat-label">Current Month</div>
-                <div class="hf-stat-value">{{ current_month }}</div>
+                <div class="hf-stat-value" style="font-size:17px;">{{ current_month }}</div>
             </div>
             <span class="hf-stat-icon"><i class="fas fa-calendar"></i></span>
         </div>
         <div class="hf-stat-trend">Daily breakdown available below</div>
     </div>
-    <div class="hf-stat-card hf-green">
-        <div class="hf-stat-head">
-            <div>
-                <div class="hf-stat-label">Top Earning Doctors</div>
-                <div class="hf-stat-value">{{ top_doctor_labels|length }}</div>
-            </div>
-            <span class="hf-stat-icon"><i class="fas fa-user-md"></i></span>
-        </div>
-        <div class="hf-stat-trend">Ranked by appointment revenue</div>
-    </div>
 </div>
 
-<!-- Monthly Revenue Bar + Daily Line -->
+<!-- ═══════════════════════════════════════════════════════ CHARTS: Monthly Bar + Daily Line -->
 <div class="hf-two-col">
     <div class="hf-chart-card">
         <div class="hf-chart-header">
@@ -76,64 +241,219 @@
     </div>
 </div>
 
-<!-- Doctor Revenue Chart + Table -->
-{% if top_doctor_labels %}
-<div class="hf-two-col">
-    <div class="hf-chart-card">
-        <div class="hf-chart-header">
-            <div>
-                <h4 class="hf-chart-title"><i class="fas fa-user-md" style="color:var(--ha-accent);margin-right:6px;"></i>Top Doctors by Revenue</h4>
-                <p class="hf-chart-sub">Appointment income contribution per doctor</p>
-            </div>
-        </div>
-        <div class="hf-canvas-wrap">
+<!-- ═══════════════════════════════════════════════════════ DOCTOR PERFORMANCE -->
+{% if top_doctors_list %}
+<div class="hf-table-card" style="margin-bottom:28px;">
+    <div class="hf-table-header">
+        <h4><i class="fas fa-user-md" style="color:var(--ha-accent);margin-right:8px;"></i>
+            Doctor Revenue Performance
+            <span style="font-size:12px;font-weight:400;color:var(--ha-muted);margin-left:8px;">({{ period_label }})</span>
+        </h4>
+        <span class="ha-badge-soft">{{ top_doctors_list|length }} doctor{{ top_doctors_list|length|pluralize }}</span>
+    </div>
+
+    {% if top_doctor_labels %}
+    <div style="padding:20px 22px;border-bottom:1px solid var(--ha-border);">
+        <div class="hf-canvas-wrap" style="height:200px;">
             <canvas id="hfDoctorBarChart"></canvas>
         </div>
     </div>
+    {% endif %}
 
-    <div class="hf-chart-card">
-        <div class="hf-chart-header">
-            <div>
-                <h4 class="hf-chart-title"><i class="fas fa-trophy" style="color:var(--ha-accent);margin-right:6px;"></i>Doctor Revenue Leaderboard</h4>
-                <p class="hf-chart-sub">Ranked list with revenue bar indicators</p>
+    <div style="overflow-x:auto;">
+        <table class="hf-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Doctor</th>
+                    <th>Specialty</th>
+                    <th>Branch</th>
+                    <th>Patients</th>
+                    <th>Fee</th>
+                    <th>Revenue</th>
+                    <th style="min-width:120px;">Bar</th>
+                    <th>Filter</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc in top_doctors_list %}
+                <tr>
+                    <td style="font-weight:700;text-align:center;width:50px;">
+                        {% if forloop.counter == 1 %}<i class="fas fa-medal" style="color:#d48b1f;font-size:16px;"></i>
+                        {% elif forloop.counter == 2 %}<i class="fas fa-medal" style="color:#678197;font-size:16px;"></i>
+                        {% elif forloop.counter == 3 %}<i class="fas fa-medal" style="color:#a56336;font-size:16px;"></i>
+                        {% else %}<span style="color:var(--ha-muted);">#{{ forloop.counter }}</span>{% endif %}
+                    </td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:9px;">
+                            <span style="width:32px;height:32px;border-radius:9px;background:rgba(15,110,140,.1);color:#0f6e8c;display:inline-flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;"><i class="fas fa-user-md"></i></span>
+                            <div style="font-weight:700;">{{ doc.name }}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <span style="font-size:12px;background:rgba(111,66,193,.1);color:#6f42c1;padding:2px 9px;border-radius:20px;font-weight:600;">{{ doc.specialty|default:'General' }}</span>
+                    </td>
+                    <td style="font-size:12.5px;color:var(--ha-muted);">{{ doc.hospital|default:'—' }}</td>
+                    <td>
+                        <span style="font-size:16px;font-weight:800;color:var(--ha-text);">{{ doc.unique_patients }}</span>
+                        <span style="font-size:11px;color:var(--ha-muted);"> unique</span>
+                        <div style="font-size:11px;color:var(--ha-muted);">{{ doc.patient_count }} visits</div>
+                    </td>
+                    <td>
+                        <span style="font-weight:700;color:#1f9d70;">&#2547; {{ doc.consultation_fee }}</span>
+                        {% if doc.report_fee and doc.report_fee > 0 %}
+                        <div style="font-size:11px;color:var(--ha-muted);">+ &#2547;{{ doc.report_fee }} report</div>
+                        {% endif %}
+                    </td>
+                    <td style="font-size:15px;font-weight:800;color:var(--ha-primary);">&#2547; {{ doc.revenue|floatformat:2 }}</td>
+                    <td>
+                        {% if top_doctors_list.0.revenue and top_doctors_list.0.revenue > 0 %}
+                        <div class="hf-rev-bar-wrap">
+                            <div class="hf-rev-bar" style="width:{% widthratio doc.revenue top_doctors_list.0.revenue 100 %}%;"></div>
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="?days={{ days|default:0 }}&branch={{ doc.hospital_id|default:0 }}&doctor={{ doc.doctor_id }}"
+                           style="font-size:12px;color:var(--ha-primary);font-weight:600;text-decoration:none;">
+                            <i class="fas fa-filter"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- ═══════════════════════════════════════════════════════ BRANCH-DOCTOR MATRIX -->
+{% if branch_doctor_matrix %}
+<div style="margin-bottom:28px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+        <div>
+            <h3 style="font-size:17px;font-weight:800;color:var(--ha-text);margin:0 0 3px;">
+                <i class="fas fa-sitemap" style="color:var(--ha-accent);margin-right:8px;"></i>
+                Branch-Doctor Performance Matrix
+            </h3>
+            <p style="font-size:12.5px;color:var(--ha-muted);margin:0;">
+                Each diagnostic centre / branch with its doctors ranked by revenue — {{ period_label }}
+            </p>
+        </div>
+        <span class="ha-badge-soft">{{ branch_doctor_matrix|length }} branch{{ branch_doctor_matrix|length|pluralize:"es" }}</span>
+    </div>
+
+    {% for branch in branch_doctor_matrix %}
+    <div class="hf-bdm-section">
+        <!-- Branch header -->
+        <div class="hf-bdm-branch-header">
+            <div class="hf-bdm-branch-left">
+                <div class="hf-bdm-branch-icon">
+                    {% if forloop.counter == 1 %}<i class="fas fa-medal" style="color:#d48b1f;font-size:16px;"></i>
+                    {% elif forloop.counter == 2 %}<i class="fas fa-medal" style="color:#678197;font-size:16px;"></i>
+                    {% elif forloop.counter == 3 %}<i class="fas fa-medal" style="color:#a56336;font-size:16px;"></i>
+                    {% else %}<i class="fas fa-hospital-alt"></i>{% endif %}
+                </div>
+                <div>
+                    <div class="hf-bdm-branch-name">{{ branch.branch_name }}</div>
+                    <div class="hf-bdm-branch-meta">
+                        {{ branch.branch_count }} transaction{{ branch.branch_count|pluralize }}
+                        &nbsp;·&nbsp;
+                        {% if branch.doctors %}
+                            {{ branch.doctors|length }} doctor{{ branch.doctors|length|pluralize }}
+                        {% else %}
+                            No doctor payment data
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="hf-bdm-branch-right">
+                <div class="hf-bdm-branch-rev">&#2547; {{ branch.branch_revenue|floatformat:2 }}</div>
+                {% if branch.hospital_id %}
+                <a href="?days={{ days|default:0 }}&branch={{ branch.hospital_id }}&doctor=0"
+                   class="hf-bdm-filter-link">
+                    <i class="fas fa-filter"></i> Filter Branch
+                </a>
+                {% endif %}
             </div>
         </div>
-        <div style="overflow-y:auto;max-height:240px;">
-            <table class="hf-rev-table">
+
+        <!-- Doctors nested table -->
+        {% if branch.doctors %}
+        <div style="overflow-x:auto;">
+            <table class="hf-bdm-doc-table">
                 <thead>
                     <tr>
-                        <th>Rank</th>
+                        <th>#</th>
                         <th>Doctor</th>
+                        <th>Specialty</th>
+                        <th>Visits</th>
+                        <th>Unique Patients</th>
+                        <th>Consultation Fee</th>
                         <th>Revenue</th>
+                        <th style="min-width:120px;">Bar</th>
+                        <th>Filter</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for label in top_doctor_labels %}
+                    {% for doc in branch.doctors %}
                     <tr>
-                        <td style="font-weight:700;color:var(--ha-muted);">
+                        <td style="text-align:center;font-weight:700;width:40px;">
                             {% if forloop.counter == 1 %}<i class="fas fa-medal" style="color:#d48b1f;"></i>
                             {% elif forloop.counter == 2 %}<i class="fas fa-medal" style="color:#678197;"></i>
                             {% elif forloop.counter == 3 %}<i class="fas fa-medal" style="color:#a56336;"></i>
-                            {% else %}#{{ forloop.counter }}{% endif %}
+                            {% else %}<span style="color:var(--ha-muted);">{{ forloop.counter }}</span>{% endif %}
                         </td>
-                        <td style="font-weight:600;">{{ label }}</td>
                         <td>
-                            <div style="font-weight:700;color:var(--ha-primary);">&#2547; {{ top_doctor_data|slice:forloop.counter0|last|floatformat:2 }}</div>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <span style="width:28px;height:28px;border-radius:7px;background:rgba(15,110,140,.1);color:#0f6e8c;display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;"><i class="fas fa-user-md"></i></span>
+                                <span style="font-weight:700;">{{ doc.name }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span style="font-size:11.5px;background:rgba(111,66,193,.1);color:#6f42c1;padding:1px 8px;border-radius:20px;font-weight:600;">{{ doc.specialty|default:'General' }}</span>
+                        </td>
+                        <td style="font-weight:600;">{{ doc.patient_count }}</td>
+                        <td>
+                            <span style="font-weight:800;">{{ doc.unique_patients }}</span>
+                            <span style="font-size:11px;color:var(--ha-muted);"> unique</span>
+                        </td>
+                        <td style="font-weight:700;color:#1f9d70;">&#2547; {{ doc.consultation_fee }}</td>
+                        <td style="font-weight:800;color:var(--ha-primary);">&#2547; {{ doc.revenue|floatformat:2 }}</td>
+                        <td>
+                            {% if branch.doctors.0.revenue %}
+                            <div class="hf-rev-bar-wrap">
+                                <div class="hf-rev-bar" style="width:{% widthratio doc.revenue branch.doctors.0.revenue 100 %}%;"></div>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="?days={{ days|default:0 }}&branch={{ branch.hospital_id|default:0 }}&doctor={{ doc.doctor_id }}"
+                               style="font-size:12px;color:var(--ha-primary);font-weight:600;text-decoration:none;">
+                                <i class="fas fa-filter"></i>
+                            </a>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+        {% else %}
+        <div class="hf-empty" style="padding:22px 20px;font-size:13px;">
+            <i class="fas fa-info-circle" style="font-size:22px;"></i>
+            No appointment revenue linked to doctors in this branch for the selected period.
+        </div>
+        {% endif %}
     </div>
+    {% endfor %}
 </div>
 {% endif %}
 
-<!-- Monthly Summary Table -->
+<!-- ═══════════════════════════════════════════════════════ MONTHLY SUMMARY TABLE -->
 <div class="hf-table-card">
     <div class="hf-table-header">
         <h4><i class="fas fa-table" style="color:var(--ha-accent);margin-right:8px;"></i>Monthly Revenue Breakdown</h4>
-        <span class="ha-badge-soft">{{ monthly_summary|length }} months recorded</span>
+        <span class="ha-badge-soft">{{ monthly_summary|length }} month{{ monthly_summary|length|pluralize }} recorded</span>
     </div>
     <div style="overflow-x:auto;">
         {% if monthly_summary %}
@@ -190,12 +510,49 @@ window.hfReportConfig = {
 </script>
 <script>
 (function () {
+    'use strict';
+
+    /* ── Doctor dropdown filter ───────────────────────────────── */
+    var doctorsData    = JSON.parse(document.getElementById('hfDoctorsData').textContent);
+    var branchSel      = document.getElementById('hfBranchSelect');
+    var doctorSel      = document.getElementById('hfDoctorSelect');
+    var selectedDoctor = {{ doctor_id|default:0 }};
+
+    function populateDoctors(branchId) {
+        doctorSel.innerHTML = '<option value="">All Doctors</option>';
+        doctorsData.forEach(function (doc) {
+            if (!branchId || doc.hospital_id == branchId) {
+                var opt = document.createElement('option');
+                opt.value = doc.id;
+                opt.textContent = doc.name;
+                if (doc.id == selectedDoctor) opt.selected = true;
+                doctorSel.appendChild(opt);
+            }
+        });
+    }
+
+    populateDoctors(branchSel.value);
+    branchSel.addEventListener('change', function () {
+        selectedDoctor = 0;
+        populateDoctors(this.value);
+    });
+
+    /* ── Day buttons ──────────────────────────────────────────── */
+    var daysInput = document.getElementById('hfDaysInput');
+    document.querySelectorAll('.hf-day-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.hf-day-btn').forEach(function (b) { b.classList.remove('active'); });
+            this.classList.add('active');
+            daysInput.value = this.dataset.days;
+        });
+    });
+
+    /* ── Charts ───────────────────────────────────────────────── */
     document.addEventListener('DOMContentLoaded', function () {
         if (typeof Chart === 'undefined' || !window.hfReportConfig) return;
         var cfg = window.hfReportConfig;
         var COLORS = ['#0f6e8c','#3aa0b5','#1f9d70','#d48b1f','#6f42c1','#c44949','#20a8d8','#4caf50'];
-
-        function currLabel(v) { return ' ৳' + v.toLocaleString(); }
+        function currLabel(v) { return ' ৳' + Number(v).toLocaleString(); }
 
         /* Monthly Bar */
         var barCtx = document.getElementById('hfMonthlyBarChart');
@@ -238,13 +595,9 @@ window.hfReportConfig = {
                         data: hasData ? cfg.dailyValues : [0],
                         borderColor: '#1f9d70',
                         backgroundColor: 'rgba(31,157,112,0.12)',
-                        fill: true,
-                        borderWidth: 2.5,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#1f9d70',
-                        pointBorderWidth: 2,
-                        tension: 0.3
+                        fill: true, borderWidth: 2.5, pointRadius: 4,
+                        pointBackgroundColor: '#fff', pointBorderColor: '#1f9d70',
+                        pointBorderWidth: 2, tension: 0.3
                     }]
                 },
                 options: {
@@ -267,7 +620,7 @@ window.hfReportConfig = {
                 data: {
                     labels: cfg.doctorLabels,
                     datasets: [{
-                        label: 'Revenue',
+                        label: 'Revenue (BDT)',
                         data: cfg.doctorData,
                         backgroundColor: COLORS.map(function(c){ return c + 'cc'; }),
                         borderColor: COLORS,

@@ -14,9 +14,7 @@ from hospital.models import Hospital_Information, User, Patient
 from django.db.models import Q
 from django.db import transaction
 from django.core.paginator import Paginator
-from pharmacy.models import Medicine, Pharmacist
 from doctor.models import Doctor_Information, Prescription, Prescription_test, Report, Appointment, Experience , Education,Specimen,Test
-from pharmacy.models import Order, Cart
 from sslcommerz.models import Payment
 from .forms import (
     AdminUserCreationForm,
@@ -24,7 +22,6 @@ from .forms import (
     EditHospitalForm,
     EditEmergencyForm,
     AdminForm,
-    PharmacistCreationForm,
     DoctorAccountCreationForm,
     DoctorAdminUpdateForm,
     LabWorkerAdminCreationForm,
@@ -36,7 +33,8 @@ from .forms import (
 from .models import Admin_Information,specialization,service,hospital_department, Clinical_Laboratory_Technician, Test_Information
 import random,re
 import string
-from django.db.models import  Count
+import json as _json
+from django.db.models import Count
 from datetime import datetime
 import datetime
 from django.views.decorators.csrf import csrf_exempt
@@ -46,7 +44,7 @@ from django.core.mail import BadHeaderError, send_mail
 from django.template.loader import render_to_string
 from django.http import HttpResponse
 from django.utils.html import strip_tags
-from .utils import searchMedicines, generate_secure_password, generate_unique_user_id, send_account_credentials_email
+from .utils import generate_secure_password, generate_unique_user_id, send_account_credentials_email
 
 # Create your views here.
 
@@ -227,9 +225,6 @@ def admin_login(request):
             elif user.is_labworker:
                 messages.success(request, 'User logged in')
                 return redirect('lab-dashboard')
-            elif user.is_pharmacist:
-                messages.success(request, 'User logged in')
-                return redirect('pharmacist-dashboard')
             else:
                 return redirect('admin-logout')
         else:
@@ -777,161 +772,6 @@ def create_report(request, pk):
 
 @csrf_exempt
 @login_required(login_url='admin_login')
-def add_pharmacist(request):
-    if request.user.is_hospital_admin:
-        user = Admin_Information.objects.get(user=request.user)
-        form = PharmacistCreationForm()
-     
-        if request.method == 'POST':
-            form = PharmacistCreationForm(request.POST)
-            if form.is_valid():
-                # form.save(), commit=False --> don't save to database yet (we have a chance to modify object)
-                user = form.save(commit=False)
-                user.is_pharmacist = True
-                user.save()
-
-                messages.success(request, 'Pharmacist account was created!')
-
-                # After user is created, we can log them in
-                #login(request, user)
-                return redirect('pharmacist-list')
-            else:
-                messages.error(request, 'An error has occurred during registration')
-    
-    context = {'form': form, 'admin': user}
-    return render(request, 'hospital_admin/add-pharmacist.html', context)
-  
-@csrf_exempt
-@login_required(login_url='admin_login')
-def medicine_list(request):
-    if request.user.is_authenticated:
-        if request.user.is_pharmacist:
-            pharmacist = Pharmacist.objects.get(user=request.user)
-            medicine = Medicine.objects.all()
-            orders = Order.objects.filter(user=request.user, ordered=False)
-            carts = Cart.objects.filter(user=request.user, purchased=False)
-            
-            medicine, search_query = searchMedicines(request)
-            
-            if carts.exists() and orders.exists():
-                order = orders[0]
-                context = {'medicine':medicine,
-                        'pharmacist':pharmacist,
-                        'search_query': search_query,
-                        'order': order,
-                        'carts': carts,}
-                return render(request, 'hospital_admin/medicine-list.html',context)
-            else:
-                context = {'medicine':medicine,
-                            'pharmacist':pharmacist,
-                            'search_query': search_query,
-                            'orders': orders,
-                            'carts': carts,}
-                return render(request, 'hospital_admin/medicine-list.html',context)
-                
-
-@login_required(login_url='admin_login')
-def generate_random_medicine_ID():
-    N = 4
-    string_var = ""
-    string_var = ''.join(random.choices(string.digits, k=N))
-    string_var = "#M-" + string_var
-    return string_var
-
-@csrf_exempt
-@login_required(login_url='admin_login')
-def add_medicine(request):
-    if request.user.is_pharmacist:
-     user = Pharmacist.objects.get(user=request.user)
-     
-    if request.method == 'POST':
-       medicine = Medicine()
-       
-       if 'featured_image' in request.FILES:
-           featured_image = request.FILES['featured_image']
-       else:
-           featured_image = "medicines/default.png"
-       
-       name = request.POST.get('name')
-       Prescription_reqiuired = request.POST.get('requirement_type')     
-       weight = request.POST.get('weight') 
-       quantity = request.POST.get('quantity')
-       medicine_category = request.POST.get('category_type')
-       medicine_type = request.POST.get('medicine_type')
-       description = request.POST.get('description')
-       price = request.POST.get('price')
-       
-       medicine.name = name
-       medicine.Prescription_reqiuired = Prescription_reqiuired
-       medicine.weight = weight
-       medicine.quantity = quantity
-       medicine.medicine_category = medicine_category
-       medicine.medicine_type = medicine_type
-       medicine.description = description
-       medicine.price = price
-       medicine.featured_image = featured_image
-       medicine.stock_quantity = 80
-       #medicine.medicine_id = generate_random_medicine_ID()
-       
-       medicine.save()
-       
-       return redirect('medicine-list')
-   
-    return render(request, 'hospital_admin/add-medicine.html',{'admin': user})
-
-@csrf_exempt
-@login_required(login_url='admin_login')
-def edit_medicine(request, pk):
-    if request.user.is_pharmacist:
-        user = Pharmacist.objects.get(user=request.user)
-        
-        medicine = Medicine.objects.get(serial_number=pk)
-        old_medicine_image = medicine.featured_image
-        
-        if request.method == 'POST':
-            if 'featured_image' in request.FILES:
-                featured_image = request.FILES['featured_image']
-            else:
-                featured_image = old_medicine_image
-                name = request.POST.get('name')
-                Prescription_reqiuired = request.POST.get('requirement_type')     
-                weight = request.POST.get('weight') 
-                quantity = request.POST.get('quantity')
-                medicine_category = request.POST.get('category_type')
-                medicine_type = request.POST.get('medicine_type')
-                description = request.POST.get('description')
-                price = request.POST.get('price')
-                
-                medicine.name = name
-                medicine.Prescription_reqiuired = Prescription_reqiuired
-                medicine.weight = weight
-                medicine.quantity = quantity
-                medicine.medicine_category = medicine_category
-                medicine.medicine_type = medicine_type
-                medicine.description = description
-                medicine.price = price
-                medicine.featured_image = featured_image
-                medicine.stock_quantity = 80
-                #medicine.medicine_id = generate_random_medicine_ID()
-            
-                medicine.save()
-            
-                return redirect('medicine-list')
-   
-    return render(request, 'hospital_admin/edit-medicine.html',{'medicine': medicine,'admin': user})
-
-
-@csrf_exempt
-@login_required(login_url='admin_login')
-def delete_medicine(request, pk):
-    if request.user.is_pharmacist:
-        user = Pharmacist.objects.get(user=request.user)
-        medicine = Medicine.objects.get(serial_number=pk)
-        medicine.delete()
-        return redirect('medicine-list')
-
-@csrf_exempt
-@login_required(login_url='admin_login')
 def add_lab_worker(request):
     if request.user.is_hospital_admin:
         admin = Admin_Information.objects.get(user=request.user)
@@ -1006,15 +846,6 @@ def view_lab_worker(request):
         page_obj = paginator.get_page(request.GET.get('page'))
         
     return render(request, 'hospital_admin/lab-worker-list.html', {'lab_workers': page_obj.object_list, 'page_obj': page_obj, 'admin': user, 'search_query': search_query})
-
-@csrf_exempt
-@login_required(login_url='admin_login')
-def view_pharmacist(request):
-    if request.user.is_hospital_admin:
-        user = Admin_Information.objects.get(user=request.user)
-        pharmcists = Pharmacist.objects.all()
-        
-    return render(request, 'hospital_admin/pharmacist-list.html', {'pharmacist': pharmcists, 'admin': user})
 
 @csrf_exempt
 @login_required(login_url='admin_login')
@@ -1622,25 +1453,6 @@ def delete_test(request,pk):
             return redirect('test-list')
 
 @csrf_exempt
-def pharmacist_dashboard(request):
-    if request.user.is_authenticated:
-        if request.user.is_pharmacist:
-            pharmacist = Pharmacist.objects.get(user=request.user)
-            total_pharmacist_count = Pharmacist.objects.annotate(count=Count('pharmacist_id'))
-            total_medicine_count = Medicine.objects.annotate(count=Count('serial_number'))
-            total_order_count = Order.objects.annotate(count=Count('orderitems'))
-            total_cart_count = Cart.objects.annotate(count=Count('item'))
-
-            medicine = Medicine.objects.all()
-            
-            context = {'pharmacist':pharmacist, 'medicine':medicine,
-                       'total_pharmacist_count':total_pharmacist_count, 
-                       'total_medicine_count':total_medicine_count, 
-                       'total_order_count':total_order_count,
-                       'total_cart_count':total_cart_count}
-            return render(request, 'hospital_admin/pharmacist-dashboard.html',context)
-
-@csrf_exempt
 def report_history(request):
     if request.user.is_authenticated:
         if request.user.is_labworker:
@@ -1654,7 +1466,6 @@ def report_history(request):
 # ── Finance Module ────────────────────────────────────────────────────────────
 
 def _finance_safe_amount(p):
-    """Return float value of a Payment.currency_amount safely."""
     try:
         return float(p.currency_amount or 0)
     except (ValueError, TypeError):
@@ -1662,13 +1473,103 @@ def _finance_safe_amount(p):
 
 
 def _month_label(m):
-    """Convert 'YYYY-MM' string to 'Mon YYYY' label."""
     from calendar import month_abbr
     try:
         y, mo = m.split('-')
         return month_abbr[int(mo)] + ' ' + y
     except Exception:
         return m
+
+
+def _parse_tx_date(p):
+    """Parse payment.transaction_date (CharField) to a date object, or None."""
+    if not p.transaction_date:
+        return None
+    try:
+        return datetime.datetime.strptime(str(p.transaction_date)[:10], '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        return None
+
+
+def _payment_in_days(p, days, today):
+    """Return True if payment falls within last `days` days (1=today only). 0 = all time."""
+    if not days or days <= 0:
+        return True
+    d = _parse_tx_date(p)
+    if d is None:
+        return False
+    start = today - datetime.timedelta(days=days - 1)
+    return start <= d <= today
+
+
+def _in_date_range(p, start_date, end_date):
+    """Return True if payment falls in [start_date, end_date] inclusive."""
+    d = _parse_tx_date(p)
+    if d is None:
+        return False
+    return start_date <= d <= end_date
+
+
+def _get_period_label(days):
+    if not days or days <= 0:
+        return 'All Time'
+    if days == 1:
+        return 'Today'
+    return f'Last {days} Days'
+
+
+def _get_growth(current, previous):
+    """Return (growth_pct, 'up'|'down') or (None, None) if no comparison data."""
+    if not previous:
+        return None, None
+    pct = ((current - previous) / previous) * 100
+    return round(pct, 1), ('up' if pct >= 0 else 'down')
+
+
+def _parse_filter_params(request):
+    """Safely parse days / branch_id / doctor_id from GET params."""
+    try:
+        days = int(request.GET.get('days', 0))
+        if days < 0 or days > 30:
+            days = 0
+    except (ValueError, TypeError):
+        days = 0
+
+    try:
+        branch_id = int(request.GET.get('branch', 0)) or None
+    except (ValueError, TypeError):
+        branch_id = None
+
+    try:
+        doctor_id = int(request.GET.get('doctor', 0)) or None
+    except (ValueError, TypeError):
+        doctor_id = None
+
+    return days, branch_id, doctor_id
+
+
+def _build_valid_payments(days, branch_id, doctor_id, today):
+    """
+    Build two lists of VALID payments:
+      all_valid      – ORM-filtered by branch/doctor; no date restriction (chart context)
+      filtered_valid – subset of all_valid also filtered by the days window
+    """
+    qs = Payment.objects.select_related(
+        'patient',
+        'appointment',
+        'appointment__doctor',
+        'appointment__doctor__hospital_name',
+        'appointment__doctor__department_name',
+    ).filter(status='VALID')
+
+    if branch_id:
+        qs = qs.filter(appointment__doctor__hospital_name_id=branch_id)
+    if doctor_id:
+        qs = qs.filter(appointment__doctor_id=doctor_id)
+
+    all_valid      = list(qs)
+    filtered_valid = [p for p in all_valid if _payment_in_days(p, days, today)]
+    return all_valid, filtered_valid
 
 
 @login_required(login_url='admin_login')
@@ -1682,69 +1583,178 @@ def payment_overview(request):
     month_str  = today.strftime('%Y-%m')
     week_start = today - datetime.timedelta(days=today.weekday())
 
-    all_payments   = list(Payment.objects.select_related(
-        'patient', 'appointment', 'appointment__doctor'
-    ).all())
-    valid_payments = [p for p in all_payments if p.status == 'VALID']
+    days, branch_id, doctor_id = _parse_filter_params(request)
+    all_valid, filtered_valid  = _build_valid_payments(days, branch_id, doctor_id, today)
 
-    def _date_starts(p, prefix):
+    # ── Growth comparison (current period vs same-length previous period) ─────
+    revenue_growth, growth_dir = None, None
+    prev_consultation_growth, prev_consultation_dir = None, None
+    if days and days > 0:
+        prev_end   = today - datetime.timedelta(days=days)
+        prev_start = prev_end  - datetime.timedelta(days=days - 1)
+        prev_valid = [p for p in all_valid if _in_date_range(p, prev_start, prev_end)]
+        cur_rev    = sum(_finance_safe_amount(p) for p in filtered_valid)
+        prev_rev   = sum(_finance_safe_amount(p) for p in prev_valid)
+        revenue_growth, growth_dir = _get_growth(cur_rev, prev_rev)
+        cur_cons  = sum(_finance_safe_amount(p) for p in filtered_valid if p.payment_type == 'appointment')
+        prev_cons = sum(_finance_safe_amount(p) for p in prev_valid if p.payment_type == 'appointment')
+        prev_consultation_growth, prev_consultation_dir = _get_growth(cur_cons, prev_cons)
+
+    def _starts(p, prefix):
         return p.transaction_date and str(p.transaction_date).startswith(str(prefix))
 
-    total_revenue   = sum(_finance_safe_amount(p) for p in valid_payments)
-    today_revenue   = sum(_finance_safe_amount(p) for p in valid_payments if _date_starts(p, today))
-    monthly_revenue = sum(_finance_safe_amount(p) for p in valid_payments if _date_starts(p, month_str))
+    # ── Revenue stats ─────────────────────────────────────────────────────────
+    period_revenue      = sum(_finance_safe_amount(p) for p in filtered_valid)
+    today_revenue       = sum(_finance_safe_amount(p) for p in all_valid if _starts(p, today))
+    monthly_revenue     = sum(_finance_safe_amount(p) for p in all_valid if _starts(p, month_str))
+    weekly_revenue      = sum(_finance_safe_amount(p) for p in all_valid
+                              if _in_date_range(p, week_start, today))
+    consultation_income = sum(_finance_safe_amount(p) for p in filtered_valid
+                              if p.payment_type == 'appointment')
+    test_income         = sum(_finance_safe_amount(p) for p in filtered_valid
+                              if p.payment_type == 'test')
+    unique_patients     = len(set(p.patient_id for p in filtered_valid if p.patient_id))
 
-    weekly_revenue = 0.0
-    for p in valid_payments:
-        if p.transaction_date:
-            try:
-                d = datetime.datetime.strptime(str(p.transaction_date)[:10], '%Y-%m-%d').date()
-                if week_start <= d <= today:
-                    weekly_revenue += _finance_safe_amount(p)
-            except (ValueError, TypeError):
-                pass
-
-    # Monthly revenue chart (last 6 months)
-    monthly_data = {}
-    for p in valid_payments:
+    # ── Trend chart (last 6 months, branch/doctor filtered, no date limit) ───
+    monthly_chart = {}
+    for p in all_valid:
         if p.transaction_date:
             m = str(p.transaction_date)[:7]
             if len(m) == 7 and '-' in m:
-                monthly_data[m] = monthly_data.get(m, 0) + _finance_safe_amount(p)
-    sorted_months = sorted(monthly_data.keys())[-6:]
-    revenue_chart_labels = [_month_label(m) for m in sorted_months]
-    revenue_chart_data   = [round(monthly_data.get(m, 0), 2) for m in sorted_months]
+                monthly_chart[m] = monthly_chart.get(m, 0) + _finance_safe_amount(p)
+    chart_months         = sorted(monthly_chart.keys())[-6:]
+    revenue_chart_labels = [_month_label(m) for m in chart_months]
+    revenue_chart_data   = [round(monthly_chart.get(m, 0), 2) for m in chart_months]
 
-    # Payment type distribution (doughnut)
+    # ── Payment type doughnut ─────────────────────────────────────────────────
     ptype_data = {}
-    for p in valid_payments:
+    for p in filtered_valid:
         ptype = (p.payment_type or 'Other').replace('_', ' ').title()
         ptype_data[ptype] = ptype_data.get(ptype, 0) + _finance_safe_amount(p)
 
-    # Recent 8 valid transactions
-    recent_transactions = sorted(valid_payments, key=lambda p: p.payment_id, reverse=True)[:8]
+    # ── Recent transactions ───────────────────────────────────────────────────
+    recent_transactions = sorted(filtered_valid, key=lambda p: p.payment_id, reverse=True)[:10]
 
-    # Appointment payment stats
-    total_appointments  = Appointment.objects.count()
-    paid_appointments   = Appointment.objects.filter(payment_status='Paid').count()
+    # ── Appointment stats (ORM-filtered by branch/doctor) ────────────────────
+    appt_qs = Appointment.objects.all()
+    if branch_id:
+        appt_qs = appt_qs.filter(doctor__hospital_name_id=branch_id)
+    if doctor_id:
+        appt_qs = appt_qs.filter(doctor_id=doctor_id)
+    total_appointments = appt_qs.count()
+    paid_appointments  = appt_qs.filter(payment_status='Paid').count()
+    confirmed_appts    = appt_qs.filter(appointment_status='confirmed').count()
+    cancelled_appts    = appt_qs.filter(appointment_status='cancelled').count()
+
+    # ── Branch revenue breakdown ──────────────────────────────────────────────
+    branch_map = {}
+    for p in filtered_valid:
+        if p.appointment and p.appointment.doctor and p.appointment.doctor.hospital_name:
+            bname = p.appointment.doctor.hospital_name.name or 'Unknown'
+            bid   = p.appointment.doctor.hospital_name_id
+        elif p.appointment and p.appointment.doctor:
+            bname, bid = 'Unassigned Branch', 0
+        else:
+            continue
+        if bname not in branch_map:
+            branch_map[bname] = {'revenue': 0.0, 'count': 0, 'hospital_id': bid}
+        branch_map[bname]['revenue'] += _finance_safe_amount(p)
+        branch_map[bname]['count']   += 1
+
+    branch_stats = sorted(
+        [{'name': k, 'revenue': round(v['revenue'], 2), 'count': v['count'], 'hospital_id': v['hospital_id']}
+         for k, v in branch_map.items()],
+        key=lambda x: x['revenue'], reverse=True
+    )
+
+    # ── Doctor performance (for overview page – top 5) ────────────────────────
+    doc_map = {}
+    for p in filtered_valid:
+        if not (p.appointment and p.appointment.doctor):
+            continue
+        doc  = p.appointment.doctor
+        name = doc.name or 'Unknown Doctor'
+        if name not in doc_map:
+            dept = ''
+            if doc.department_name:
+                dept = doc.department_name.hospital_department_name or ''
+            if not dept:
+                dept = doc.department or 'General'
+            doc_map[name] = {
+                'revenue':      0.0,
+                'count':        0,
+                'specialty':    dept,
+                'hospital':     doc.hospital_name.name if doc.hospital_name else '—',
+                'hospital_id':  doc.hospital_name_id or 0,
+                'patient_ids':  set(),
+            }
+        doc_map[name]['revenue'] += _finance_safe_amount(p)
+        doc_map[name]['count']   += 1
+        if p.patient_id:
+            doc_map[name]['patient_ids'].add(p.patient_id)
+
+    top_doctors_overview = sorted(
+        [{'name': k, 'revenue': round(v['revenue'], 2), 'count': v['count'],
+          'specialty': v['specialty'], 'hospital': v['hospital'],
+          'hospital_id': v['hospital_id'],
+          'unique_patients': len(v['patient_ids'])}
+         for k, v in doc_map.items()],
+        key=lambda x: x['revenue'], reverse=True
+    )[:5]
+
+    # ── Dropdown data for filter form ─────────────────────────────────────────
+    all_hospitals = list(Hospital_Information.objects.order_by('name').values('hospital_id', 'name'))
+    doctors_list  = [
+        {'id': d.doctor_id, 'name': d.name or d.username or 'Doctor',
+         'hospital_id': d.hospital_name_id or 0}
+        for d in Doctor_Information.objects.select_related('hospital_name').order_by('name')
+    ]
 
     context = {
         'admin': admin,
-        'total_revenue':     round(total_revenue, 2),
-        'today_revenue':     round(today_revenue, 2),
-        'monthly_revenue':   round(monthly_revenue, 2),
-        'weekly_revenue':    round(weekly_revenue, 2),
-        'total_transactions': len(all_payments),
-        'paid_count':        sum(1 for p in all_payments if p.status == 'VALID'),
-        'pending_count':     sum(1 for p in all_payments if p.status not in ('VALID', 'VALIDATED', None, '')),
-        'recent_transactions': recent_transactions,
+        # Filter state
+        'days':         days,
+        'branch_id':    branch_id,
+        'doctor_id':    doctor_id,
+        'period_label': _get_period_label(days),
+        'day_options':  range(1, 31),
+        # Dropdown options
+        'all_hospitals': all_hospitals,
+        'doctors_list':  doctors_list,
+        # Revenue stats
+        'period_revenue':                round(period_revenue, 2),
+        'today_revenue':                 round(today_revenue, 2),
+        'monthly_revenue':               round(monthly_revenue, 2),
+        'weekly_revenue':                round(weekly_revenue, 2),
+        'consultation_income':           round(consultation_income, 2),
+        'test_income':                   round(test_income, 2),
+        'unique_patients':               unique_patients,
+        'period_count':                  len(filtered_valid),
+        'revenue_growth':                revenue_growth,
+        'growth_dir':                    growth_dir,
+        'prev_consultation_growth':      prev_consultation_growth,
+        'prev_consultation_dir':         prev_consultation_dir,
+        # Overall counts (no filter)
+        'total_transactions': Payment.objects.count(),
+        'paid_count':         Payment.objects.filter(status='VALID').count(),
+        'pending_count':      Payment.objects.exclude(
+            status__in=['VALID', 'VALIDATED']
+        ).filter(status__isnull=False).exclude(status='').count(),
+        # Charts
+        'recent_transactions':  recent_transactions,
         'revenue_chart_labels': revenue_chart_labels,
         'revenue_chart_data':   revenue_chart_data,
-        'ptype_labels':  list(ptype_data.keys()),
-        'ptype_data':    [round(v, 2) for v in ptype_data.values()],
+        'ptype_labels':         list(ptype_data.keys()),
+        'ptype_data':           [round(v, 2) for v in ptype_data.values()],
+        # Appointment stats
         'total_appointments':  total_appointments,
         'paid_appointments':   paid_appointments,
         'unpaid_appointments': total_appointments - paid_appointments,
+        'confirmed_appts':     confirmed_appts,
+        'cancelled_appts':     cancelled_appts,
+        # Branch + Doctor
+        'branch_stats':          branch_stats,
+        'top_doctors_overview':  top_doctors_overview,
     }
     return render(request, 'hospital_admin/finance-overview.html', context)
 
@@ -1759,65 +1769,192 @@ def revenue_reports(request):
     today     = datetime.date.today()
     month_str = today.strftime('%Y-%m')
 
-    all_payments   = list(Payment.objects.select_related(
-        'patient', 'appointment', 'appointment__doctor'
-    ).all())
-    valid_payments = [p for p in all_payments if p.status == 'VALID']
+    days, branch_id, doctor_id = _parse_filter_params(request)
+    all_valid, filtered_valid  = _build_valid_payments(days, branch_id, doctor_id, today)
 
-    # Monthly aggregation
+    # ── Monthly aggregation (no date filter — full history for chart) ─────────
     monthly_data   = {}
     monthly_counts = {}
-    for p in valid_payments:
+    for p in all_valid:
         if p.transaction_date:
             m = str(p.transaction_date)[:7]
             if len(m) == 7 and '-' in m:
                 monthly_data[m]   = monthly_data.get(m, 0)   + _finance_safe_amount(p)
                 monthly_counts[m] = monthly_counts.get(m, 0) + 1
 
-    sorted_months    = sorted(monthly_data.keys())
-    monthly_summary  = [
-        {
-            'month':   _month_label(m),
-            'revenue': round(monthly_data[m], 2),
-            'count':   monthly_counts.get(m, 0),
-        }
+    sorted_months   = sorted(monthly_data.keys())
+    monthly_summary = [
+        {'month': _month_label(m), 'revenue': round(monthly_data[m], 2), 'count': monthly_counts.get(m, 0)}
         for m in sorted_months
     ]
-
-    # Bar chart: last 12 months
     chart_months = sorted_months[-12:]
     bar_labels   = [_month_label(m) for m in chart_months]
     bar_data     = [round(monthly_data.get(m, 0), 2) for m in chart_months]
 
-    # Daily earnings for current month (line chart)
+    # ── Daily earnings current month (full valid — no date window) ────────────
     daily_data = {}
-    for p in valid_payments:
+    for p in all_valid:
         if p.transaction_date and str(p.transaction_date).startswith(month_str):
             d = str(p.transaction_date)[:10]
             daily_data[d] = daily_data.get(d, 0) + _finance_safe_amount(p)
     sorted_days  = sorted(daily_data.keys())
-    daily_labels = [d[8:] for d in sorted_days]   # day number within month
+    daily_labels = [d[8:] for d in sorted_days]
     daily_values = [round(daily_data[d], 2) for d in sorted_days]
 
-    # Doctor-wise revenue (top 8)
-    doctor_revenue = {}
-    for p in valid_payments:
-        if p.appointment and p.appointment.doctor:
-            doc_name = p.appointment.doctor.name or 'Unknown'
-            doctor_revenue[doc_name] = doctor_revenue.get(doc_name, 0) + _finance_safe_amount(p)
-    top_doctors = sorted(doctor_revenue.items(), key=lambda x: x[1], reverse=True)[:8]
+    # ── Doctor performance (period-scoped) ────────────────────────────────────
+    doctor_stats = {}
+    for p in filtered_valid:
+        if not (p.appointment and p.appointment.doctor):
+            continue
+        doc  = p.appointment.doctor
+        name = doc.name or 'Unknown Doctor'
+        if name not in doctor_stats:
+            dept = ''
+            if doc.department_name:
+                dept = doc.department_name.hospital_department_name or ''
+            if not dept:
+                dept = doc.department or 'General'
+            hospital    = doc.hospital_name.name if doc.hospital_name else '—'
+            hospital_id = doc.hospital_name_id or 0
+            doctor_stats[name] = {
+                'revenue':          0.0,
+                'patient_count':    0,
+                'consultation_fee': int(doc.consultation_fee or 0),
+                'report_fee':       int(doc.report_fee or 0),
+                'specialty':        dept,
+                'hospital':         hospital,
+                'hospital_id':      hospital_id,
+                'doctor_id':        doc.doctor_id,
+                'patient_ids':      set(),
+            }
+        doctor_stats[name]['revenue']       += _finance_safe_amount(p)
+        doctor_stats[name]['patient_count'] += 1
+        if p.patient_id:
+            doctor_stats[name]['patient_ids'].add(p.patient_id)
+
+    top_doctors_list = sorted(
+        [
+            {
+                'name':             k,
+                'revenue':          round(v['revenue'], 2),
+                'patient_count':    v['patient_count'],
+                'unique_patients':  len(v['patient_ids']),
+                'consultation_fee': v['consultation_fee'],
+                'report_fee':       v['report_fee'],
+                'specialty':        v['specialty'],
+                'hospital':         v['hospital'],
+                'hospital_id':      v['hospital_id'],
+                'doctor_id':        v['doctor_id'],
+            }
+            for k, v in doctor_stats.items()
+        ],
+        key=lambda x: x['revenue'],
+        reverse=True,
+    )
+    top_doctors = top_doctors_list[:8]
+
+    # ── Branch revenue (period-scoped) ────────────────────────────────────────
+    branch_data = {}
+    for p in filtered_valid:
+        if p.appointment and p.appointment.doctor and p.appointment.doctor.hospital_name:
+            bname = p.appointment.doctor.hospital_name.name or 'Unknown'
+            bid   = p.appointment.doctor.hospital_name_id
+        elif p.appointment and p.appointment.doctor:
+            bname, bid = 'Unassigned Branch', 0
+        else:
+            bname, bid = 'Other / Lab', 0
+        if bname not in branch_data:
+            branch_data[bname] = {'revenue': 0.0, 'count': 0, 'hospital_id': bid}
+        branch_data[bname]['revenue'] += _finance_safe_amount(p)
+        branch_data[bname]['count']   += 1
+
+    branch_stats = sorted(
+        [{'name': k, 'revenue': round(v['revenue'], 2), 'count': v['count'], 'hospital_id': v['hospital_id']}
+         for k, v in branch_data.items()],
+        key=lambda x: x['revenue'], reverse=True,
+    )
+
+    # ── Branch-Doctor matrix (period-scoped) ──────────────────────────────────
+    # Group doctors under their respective branch
+    branch_doctor_matrix = []
+    seen_branches = set()
+    for branch in branch_stats:
+        bname = branch['name']
+        if bname in seen_branches:
+            continue
+        seen_branches.add(bname)
+        docs_in_branch = sorted(
+            [d for d in top_doctors_list if d['hospital'] == bname],
+            key=lambda x: x['revenue'], reverse=True,
+        )
+        branch_doctor_matrix.append({
+            'branch_name':    bname,
+            'branch_revenue': branch['revenue'],
+            'branch_count':   branch['count'],
+            'hospital_id':    branch['hospital_id'],
+            'doctors':        docs_in_branch,
+        })
+
+    # ── Summary stats ─────────────────────────────────────────────────────────
+    period_total        = sum(_finance_safe_amount(p) for p in filtered_valid)
+    period_count        = len(filtered_valid)
+    period_consultation = sum(_finance_safe_amount(p) for p in filtered_valid if p.payment_type == 'appointment')
+    period_test         = sum(_finance_safe_amount(p) for p in filtered_valid if p.payment_type == 'test')
+    total_patients      = len(set(p.patient_id for p in filtered_valid if p.patient_id))
+    lifetime_revenue    = sum(_finance_safe_amount(p) for p in all_valid)
+
+    # ── Growth for summary cards ──────────────────────────────────────────────
+    revenue_growth, growth_dir = None, None
+    if days and days > 0:
+        prev_end   = today - datetime.timedelta(days=days)
+        prev_start = prev_end - datetime.timedelta(days=days - 1)
+        prev_valid = [p for p in all_valid if _in_date_range(p, prev_start, prev_end)]
+        revenue_growth, growth_dir = _get_growth(period_total, sum(_finance_safe_amount(p) for p in prev_valid))
+
+    # ── Dropdown options ──────────────────────────────────────────────────────
+    all_hospitals = list(Hospital_Information.objects.order_by('name').values('hospital_id', 'name'))
+    doctors_list  = [
+        {'id': d.doctor_id, 'name': d.name or d.username or 'Doctor', 'hospital_id': d.hospital_name_id or 0}
+        for d in Doctor_Information.objects.select_related('hospital_name').order_by('name')
+    ]
 
     context = {
-        'admin':            admin,
-        'monthly_summary':  monthly_summary,
-        'bar_labels':       bar_labels,
-        'bar_data':         bar_data,
-        'daily_labels':     daily_labels,
-        'daily_values':     daily_values,
-        'top_doctor_labels': [d[0] for d in top_doctors],
-        'top_doctor_data':   [round(d[1], 2) for d in top_doctors],
-        'total_revenue':     round(sum(_finance_safe_amount(p) for p in valid_payments), 2),
-        'current_month':     today.strftime('%B %Y'),
+        'admin': admin,
+        # Filter state
+        'days':         days,
+        'branch_id':    branch_id,
+        'doctor_id':    doctor_id,
+        'period_label': _get_period_label(days),
+        'day_options':  range(1, 31),
+        # Dropdown options
+        'all_hospitals': all_hospitals,
+        'doctors_list':  doctors_list,
+        # Charts (full history)
+        'monthly_summary': monthly_summary,
+        'bar_labels':      bar_labels,
+        'bar_data':        bar_data,
+        'daily_labels':    daily_labels,
+        'daily_values':    daily_values,
+        # Doctor performance
+        'top_doctor_labels':  [d['name'] for d in top_doctors],
+        'top_doctor_data':    [d['revenue'] for d in top_doctors],
+        'top_doctors_list':   top_doctors_list,
+        # Branch breakdown
+        'branch_stats':       branch_stats,
+        'branch_labels':      [b['name'] for b in branch_stats],
+        'branch_data_chart':  [b['revenue'] for b in branch_stats],
+        # Branch-Doctor matrix
+        'branch_doctor_matrix': branch_doctor_matrix,
+        # Summary stats
+        'total_revenue':        round(lifetime_revenue, 2),
+        'period_total':         round(period_total, 2),
+        'period_count':         period_count,
+        'period_consultation':  round(period_consultation, 2),
+        'period_test':          round(period_test, 2),
+        'total_patients_served':total_patients,
+        'current_month':        today.strftime('%B %Y'),
+        'revenue_growth':       revenue_growth,
+        'growth_dir':           growth_dir,
     }
     return render(request, 'hospital_admin/revenue-reports.html', context)
 

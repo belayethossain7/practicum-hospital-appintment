@@ -33,6 +33,13 @@
     margin: 0;
     font-size: 16px;
     font-weight: 700;
+    color: #fff;
+}
+
+/* Isolated fix: prescription ID heading in Patient → My Lab Reports.
+   Uses !important to beat dp_theme_ui.css and style.css heading overrides. */
+body.hs-patient-lab-reports .patient-lab-prescription-id-text {
+    color: #fff !important;
 }
 
 .lr-card-header h5 i {

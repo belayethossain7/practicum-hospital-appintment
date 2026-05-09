@@ -39,7 +39,6 @@ urlpatterns = [
     path('chat-doctor/', views.chat_doctor, name='chat-doctor'),
     path('hospital-profile/<int:pk>/', views.hospital_profile, name='hospital-profile'),
     path('checkout-payment/', views.checkout_payment, name='checkout-payment'),
-    path('shop/', views.pharmacy_shop, name='pharmacy_shop'),
     path('data-table/', views.data_table, name='data-table'),
     path('testing/',views.testing, name='testing'),
     path('hospital-department-list/<int:pk>/', views.hospital_department_list, name='hospital-department-list'),

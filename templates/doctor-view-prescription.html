@@ -30,9 +30,79 @@
       <script src="assets/js/html5shiv.min.js"></script>
       <script src="assets/js/respond.min.js"></script>
     <![endif]-->
+
+	<style>
+	/* ── Prescription notification toast ──────────────────────────── */
+	#rxToastStack {
+	  position: fixed; top: 24px; right: 24px; z-index: 9999;
+	  display: flex; flex-direction: column; gap: 12px; pointer-events: none;
+	}
+	.rx-toast {
+	  min-width: 300px; max-width: 400px; background: #fff;
+	  border-radius: 14px; box-shadow: 0 8px 32px rgba(0,0,0,.16);
+	  padding: 16px 20px; display: flex; align-items: flex-start;
+	  gap: 14px; pointer-events: all; opacity: 0;
+	  transform: translateX(40px);
+	  transition: opacity .32s ease, transform .32s ease;
+	}
+	.rx-toast.rx-toast--in  { opacity: 1; transform: translateX(0); }
+	.rx-toast.rx-toast--out { opacity: 0; transform: translateX(40px); }
+	.rx-toast-icon {
+	  width: 42px; height: 42px; border-radius: 50%;
+	  display: flex; align-items: center; justify-content: center;
+	  font-size: 18px; flex-shrink: 0;
+	}
+	.rx-toast--success .rx-toast-icon { background: rgba(31,157,112,.14); color: #1f9d70; }
+	.rx-toast--error   .rx-toast-icon { background: rgba(196,73,73,.14);  color: #c44949; }
+	.rx-toast--warning .rx-toast-icon { background: rgba(212,139,31,.14); color: #d48b1f; }
+	.rx-toast-body { flex: 1; min-width: 0; }
+	.rx-toast-title { font-size: 13.5px; font-weight: 800; color: #1a1a2e; margin-bottom: 2px; }
+	.rx-toast-msg   { font-size: 13px; color: #555; margin: 0; word-wrap: break-word; }
+	.rx-toast-close {
+	  background: none; border: none; color: #aaa; font-size: 17px;
+	  cursor: pointer; padding: 0; line-height: 1; flex-shrink: 0;
+	  transition: color .15s;
+	}
+	.rx-toast-close:hover { color: #333; }
+	.rx-toast-bar {
+	  height: 3px; border-radius: 3px; margin-top: 10px; width: 100%;
+	  background: linear-gradient(90deg, #1f9d70, #2dc98e);
+	  animation: rxBarShrink 3.8s linear forwards;
+	}
+	.rx-toast--error   .rx-toast-bar { background: linear-gradient(90deg,#c44949,#e07070); }
+	.rx-toast--warning .rx-toast-bar { background: linear-gradient(90deg,#d48b1f,#f0a829); }
+	@keyframes rxBarShrink { from { width: 100%; } to { width: 0%; } }
+	@media (max-width: 480px) {
+	  #rxToastStack { top: 12px; right: 12px; left: 12px; }
+	  .rx-toast { min-width: unset; max-width: 100%; }
+	}
+	</style>
 </head>
 
 <body class="dp-theme">
+
+	<!-- ═══ Notification Toasts (Django messages) ═══ -->
+	{% if messages %}
+	<div id="rxToastStack" role="region" aria-live="polite" aria-label="Notifications">
+	  {% for msg in messages %}
+	  <div class="rx-toast rx-toast--{% if msg.tags == 'success' %}success{% elif msg.tags == 'error' %}error{% else %}warning{% endif %}"
+	       role="alert" data-rx-toast="1">
+	    <div class="rx-toast-icon">
+	      <i class="fas {% if msg.tags == 'success' %}fa-check-circle{% elif msg.tags == 'error' %}fa-times-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+	    </div>
+	    <div class="rx-toast-body">
+	      <div class="rx-toast-title">
+	        {% if msg.tags == 'success' %}Success{% elif msg.tags == 'error' %}Error{% else %}Notice{% endif %}
+	      </div>
+	      <p class="rx-toast-msg">{{ msg }}</p>
+	      <div class="rx-toast-bar"></div>
+	    </div>
+	    <button class="rx-toast-close" aria-label="Close" data-rx-close="1">&times;</button>
+	  </div>
+	  {% endfor %}
+	</div>
+	{% endif %}
+
 	<!-- Main Wrapper -->
 	<div class="main-wrapper dp-theme-wrapper">
 		<!-- Header -->
@@ -389,6 +459,41 @@
 
     <!-- DP Theme JS -->
     <script src="{% static 'HealthStack-System/js/Normal/dp_theme.js' %}?v=20260323a"></script>
+
+    <!-- ═══ Prescription toast controller ═══ -->
+    <script>
+    (function () {
+      var SHOW_DELAY  = 120;   /* ms before slide-in */
+      var AUTO_HIDE   = 4200;  /* ms until slide-out starts */
+      var REMOVE_AFTER = 650; /* ms after slide-out to remove element */
+
+      function dismissToast(toast) {
+        if (toast.classList.contains('rx-toast--out')) return;
+        toast.classList.remove('rx-toast--in');
+        toast.classList.add('rx-toast--out');
+        setTimeout(function () {
+          if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, REMOVE_AFTER);
+      }
+
+      document.querySelectorAll('[data-rx-toast]').forEach(function (toast) {
+        /* Slide in */
+        setTimeout(function () { toast.classList.add('rx-toast--in'); }, SHOW_DELAY);
+
+        /* Auto-dismiss */
+        var timer = setTimeout(function () { dismissToast(toast); }, AUTO_HIDE);
+
+        /* Manual close button */
+        var closeBtn = toast.querySelector('[data-rx-close]');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', function () {
+            clearTimeout(timer);
+            dismissToast(toast);
+          });
+        }
+      });
+    }());
+    </script>
 
 </body>
 

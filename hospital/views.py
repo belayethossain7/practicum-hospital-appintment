@@ -404,11 +404,6 @@ def chat_doctor(request):
     context = {'patients': patients, 'doctor': doctor}
     return render(request, 'chat-doctor.html', context)
 
-@csrf_exempt     
-@login_required(login_url="login")
-def pharmacy_shop(request):
-    return render(request, 'pharmacy/shop.html')
-
 @csrf_exempt
 def login_user(request):
     page = 'patient_login'

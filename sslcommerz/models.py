@@ -1,7 +1,6 @@
 from django.db import models
 from doctor.models import Appointment, testOrder, Prescription
 from hospital.models import Patient
-from pharmacy.models import Order
 
 # Create your models here.
 
@@ -13,7 +12,6 @@ class Payment(models.Model):
     
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, null=True, blank=True)
     appointment = models.ForeignKey(Appointment, on_delete=models.SET_NULL, null=True, blank=True)
-    order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True, blank=True)
     test_order = models.ForeignKey(testOrder, on_delete=models.SET_NULL, null=True, blank=True)
     prescription = models.ForeignKey(Prescription, on_delete=models.SET_NULL, null=True, blank=True)
     
@@ -40,11 +38,6 @@ class Payment(models.Model):
     currency = models.CharField(max_length=255, null=True, blank=True)
     card_issuer = models.CharField(max_length=255, null=True, blank=True)
     card_brand = models.CharField(max_length=255, null=True, blank=True)
-    
-    # Pharamcy
-    # {% url 'ssl-payment-request-medicine' pk=order.user.patient.patient_id id=order.id %}
-    # order.orderitems.all.1
-    
     
 
     # String representation of object

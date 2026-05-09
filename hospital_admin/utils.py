@@ -3,21 +3,8 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import BadHeaderError, send_mail
 from django.template.loader import render_to_string
-from pharmacy.models import Medicine
 import secrets
 import string
-
-
-def searchMedicines(request):
-    
-    search_query = ''
-    
-    if request.GET.get('search_query'):
-        search_query = request.GET.get('search_query')
-            
-    medicine = Medicine.objects.filter(Q(name__icontains=search_query))
-    
-    return medicine, search_query
 
 
 def generate_secure_password(length=12):

@@ -68,6 +68,53 @@
       <script src="assets/js/html5shiv.min.js"></script>
       <script src="assets/js/respond.min.js"></script>
     <![endif]-->
+
+    <style>
+      /* ── Booking notification modals ──────────────────────────── */
+      .hs-bk-modal .modal-content {
+        border: none;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,.18);
+      }
+      .hs-bk-modal .modal-body { padding: 40px 32px 36px; }
+      .hs-bk-modal-icon {
+        width: 76px; height: 76px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 32px; margin: 0 auto 16px;
+      }
+      .hs-bk-modal-icon.warn  { background: rgba(255,193,7,.15); color: #d48b1f; }
+      .hs-bk-modal-icon.success { background: rgba(31,157,112,.15); color: #1f9d70; }
+      .hs-bk-modal-title { font-size: 20px; font-weight: 800; color: #1a1a2e; margin-bottom: 10px; }
+      .hs-bk-modal-msg   { font-size: 14.5px; color: #555; line-height: 1.6; margin-bottom: 0; }
+      .hs-bk-modal-note  { font-size: 12.5px; color: #999; margin-top: 10px; }
+      .hs-bk-modal-btn   {
+        border-radius: 10px; padding: 10px 28px;
+        font-size: 14px; font-weight: 700; margin-top: 22px; border: none;
+        transition: opacity .18s, transform .14s;
+      }
+      .hs-bk-modal-btn:hover { opacity: .88; transform: translateY(-1px); }
+      .hs-bk-modal-btn.warn-btn    { background: #ffaa00; color: #fff; }
+      .hs-bk-modal-btn.success-btn { background: #1f9d70; color: #fff; }
+      /* Animated progress bar in success modal */
+      .hs-bk-redirect-bar {
+        height: 4px; border-radius: 4px;
+        background: linear-gradient(90deg, #1f9d70, #2dc98e);
+        margin-top: 18px; animation: hsBkBarFill 2.4s linear forwards;
+        transform-origin: left; transform: scaleX(0);
+      }
+      @keyframes hsBkBarFill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+      /* Submit button loading state */
+      .hs-btn-submitting { opacity: .72; pointer-events: none; cursor: not-allowed; }
+      /* Django messages display (non-JS fallback) */
+      .hs-bk-alert {
+        border-radius: 10px; padding: 12px 18px; margin-bottom: 16px;
+        font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 10px;
+      }
+      .hs-bk-alert-danger  { background: rgba(196,73,73,.1); color: #b53232; border: 1px solid rgba(196,73,73,.22); }
+      .hs-bk-alert-success { background: rgba(31,157,112,.1); color: #1a8e62; border: 1px solid rgba(31,157,112,.22); }
+      .hs-bk-alert-warning { background: rgba(212,139,31,.1); color: #a06a0a; border: 1px solid rgba(212,139,31,.22); }
+    </style>
   </head>
   <body class="{% if user.is_authenticated and user.is_patient %}hs-patient-booking{% endif %}">
     <!-- Main Wrapper -->
@@ -206,7 +253,25 @@
                       <h4><i class="fa fa-calendar pr-3 padd-r-10"></i>Schedule an Appointment</h4>
                   </div>
 
-                  <form method="post" action="{% url 'booking' pk=doctor.doctor_id %}" enctype="multipart/form-data">
+                  <!-- Django messages (non-JS fallback) -->
+                  {% if messages %}
+                  <div style="padding: 0 22px;">
+                    {% for msg in messages %}
+                    <div class="hs-bk-alert
+                      {% if msg.tags == 'error' %}hs-bk-alert-danger
+                      {% elif msg.tags == 'success' %}hs-bk-alert-success
+                      {% else %}hs-bk-alert-warning{% endif %}">
+                      <i class="fas
+                        {% if msg.tags == 'error' %}fa-exclamation-circle
+                        {% elif msg.tags == 'success' %}fa-check-circle
+                        {% else %}fa-info-circle{% endif %}"></i>
+                      {{ msg }}
+                    </div>
+                    {% endfor %}
+                  </div>
+                  {% endif %}
+
+                  <form method="post" action="{% url 'booking' pk=doctor.doctor_id %}" enctype="multipart/form-data" id="hsBkForm">
                     {% csrf_token %}
                       <div class="agent-contact-form-sidebar">
                           <div class="row">
@@ -277,6 +342,47 @@
       <!-- /Footer -->
     </div>
     <!-- /Main Wrapper -->
+
+    <!-- ═══ Warning Modal (conflict / error) ═══ -->
+    <div class="modal fade hs-bk-modal" id="hsBkWarnModal" tabindex="-1" role="dialog"
+         aria-labelledby="hsBkWarnTitle" aria-modal="true">
+      <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+        <div class="modal-content">
+          <div class="modal-body text-center">
+            <div class="hs-bk-modal-icon warn">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h5 class="hs-bk-modal-title" id="hsBkWarnTitle">Booking Conflict</h5>
+            <p class="hs-bk-modal-msg" id="hsBkWarnMsg">
+              You already have an appointment booked at this time. Please choose another time slot.
+            </p>
+            <button type="button" class="hs-bk-modal-btn warn-btn" data-dismiss="modal">
+              <i class="fas fa-calendar-alt mr-1"></i> Choose Another Slot
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Success Modal ═══ -->
+    <div class="modal fade hs-bk-modal" id="hsBkSuccessModal" tabindex="-1" role="dialog"
+         aria-labelledby="hsBkSuccessTitle" aria-modal="true">
+      <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+        <div class="modal-content">
+          <div class="modal-body text-center">
+            <div class="hs-bk-modal-icon success">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <h5 class="hs-bk-modal-title" id="hsBkSuccessTitle">Appointment Confirmed!</h5>
+            <p class="hs-bk-modal-msg" id="hsBkSuccessMsg">
+              Your appointment has been confirmed successfully. A confirmation email will be sent to you shortly.
+            </p>
+            <p class="hs-bk-modal-note">Redirecting to your dashboard&hellip;</p>
+            <div class="hs-bk-redirect-bar" id="hsBkRedirectBar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- jQuery -->
     <script src="{% static 'HealthStack-System/js/Normal/jquery.min.js' %}"></script>
@@ -534,6 +640,96 @@
               fixedContentPos: false
           });
       });
+    </script>
+
+    <!-- ═══ Booking AJAX submit + modals ═══ -->
+    <script>
+    (function () {
+      'use strict';
+
+      var form        = document.getElementById('hsBkForm');
+      var submitBtn   = form ? form.querySelector('button[type="submit"]') : null;
+      var origBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+
+      function resetBtn() {
+        if (!submitBtn) return;
+        submitBtn.innerHTML = origBtnHtml;
+        submitBtn.classList.remove('hs-btn-submitting');
+        submitBtn.disabled = false;
+      }
+
+      function showWarnModal(msg) {
+        var el = document.getElementById('hsBkWarnMsg');
+        if (el && msg) el.textContent = msg;
+        $('#hsBkWarnModal').modal('show');
+      }
+
+      function showSuccessModal(msg, redirectUrl) {
+        var el = document.getElementById('hsBkSuccessMsg');
+        if (el && msg) el.textContent = msg;
+        $('#hsBkSuccessModal').modal({ backdrop: 'static', keyboard: false });
+        $('#hsBkSuccessModal').modal('show');
+        /* Restart the progress-bar animation by cloning the element */
+        var bar = document.getElementById('hsBkRedirectBar');
+        if (bar) {
+          var clone = bar.cloneNode(true);
+          bar.parentNode.replaceChild(clone, bar);
+        }
+        setTimeout(function () {
+          window.location.href = redirectUrl || '/';
+        }, 2500);
+      }
+
+      if (form) {
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+
+          var dateVal = document.getElementById('reservation-date');
+          var timeVal = document.getElementById('reservation-time');
+
+          if (!dateVal || !dateVal.value) {
+            showWarnModal('Please select an appointment date before submitting.');
+            return;
+          }
+          if (!timeVal || !timeVal.value) {
+            showWarnModal('Please select a time slot before submitting.');
+            return;
+          }
+
+          /* Loading state */
+          if (submitBtn) {
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Confirming&hellip;';
+            submitBtn.classList.add('hs-btn-submitting');
+            submitBtn.disabled = true;
+          }
+
+          var formData = new FormData(form);
+
+          fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin',
+          })
+          .then(function (resp) {
+            if (!resp.ok) throw new Error('Server error ' + resp.status);
+            return resp.json();
+          })
+          .then(function (data) {
+            if (data.status === 'ok') {
+              showSuccessModal(data.message, data.redirect);
+            } else {
+              resetBtn();
+              showWarnModal(data.message || 'An error occurred. Please try again.');
+            }
+          })
+          .catch(function (err) {
+            resetBtn();
+            showWarnModal('A network error occurred. Please check your connection and try again.');
+          });
+        });
+      }
+    }());
     </script>
 
     <script>

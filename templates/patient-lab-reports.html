@@ -24,6 +24,15 @@
 
     <!-- DP Theme CSS -->
     <link rel="stylesheet" href="{% static 'HealthStack-System/css/Normal/dp_theme_ui.css' %}" />
+
+    <!-- Isolated fix: Prescription number text in Patient → My Lab Reports.
+         Placed after all external CSS so it always wins regardless of
+         specificity wars in dp_theme_ui.css / style.css. -->
+    <style>
+        body.hs-patient-lab-reports .patient-lab-prescription-id-text {
+            color: #ffffff !important;
+        }
+    </style>
 </head>
 <body class="hs-patient-lab-reports dp-theme">
     <!-- Main Wrapper -->
@@ -68,7 +77,7 @@
                         <div class="lr-card">
                             <div class="lr-card-header">
                                 <div class="lr-card-header-left">
-                                    <h5><i class="fas fa-file-prescription">Prescription</i>  #{{ item.prescription.prescription_id }}</h5>
+                                    <h5 class="patient-lab-prescription-id-text"><i class="fas fa-file-prescription"></i> Prescription #{{ item.prescription.prescription_id }}</h5>
                                     <span class="lr-card-date"><i class="fas fa-calendar-alt"></i> {{ item.prescription.create_date }}</span>
                                 </div>
                                 <div class="lr-card-header-right">

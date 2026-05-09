@@ -396,6 +396,221 @@
     .hf-two-col { grid-template-columns: 1fr; }
 }
 
+/* ── Period filter bar ──────────────────────────────────────── */
+.hf-period-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    background: var(--ha-surface);
+    border: 1px solid var(--ha-border);
+    border-radius: 12px;
+    padding: 12px 18px;
+    margin-bottom: 24px;
+    box-shadow: var(--ha-shadow-xs);
+}
+
+.hf-period-label {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ha-muted);
+    letter-spacing: .04em;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.hf-period-tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.hf-period-tab {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--ha-border);
+    background: var(--ha-surface-alt);
+    color: var(--ha-muted);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background .16s, border-color .16s, color .16s;
+    white-space: nowrap;
+}
+.hf-period-tab:hover {
+    border-color: var(--ha-primary);
+    color: var(--ha-primary);
+    text-decoration: none;
+    background: rgba(15,110,140,.06);
+}
+.hf-period-tab.active {
+    background: var(--ha-primary);
+    border-color: var(--ha-primary);
+    color: #fff;
+    text-decoration: none;
+}
+
+.hf-period-badge {
+    margin-left: auto;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--ha-primary);
+    background: rgba(15,110,140,.08);
+    padding: 4px 12px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+/* ── Period analytics strip ─────────────────────────────────── */
+.hf-period-analytics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.hf-pa-card {
+    border-radius: 14px;
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: #fff;
+    box-shadow: 0 6px 20px rgba(0,0,0,.12);
+    transition: transform .2s, box-shadow .2s;
+}
+.hf-pa-card:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,.18); }
+
+.hf-pa-primary { background: linear-gradient(135deg, #0f6e8c 0%, #3aa0b5 100%); }
+.hf-pa-green   { background: linear-gradient(135deg, #1f9d70 0%, #2dc98e 100%); }
+.hf-pa-amber   { background: linear-gradient(135deg, #d48b1f 0%, #f0a829 100%); }
+.hf-pa-purple  { background: linear-gradient(135deg, #6f42c1 0%, #9b6de8 100%); }
+
+.hf-pa-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    flex-shrink: 0;
+}
+.hf-pa-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    opacity: .85;
+    margin-bottom: 2px;
+}
+.hf-pa-value {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -.3px;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+.hf-pa-sub {
+    font-size: 11px;
+    opacity: .75;
+}
+
+/* ── Branch icon in table ───────────────────────────────────── */
+.hf-branch-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: rgba(15,110,140,.1);
+    color: #0f6e8c;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+/* ── Branch card grid (report page) ────────────────────────── */
+.hf-branch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+    padding: 20px 22px;
+    border-bottom: 1px solid var(--ha-border);
+}
+
+.hf-branch-card {
+    background: var(--ha-surface-alt);
+    border: 1px solid var(--ha-border);
+    border-radius: 12px;
+    padding: 18px 16px 14px;
+    text-align: center;
+    transition: box-shadow .2s, transform .2s;
+}
+.hf-branch-card:hover { box-shadow: var(--ha-shadow-sm); transform: translateY(-2px); }
+
+.hf-branch-rank {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+.hf-branch-icon-wrap {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: rgba(15,110,140,.1);
+    color: #0f6e8c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin: 0 auto 10px;
+}
+.hf-branch-name {
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--ha-text);
+    margin-bottom: 4px;
+    line-height: 1.3;
+}
+.hf-branch-revenue {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--ha-primary);
+    margin-bottom: 2px;
+}
+.hf-branch-count {
+    font-size: 11.5px;
+    color: var(--ha-muted);
+    margin-bottom: 8px;
+}
+.hf-branch-bar-wrap {
+    background: #edf4f8;
+    border-radius: 4px;
+    height: 5px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+.hf-branch-bar {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #0f6e8c, #3aa0b5);
+    transition: width .5s;
+}
+.hf-branch-share {
+    font-size: 10.5px;
+    color: var(--ha-muted);
+    font-weight: 600;
+}
+
 /* ── Dashboard finance mini-strip ───────────────────────────── */
 .hf-dash-strip {
     display: grid;
@@ -453,4 +668,359 @@
     font-weight: 800;
     letter-spacing: -.3px;
     line-height: 1;
+}
+
+/* ── Advanced filter panel ──────────────────────────────────── */
+.hf-filter-panel {
+    background: var(--ha-surface);
+    border: 1px solid var(--ha-border);
+    border-radius: 14px;
+    padding: 0;
+    margin-bottom: 24px;
+    box-shadow: var(--ha-shadow-xs);
+    overflow: hidden;
+}
+
+.hf-filter-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--ha-surface-alt);
+    border-bottom: 1px solid var(--ha-border);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.hf-fp-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ha-text);
+}
+.hf-fp-title i { color: var(--ha-primary); font-size: 14px; }
+
+.hf-active-badge {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    background: rgba(15,110,140,.12);
+    color: var(--ha-primary);
+    padding: 2px 9px;
+    border-radius: 20px;
+}
+
+.hf-fp-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--ha-muted);
+    flex-wrap: wrap;
+}
+.hf-fp-meta strong { color: var(--ha-text); }
+
+.hf-clear-all-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #c44949;
+    text-decoration: none;
+    margin-left: 6px;
+    transition: opacity .15s;
+}
+.hf-clear-all-link:hover { opacity: .75; text-decoration: none; }
+
+/* ── Day buttons section ────────────────────────────────────── */
+.hf-filter-section {
+    padding: 14px 20px 10px;
+    border-bottom: 1px solid var(--ha-border);
+}
+
+.hf-filter-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--ha-muted);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.hf-day-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.hf-day-btn {
+    padding: 4px 9px;
+    border-radius: 7px;
+    border: 1px solid var(--ha-border);
+    background: var(--ha-surface-alt);
+    color: var(--ha-muted);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .14s, border-color .14s, color .14s;
+    line-height: 1.4;
+    min-width: 34px;
+    text-align: center;
+}
+.hf-day-btn:hover {
+    border-color: var(--ha-primary);
+    color: var(--ha-primary);
+    background: rgba(15,110,140,.06);
+}
+.hf-day-btn.active {
+    background: var(--ha-primary);
+    border-color: var(--ha-primary);
+    color: #fff;
+}
+
+/* ── Filter dropdowns row ───────────────────────────────────── */
+.hf-filter-dropdowns {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    padding: 14px 20px 16px;
+    flex-wrap: wrap;
+}
+
+.hf-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    min-width: 180px;
+}
+
+.hf-filter-group-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--ha-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.hf-filter-select {
+    height: 38px;
+    border: 1px solid var(--ha-border);
+    border-radius: 9px;
+    padding: 0 12px;
+    font-size: 13px;
+    color: var(--ha-text);
+    background: var(--ha-surface-alt);
+    outline: none;
+    transition: border-color .18s, box-shadow .18s;
+    width: 100%;
+    cursor: pointer;
+}
+.hf-filter-select:focus {
+    border-color: var(--ha-primary);
+    box-shadow: 0 0 0 3px rgba(15,110,140,.1);
+}
+
+.hf-filter-actions-group {
+    flex: 0 0 auto;
+    min-width: unset;
+}
+
+.hf-filter-btns {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.hf-btn-apply {
+    height: 38px;
+    padding: 0 20px;
+    border-radius: 9px;
+    border: none;
+    background: var(--ha-primary);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background .16s, transform .14s;
+    white-space: nowrap;
+}
+.hf-btn-apply:hover { background: var(--ha-primary-dark); transform: translateY(-1px); }
+.hf-btn-apply:active { transform: translateY(0); }
+
+.hf-btn-clear-filter {
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 9px;
+    border: 1px solid var(--ha-border);
+    background: var(--ha-surface);
+    color: var(--ha-muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    transition: border-color .16s, color .16s;
+    white-space: nowrap;
+}
+.hf-btn-clear-filter:hover {
+    border-color: var(--ha-primary);
+    color: var(--ha-primary);
+    text-decoration: none;
+}
+
+/* ── Growth indicators ──────────────────────────────────────── */
+.hf-growth-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 1px 7px;
+    border-radius: 20px;
+    margin-left: 4px;
+    white-space: nowrap;
+}
+.hf-growth-up   { background: rgba(31,157,112,.18); color: #1a8e62; }
+.hf-growth-down { background: rgba(196,73,73,.18);  color: #b53232; }
+
+/* On coloured pa-cards, growth pill should stand out on white */
+.hf-pa-sub .hf-growth-inline { background: rgba(255,255,255,.25); color: #fff; }
+
+/* ── Branch-Doctor Matrix ───────────────────────────────────── */
+.hf-bdm-section {
+    background: var(--ha-surface);
+    border: 1px solid var(--ha-border);
+    border-radius: 14px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: var(--ha-shadow-xs);
+}
+
+.hf-bdm-branch-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: linear-gradient(90deg, rgba(15,110,140,.06) 0%, transparent 100%);
+    border-bottom: 1px solid var(--ha-border);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.hf-bdm-branch-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.hf-bdm-branch-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(15,110,140,.12);
+    color: #0f6e8c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.hf-bdm-branch-name {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--ha-text);
+    margin-bottom: 2px;
+}
+
+.hf-bdm-branch-meta {
+    font-size: 12px;
+    color: var(--ha-muted);
+}
+
+.hf-bdm-branch-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+}
+
+.hf-bdm-branch-rev {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--ha-primary);
+    letter-spacing: -.3px;
+}
+
+.hf-bdm-filter-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ha-primary);
+    background: rgba(15,110,140,.08);
+    border: 1px solid rgba(15,110,140,.2);
+    border-radius: 8px;
+    padding: 5px 12px;
+    text-decoration: none;
+    transition: background .15s, border-color .15s;
+    white-space: nowrap;
+}
+.hf-bdm-filter-link:hover {
+    background: rgba(15,110,140,.15);
+    border-color: var(--ha-primary);
+    text-decoration: none;
+}
+
+/* Doctor table inside branch section */
+.hf-bdm-doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.hf-bdm-doc-table thead th {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--ha-muted);
+    background: var(--ha-surface-alt);
+    border-bottom: 1px solid var(--ha-border);
+}
+.hf-bdm-doc-table tbody tr {
+    border-bottom: 1px solid #f0f4f8;
+    transition: background .13s;
+}
+.hf-bdm-doc-table tbody tr:last-child { border-bottom: none; }
+.hf-bdm-doc-table tbody tr:hover { background: #f5fafd; }
+.hf-bdm-doc-table tbody td {
+    padding: 11px 14px;
+    vertical-align: middle;
+    color: var(--ha-text);
+}
+
+@media (max-width: 768px) {
+    .hf-filter-dropdowns { flex-direction: column; }
+    .hf-filter-group { min-width: 100%; }
+    .hf-bdm-branch-header { flex-direction: column; align-items: flex-start; }
+    .hf-bdm-branch-right { width: 100%; justify-content: space-between; }
 }

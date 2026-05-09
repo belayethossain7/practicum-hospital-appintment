@@ -5,8 +5,6 @@ from .models import Patient, User
 from doctor.models import Doctor_Information
 from hospital_admin.models import Admin_Information, Clinical_Laboratory_Technician
 
-from pharmacy.models import Pharmacist
-
 import random
 import string
 
@@ -46,9 +44,6 @@ def createPatient(sender, instance, created, **kwargs):
             user = instance
             Admin_Information.objects.create(
                 user=user, username=user.username, email=user.email)
-        elif instance.is_pharmacist:
-            user = instance
-            Pharmacist.objects.create(user=user, username=user.username, email=user.email)
         elif instance.is_labworker:
             user = instance
             Clinical_Laboratory_Technician.objects.create(user=user, username=user.username, email=user.email)

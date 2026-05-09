@@ -91,7 +91,7 @@ def lab_dashboard(request):
         Prescription_test.objects
         .filter(test_info_pay_status='Paid')
         .select_related('prescription', 'prescription__doctor', 'prescription__patient')
-        .order_by('prescription__patient__patient_id', 'test_id')
+        .order_by('-test_id')
     )
 
     # Apply filters from GET params

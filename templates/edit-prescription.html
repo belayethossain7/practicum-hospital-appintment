@@ -37,6 +37,17 @@
       rel="stylesheet"
       href="{% static 'HealthStack-System/css/Normal/style.css' %}"
     />
+
+    <!-- Prescription page layout fix -->
+    <style>
+      .content.prescription-page {
+        padding-bottom: 40px;
+        overflow-x: hidden;
+      }
+      .content.prescription-page .card {
+        overflow: visible;
+      }
+    </style>
   </head>
   <body>
     <!-- Main Wrapper -->
@@ -284,6 +295,9 @@
         </div>
       </div>
     </form>
+          </div><!-- /row -->
+        </div><!-- /container-fluid -->
+      </div><!-- /content prescription-page -->
       <!-- /Page Content -->
 
       <!-- Footer -->
