@@ -64,6 +64,7 @@ urlpatterns = [
     path('finance/', views.payment_overview, name='finance-overview'),
     path('finance/transactions/', views.transactions_list, name='transactions_list'),
     path('finance/revenue-reports/', views.revenue_reports, name='revenue-reports'),
+    path('finance/revenue-report-pdf/', views.admin_revenue_report_pdf, name='admin_revenue_report_pdf'),
     
 ]
   

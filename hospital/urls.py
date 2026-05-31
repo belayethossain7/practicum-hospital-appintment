@@ -29,6 +29,7 @@ urlpatterns = [
     path('cancel-appointment/<int:pk>/', views.cancel_appointment, name='cancel-appointment'),
     path('pay-prescription-tests/<int:pk>/', views.pay_prescription_tests, name='pay-prescription-tests'),
     path('test-receipt-pdf/<int:pk>/', views.test_receipt_pdf, name='test-receipt-pdf'),
+    path('appointment-receipt-pdf/<int:pk>/', views.appointment_receipt_pdf, name='appointment-receipt-pdf'),
     path('privacy-policy/', views.privacy_policy, name='privacy-policy'),
     path('profile-settings/',views.profile_settings, name='profile-settings'),
     path('about-us/', views.about_us, name='about-us'),

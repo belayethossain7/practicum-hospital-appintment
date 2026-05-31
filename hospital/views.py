@@ -488,7 +488,7 @@ def patient_dashboard(request):
         # patient = Patient.objects.get(user_id=pk)
         patient = Patient.objects.get(user=request.user)
         report = Report.objects.filter(patient=patient)
-        prescription = Prescription.objects.filter(patient=patient).order_by('-prescription_id')
+        prescription = Prescription.objects.filter(patient=patient).order_by('prescription_id')
         base_appointments = (
             Appointment.objects.filter(patient=patient)
             .filter(Q(appointment_status='pending') | Q(appointment_status='confirmed'))
@@ -530,10 +530,20 @@ def patient_dashboard(request):
                     'test_payment': test_payment,
                 })
 
+        # Build per-appointment payment lookup for receipt buttons in Finished Appointments
+        finished_appointments_with_payment = []
+        for appt in finished_appointments:
+            apmt_payment = payments.filter(appointment=appt).first()
+            finished_appointments_with_payment.append({
+                'appointment': appt,
+                'payment': apmt_payment,
+            })
+
         context = {
             'patient': patient,
             'pending_prescription_appointments': pending_prescription_appointments,
             'finished_appointments': finished_appointments,
+            'finished_appointments_with_payment': finished_appointments_with_payment,
             'payments': payments,
             'report': report,
             'prescription': prescription,
@@ -587,7 +597,13 @@ def test_receipt_pdf(request, pk):
     payment = Payment.objects.filter(prescription=pres, payment_type='test', status='VALID').first()
 
     if not payment:
-        messages.error(request, 'No valid payment found for these tests.')
+        messages.error(request, 'Receipt is available only after successful payment.')
+        return redirect('patient-dashboard')
+
+    # Block access if any test is still not marked Paid (status mismatch guard)
+    unpaid_count = tests.exclude(test_info_pay_status='Paid').count()
+    if unpaid_count > 0:
+        messages.error(request, 'Receipt is available only after successful payment.')
         return redirect('patient-dashboard')
 
     total_amount = 0
@@ -612,6 +628,43 @@ def test_receipt_pdf(request, pk):
     if not pdf.err:
         response = HttpResponse(result.getvalue(), content_type='application/pdf')
         response['Content-Disposition'] = 'inline; filename=test_receipt.pdf'
+        return response
+    return HttpResponse("Error generating PDF", status=500)
+
+
+@login_required(login_url="login")
+def appointment_receipt_pdf(request, pk):
+    """Generate a PDF receipt for a paid appointment. pk = Payment.payment_id."""
+    if not request.user.is_patient:
+        return redirect('logout')
+
+    patient = Patient.objects.get(user=request.user)
+    payment = get_object_or_404(
+        Payment,
+        payment_id=pk,
+        patient=patient,
+        payment_type='appointment',
+        status='VALID',
+    )
+    appointment = payment.appointment
+
+    if not appointment:
+        messages.error(request, 'Appointment details not found for this receipt.')
+        return redirect('patient-dashboard')
+
+    context = {
+        'patient': patient,
+        'payment': payment,
+        'appointment': appointment,
+        'current_date': datetime.date.today(),
+    }
+    template = get_template('appointment_receipt_pdf.html')
+    html = template.render(context)
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+    if not pdf.err:
+        response = HttpResponse(result.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename=appointment_receipt.pdf'
         return response
     return HttpResponse("Error generating PDF", status=500)
 

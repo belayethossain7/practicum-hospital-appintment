@@ -132,7 +132,15 @@
                           data-toggle="tab"
                           ><span class="test-pay-label">Test &amp; Payment</span></a
                         >
-                      </li>
+                      <!--</li>
+                        <li class="nav-item">
+                        <a
+                          class="nav-link"
+                          href="#pat_medical_records"
+                          data-toggle="tab"
+                          ><span class="med-records">Remarks</span></a
+                        >
+                      </li>-->
                       <li class="nav-item">
                         <a
                           class="nav-link"
@@ -141,6 +149,8 @@
                           ><span class="med-records">Medical Records</span></a
                         >
                       </li>
+
+                     
                       <li class="nav-item">
                         <a
                           class="nav-link"
@@ -283,44 +293,44 @@
                                   <th>Type</th>
                                   <th>Amount</th>
                                   <th>Payment Status</th>
-                                  <th>Action</th>
+                                  <th>Receipt</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {% for appointment in finished_appointments %}
+                                {% for item in finished_appointments_with_payment %}
                                 <tr>
                                   <td>
                                     <h2 class="table-avatar">
                                       <a
-                                        href="{% url 'doctor-profile' pk=appointment.doctor.doctor_id %}"
+                                        href="{% url 'doctor-profile' pk=item.appointment.doctor.doctor_id %}"
                                         class="avatar avatar-sm mr-2"
                                       >
                                         <img
                                           class="avatar-img rounded-circle"
-                                          src="{{ appointment.doctor.featured_image.url }}"
+                                          src="{{ item.appointment.doctor.featured_image.url }}"
                                           alt="User Image"
                                         />
                                       </a>
-                                      <a href="{% url 'doctor-profile' pk=appointment.doctor.doctor_id %}"
-                                        >{{ appointment.doctor.name }}
+                                      <a href="{% url 'doctor-profile' pk=item.appointment.doctor.doctor_id %}"
+                                        >{{ item.appointment.doctor.name }}
                                         <span
-                                          >{{appointment.doctor.department_name}}</span
+                                          >{{item.appointment.doctor.department_name}}</span
                                         ></a
                                       >
                                     </h2>
                                   </td>
                                   <td>
-                                    {{appointment.date}}
+                                    {{item.appointment.date}}
                                     <span class="d-block text-info"
-                                      >{{appointment.time}}</span
+                                      >{{item.appointment.time}}</span
                                     >
                                   </td>
-                                  <td>{{appointment.appointment_type}}</td>
-                                  
-                                  {% if appointment.appointment_type == 'checkup' %}
-                                  <td>{{appointment.doctor.consultation_fee}} BDT</td>
+                                  <td>{{item.appointment.appointment_type}}</td>
+
+                                  {% if item.appointment.appointment_type == 'checkup' %}
+                                  <td>{{item.appointment.doctor.consultation_fee}} BDT</td>
                                   {% else %}
-                                  <td>{{appointment.doctor.report_fee}} BDT</td>
+                                  <td>{{item.appointment.doctor.report_fee}} BDT</td>
                                   {% endif %}
                                   <td class="text-center">
                                     <span class="badge badge-pill bg-success-light">Paid</span>
@@ -328,9 +338,20 @@
 
                                   <td>
                                     <div class="table-action">
-                                      <span class="btn btn-sm bg-success-light btn-paid-disabled" title="Already paid">
-                                        <i class="fas fa-check-circle"></i> Paid
+                                      {% if item.payment %}
+                                      <a
+                                        href="{% url 'appointment-receipt-pdf' pk=item.payment.payment_id %}"
+                                        class="btn btn-sm btn-appt-receipt bg-primary-light"
+                                        target="_blank"
+                                        title="View Appointment Receipt"
+                                      >
+                                        <i class="fas fa-file-pdf"></i> Receipt
+                                      </a>
+                                      {% else %}
+                                      <span class="btn btn-sm bg-secondary-light btn-cancel-disabled" title="Receipt not available">
+                                        <i class="fas fa-file-pdf"></i> N/A
                                       </span>
+                                      {% endif %}
                                     </div>
                                   </td>
                                 </tr>
@@ -491,7 +512,7 @@
                                   </td>
                                   <td>
                                     <div class="table-action">
-                                      {% if item.test_payment %}
+                                      {% if item.test_payment and item.all_paid %}
                                       <a
                                         href="{% url 'test-receipt-pdf' pk=item.prescription.prescription_id %}"
                                         class="btn btn-sm bg-info-light"
@@ -500,7 +521,7 @@
                                         <i class="fas fa-file-pdf"></i> Receipt
                                       </a>
                                       {% else %}
-                                      <span class="btn btn-sm bg-secondary-light btn-cancel-disabled" title="Pay first to view receipt">
+                                      <span class="btn btn-sm bg-secondary-light btn-cancel-disabled" title="Receipt available only after successful payment">
                                         <i class="fas fa-file-pdf"></i> N/A
                                       </span>
                                       {% endif %}
@@ -665,7 +686,7 @@
                                   <th>Card Type</th>
                                   <th>Card Issuer</th>
                                   <th>Payment Status</th>
-                      
+                                  <th>Receipt</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -701,7 +722,16 @@
                                     <span class="badge badge-pill bg-warning-light">Pending</span>
                                     {% endif %}
                                   </td>
-                            
+                                  <td>
+                                    <a
+                                      href="{% url 'appointment-receipt-pdf' pk=payment.payment_id %}"
+                                      class="btn btn-sm btn-appt-receipt bg-primary-light"
+                                      target="_blank"
+                                      title="View Appointment Receipt"
+                                    >
+                                      <i class="fas fa-file-pdf"></i> Receipt
+                                    </a>
+                                  </td>
                                 </tr>
                                 {% endfor %}
                           

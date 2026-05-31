@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Branch-wise Doctor Revenue Report</title>
+<style>
+    /* Page setup */
+    @page {
+        size: A4;
+        margin: 14mm 12mm 14mm 12mm;
+    }
+    body {
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 10pt;
+        color: #1a2e3b;
+        margin: 0;
+        padding: 0;
+    }
+    .page-wrap { padding: 0; }
+
+    /* Centered header */
+    .rr-header  { text-align: center; margin-bottom: 6pt; }
+    .rr-org     { font-size: 18pt; font-weight: bold; color: #0f6e8c; }
+    .rr-sub     { font-size: 12pt; font-weight: bold; color: #1a2e3b; margin-top: 3pt; }
+    .rr-period  { font-size: 10pt; color: #4a6070; margin-top: 3pt; }
+    .rr-gendate { font-size: 8.5pt; color: #7a9aaa; margin-top: 2pt; }
+
+    /* Divider */
+    .rr-rule {
+        border: none;
+        border-top: 2px solid #0f6e8c;
+        margin: 8pt 0 10pt;
+    }
+
+    /* Summary strip */
+    .rr-summary {
+        background-color: #f0f7fa;
+        border: 1px solid #c0d8e4;
+        padding: 6pt 10pt;
+        margin-bottom: 10pt;
+        font-size: 9pt;
+        color: #1a2e3b;
+    }
+    .rr-summary b { color: #0f6e8c; }
+
+    /* -------------------------------------------------------
+       MAIN TABLE
+       table-layout:fixed + explicit th widths enforce columns
+       ------------------------------------------------------- */
+    .rr-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 9pt;
+        table-layout: fixed;
+    }
+
+    /* Column headers */
+    .rr-table th {
+        background-color: #0f6e8c;
+        color: #ffffff;
+        font-weight: bold;
+        font-size: 8.5pt;
+        text-transform: uppercase;
+        padding: 6pt 8pt;
+        text-align: left;
+        border: 1px solid #0a5570;
+        vertical-align: middle;
+        word-wrap: break-word;
+        overflow: hidden;
+    }
+
+    /* Branch header row (full-width section label) */
+    .rr-branch-cell {
+        background-color: #d6ecf5;
+        color: #0a4a5e;
+        font-weight: bold;
+        font-size: 9.5pt;
+        padding: 6pt 9pt;
+        border-top: 2pt solid #0f6e8c;
+        border-bottom: 1px solid #9dc8d8;
+        border-left: 1px solid #9dc8d8;
+        border-right: 1px solid #9dc8d8;
+        word-wrap: break-word;
+        overflow: hidden;
+    }
+
+    /* Doctor rows (shared base properties) */
+    .rr-doc-cell,
+    .rr-doc-cell-alt {
+        padding: 5pt 8pt;
+        border-bottom: 1px solid #cddde8;
+        border-left: 1px solid #cddde8;
+        border-right: 1px solid #cddde8;
+        color: #1a2e3b;
+        vertical-align: top;
+        word-wrap: break-word;
+        overflow: hidden;
+        line-height: 1.35;
+    }
+    .rr-doc-cell-alt { background-color: #f2f8fc; }
+
+    /* Branch subtotal row */
+    .rr-subtotal-cell {
+        background-color: #e3f0f7;
+        font-weight: bold;
+        font-size: 8.5pt;
+        padding: 5pt 8pt;
+        border-top: 1px solid #9dc8d8;
+        border-bottom: 1.5pt solid #9dc8d8;
+        border-left: 1px solid #9dc8d8;
+        border-right: 1px solid #9dc8d8;
+        color: #0a4a5e;
+        word-wrap: break-word;
+        overflow: hidden;
+    }
+
+    /* Empty-branch row */
+    .rr-empty-cell {
+        padding: 5pt 8pt;
+        border-bottom: 1px solid #cddde8;
+        border-left: 1px solid #cddde8;
+        border-right: 1px solid #cddde8;
+        color: #9ab5c4;
+        font-style: italic;
+        word-wrap: break-word;
+        overflow: hidden;
+    }
+
+    /* Grand total row */
+    .rr-grand-cell {
+        background-color: #0f6e8c;
+        color: #ffffff;
+        font-weight: bold;
+        font-size: 9.5pt;
+        padding: 7pt 8pt;
+        border: 1px solid #0a5570;
+        word-wrap: break-word;
+        overflow: hidden;
+    }
+
+    /* Footer */
+    .rr-footer {
+        margin-top: 14pt;
+        border-top: 1px solid #dbe7f0;
+        padding-top: 7pt;
+        font-size: 8pt;
+        color: #9ab5c4;
+        text-align: center;
+    }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+    <!-- Centered header -->
+    <div class="rr-header">
+        <div class="rr-org">Belayet Diagnostic Centre</div>
+        <div class="rr-sub">Branch-wise Doctor Revenue Report</div>
+        <div class="rr-period">
+            Period: {{ start_date|date:"d M Y" }} &nbsp;to&nbsp; {{ end_date|date:"d M Y" }}
+        </div>
+        <div class="rr-gendate">Generated: {{ generated_at|date:"d M Y, H:i" }}</div>
+    </div>
+
+    <hr class="rr-rule">
+
+    <!-- Summary strip -->
+    <div class="rr-summary">
+        <b>Report Period:</b> {{ period_date_str }}
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        <b>Total Appointments:</b> {{ grand_total_appointments }}
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        <b>Grand Total Revenue:</b> BDT {{ grand_total_amount }}
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        <b>Branches:</b> {{ branch_report|length }}
+    </div>
+
+    <!-- Main branch-doctor table
+         Column widths (proportional to user-requested 45/45/30/30/35 = 185 units):
+           Branch  : 45/185 = 24%
+           Doctor  : 45/185 = 24%
+           Date    : 30/185 = 16%
+           Appts   : 30/185 = 17%
+           Amount  : 35/185 = 19%
+    -->
+    <table class="rr-table">
+        <thead>
+            <tr>
+                <th style="width:24%;">Branch Name</th>
+                <th style="width:24%;">Doctor Name</th>
+                <th style="width:16%;">Date</th>
+                <th style="width:17%;text-align:center;">Total Appts.</th>
+                <th style="width:19%;text-align:right;">Total Amount (BDT)</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        {% for branch in branch_report %}
+
+            <!-- Branch section header (spans all columns) -->
+            <tr>
+                <td class="rr-branch-cell" colspan="5">
+                    {{ branch.name }}
+                </td>
+            </tr>
+
+            {% if branch.doctors %}
+
+                {% for doc in branch.doctors %}
+                {% if forloop.counter|divisibleby:2 %}
+                <tr>
+                    <td class="rr-doc-cell-alt"></td>
+                    <td class="rr-doc-cell-alt">{{ doc.name }}</td>
+                    <td class="rr-doc-cell-alt" style="color:#4a6070;font-size:8pt;">{{ period_date_str }}</td>
+                    <td class="rr-doc-cell-alt" style="text-align:center;font-weight:bold;">{{ doc.appointments }}</td>
+                    <td class="rr-doc-cell-alt" style="text-align:right;font-weight:bold;">{{ doc.amount }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td class="rr-doc-cell"></td>
+                    <td class="rr-doc-cell">{{ doc.name }}</td>
+                    <td class="rr-doc-cell" style="color:#4a6070;font-size:8pt;">{{ period_date_str }}</td>
+                    <td class="rr-doc-cell" style="text-align:center;font-weight:bold;">{{ doc.appointments }}</td>
+                    <td class="rr-doc-cell" style="text-align:right;font-weight:bold;">{{ doc.amount }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+
+                <!-- Branch subtotal -->
+                <tr>
+                    <td class="rr-subtotal-cell"></td>
+                    <td class="rr-subtotal-cell">Branch Total</td>
+                    <td class="rr-subtotal-cell"></td>
+                    <td class="rr-subtotal-cell" style="text-align:center;">{{ branch.total_appointments }}</td>
+                    <td class="rr-subtotal-cell" style="text-align:right;">{{ branch.total_amount }}</td>
+                </tr>
+
+            {% else %}
+
+                <!-- Branch with no paid appointments in this range -->
+                <tr>
+                    <td class="rr-empty-cell"></td>
+                    <td class="rr-empty-cell">No paid appointments in this period</td>
+                    <td class="rr-empty-cell" style="font-size:8pt;">{{ period_date_str }}</td>
+                    <td class="rr-empty-cell" style="text-align:center;">0</td>
+                    <td class="rr-empty-cell" style="text-align:right;">0.00</td>
+                </tr>
+
+            {% endif %}
+
+        {% empty %}
+            <tr>
+                <td colspan="5" style="text-align:center;padding:16pt;color:#9ab5c4;font-style:italic;">
+                    No branches found.
+                </td>
+            </tr>
+        {% endfor %}
+
+            <!-- Grand total -->
+            <tr>
+                <td class="rr-grand-cell" colspan="3">Grand Total</td>
+                <td class="rr-grand-cell" style="text-align:center;">{{ grand_total_appointments }}</td>
+                <td class="rr-grand-cell" style="text-align:right;">{{ grand_total_amount }}</td>
+            </tr>
+
+        </tbody>
+    </table>
+
+    <!-- Footer -->
+    <div class="rr-footer">
+        This report was automatically generated by HealthStack System.
+        &nbsp;|&nbsp;
+        Period: {{ start_date|date:"d M Y" }} - {{ end_date|date:"d M Y" }}
+        &nbsp;|&nbsp;
+        Generated: {{ generated_at|date:"d M Y, H:i" }}
+    </div>
+
+</div>
+</body>
+</html>

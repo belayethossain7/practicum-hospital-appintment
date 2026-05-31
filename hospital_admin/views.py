@@ -349,7 +349,7 @@ def transactions_list(request):
 
     payments = Payment.objects.select_related(
         'patient', 'appointment', 'appointment__doctor'
-    ).order_by('-payment_id')
+    ).order_by('payment_id')
 
     search_q = (request.GET.get('q') or '').strip()
     status_f = (request.GET.get('status') or '').strip()
@@ -1572,6 +1572,23 @@ def _build_valid_payments(days, branch_id, doctor_id, today):
     return all_valid, filtered_valid
 
 
+def safe_pdf_text(value):
+    """Return a Latin-1-safe string for xhtml2pdf; replace known Unicode symbols."""
+    if value is None:
+        return ''
+    s = str(value)
+    s = s.replace('৳', 'BDT')   # ৳ taka sign
+    s = s.replace('–', '-')     # en dash
+    s = s.replace('—', '-')     # em dash
+    s = s.replace('‘', "'")     # left single quote
+    s = s.replace('’', "'")     # right single quote
+    s = s.replace('“', '"')     # left double quote
+    s = s.replace('”', '"')     # right double quote
+    s = s.replace('─', '-')     # box drawing light horizontal
+    s = s.replace('═', '=')     # box drawing double horizontal
+    return s.encode('latin-1', 'ignore').decode('latin-1')
+
+
 @login_required(login_url='admin_login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def payment_overview(request):
@@ -1766,195 +1783,531 @@ def revenue_reports(request):
         return redirect('admin-logout')
     admin = Admin_Information.objects.get(user=request.user)
 
-    today     = datetime.date.today()
-    month_str = today.strftime('%Y-%m')
+    start_date_str = request.GET.get('rr_start', '').strip()
+    end_date_str   = request.GET.get('rr_end',   '').strip()
 
-    days, branch_id, doctor_id = _parse_filter_params(request)
-    all_valid, filtered_valid  = _build_valid_payments(days, branch_id, doctor_id, today)
+    date_error   = None
+    start_date   = None
+    end_date     = None
+    has_filter   = bool(start_date_str or end_date_str)
+    report_ready = False
 
-    # ── Monthly aggregation (no date filter — full history for chart) ─────────
-    monthly_data   = {}
-    monthly_counts = {}
-    for p in all_valid:
-        if p.transaction_date:
-            m = str(p.transaction_date)[:7]
-            if len(m) == 7 and '-' in m:
-                monthly_data[m]   = monthly_data.get(m, 0)   + _finance_safe_amount(p)
-                monthly_counts[m] = monthly_counts.get(m, 0) + 1
-
-    sorted_months   = sorted(monthly_data.keys())
-    monthly_summary = [
-        {'month': _month_label(m), 'revenue': round(monthly_data[m], 2), 'count': monthly_counts.get(m, 0)}
-        for m in sorted_months
-    ]
-    chart_months = sorted_months[-12:]
-    bar_labels   = [_month_label(m) for m in chart_months]
-    bar_data     = [round(monthly_data.get(m, 0), 2) for m in chart_months]
-
-    # ── Daily earnings current month (full valid — no date window) ────────────
-    daily_data = {}
-    for p in all_valid:
-        if p.transaction_date and str(p.transaction_date).startswith(month_str):
-            d = str(p.transaction_date)[:10]
-            daily_data[d] = daily_data.get(d, 0) + _finance_safe_amount(p)
-    sorted_days  = sorted(daily_data.keys())
-    daily_labels = [d[8:] for d in sorted_days]
-    daily_values = [round(daily_data[d], 2) for d in sorted_days]
-
-    # ── Doctor performance (period-scoped) ────────────────────────────────────
-    doctor_stats = {}
-    for p in filtered_valid:
-        if not (p.appointment and p.appointment.doctor):
-            continue
-        doc  = p.appointment.doctor
-        name = doc.name or 'Unknown Doctor'
-        if name not in doctor_stats:
-            dept = ''
-            if doc.department_name:
-                dept = doc.department_name.hospital_department_name or ''
-            if not dept:
-                dept = doc.department or 'General'
-            hospital    = doc.hospital_name.name if doc.hospital_name else '—'
-            hospital_id = doc.hospital_name_id or 0
-            doctor_stats[name] = {
-                'revenue':          0.0,
-                'patient_count':    0,
-                'consultation_fee': int(doc.consultation_fee or 0),
-                'report_fee':       int(doc.report_fee or 0),
-                'specialty':        dept,
-                'hospital':         hospital,
-                'hospital_id':      hospital_id,
-                'doctor_id':        doc.doctor_id,
-                'patient_ids':      set(),
-            }
-        doctor_stats[name]['revenue']       += _finance_safe_amount(p)
-        doctor_stats[name]['patient_count'] += 1
-        if p.patient_id:
-            doctor_stats[name]['patient_ids'].add(p.patient_id)
-
-    top_doctors_list = sorted(
-        [
-            {
-                'name':             k,
-                'revenue':          round(v['revenue'], 2),
-                'patient_count':    v['patient_count'],
-                'unique_patients':  len(v['patient_ids']),
-                'consultation_fee': v['consultation_fee'],
-                'report_fee':       v['report_fee'],
-                'specialty':        v['specialty'],
-                'hospital':         v['hospital'],
-                'hospital_id':      v['hospital_id'],
-                'doctor_id':        v['doctor_id'],
-            }
-            for k, v in doctor_stats.items()
-        ],
-        key=lambda x: x['revenue'],
-        reverse=True,
-    )
-    top_doctors = top_doctors_list[:8]
-
-    # ── Branch revenue (period-scoped) ────────────────────────────────────────
-    branch_data = {}
-    for p in filtered_valid:
-        if p.appointment and p.appointment.doctor and p.appointment.doctor.hospital_name:
-            bname = p.appointment.doctor.hospital_name.name or 'Unknown'
-            bid   = p.appointment.doctor.hospital_name_id
-        elif p.appointment and p.appointment.doctor:
-            bname, bid = 'Unassigned Branch', 0
+    if has_filter:
+        if not start_date_str:
+            date_error = 'Please enter a Start Date.'
+        elif not end_date_str:
+            date_error = 'Please enter an End Date.'
         else:
-            bname, bid = 'Other / Lab', 0
-        if bname not in branch_data:
-            branch_data[bname] = {'revenue': 0.0, 'count': 0, 'hospital_id': bid}
-        branch_data[bname]['revenue'] += _finance_safe_amount(p)
-        branch_data[bname]['count']   += 1
+            try:
+                start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                date_error = 'Invalid Start Date format. Use YYYY-MM-DD.'
+            if not date_error:
+                try:
+                    end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    date_error = 'Invalid End Date format. Use YYYY-MM-DD.'
+            if not date_error and start_date > end_date:
+                date_error = 'Start Date cannot be after End Date.'
+        if not date_error:
+            report_ready = True
 
-    branch_stats = sorted(
-        [{'name': k, 'revenue': round(v['revenue'], 2), 'count': v['count'], 'hospital_id': v['hospital_id']}
-         for k, v in branch_data.items()],
-        key=lambda x: x['revenue'], reverse=True,
-    )
+    filtered_valid          = []
+    period_total            = 0.0
+    period_consultation     = 0.0
+    period_test             = 0.0
+    total_patients_served   = 0
+    period_count            = 0
+    top_doctors_list        = []
+    branch_stats            = []
+    branch_doctor_matrix    = []
+    transactions_for_report = []
 
-    # ── Branch-Doctor matrix (period-scoped) ──────────────────────────────────
-    # Group doctors under their respective branch
-    branch_doctor_matrix = []
-    seen_branches = set()
-    for branch in branch_stats:
-        bname = branch['name']
-        if bname in seen_branches:
-            continue
-        seen_branches.add(bname)
-        docs_in_branch = sorted(
-            [d for d in top_doctors_list if d['hospital'] == bname],
+    if report_ready:
+        qs = Payment.objects.select_related(
+            'patient',
+            'appointment',
+            'appointment__doctor',
+            'appointment__doctor__hospital_name',
+            'appointment__doctor__department_name',
+        ).filter(status='VALID')
+
+        filtered_valid = [p for p in qs if _in_date_range(p, start_date, end_date)]
+
+        period_total          = sum(_finance_safe_amount(p) for p in filtered_valid)
+        period_count          = len(filtered_valid)
+        period_consultation   = sum(_finance_safe_amount(p) for p in filtered_valid if p.payment_type == 'appointment')
+        period_test           = sum(_finance_safe_amount(p) for p in filtered_valid if p.payment_type == 'test')
+        total_patients_served = len(set(p.patient_id for p in filtered_valid if p.patient_id))
+
+        # Doctor performance (date-range scoped)
+        doctor_stats = {}
+        for p in filtered_valid:
+            if not (p.appointment and p.appointment.doctor):
+                continue
+            doc  = p.appointment.doctor
+            dname = doc.name or 'Unknown Doctor'
+            if dname not in doctor_stats:
+                dept = ''
+                if doc.department_name:
+                    dept = doc.department_name.hospital_department_name or ''
+                if not dept:
+                    dept = getattr(doc, 'department', None) or 'General'
+                hospital    = doc.hospital_name.name if doc.hospital_name else '—'
+                hospital_id = doc.hospital_name_id or 0
+                doctor_stats[dname] = {
+                    'revenue': 0.0, 'patient_count': 0,
+                    'consultation_fee': int(doc.consultation_fee or 0),
+                    'report_fee':       int(doc.report_fee or 0),
+                    'specialty': dept, 'hospital': hospital,
+                    'hospital_id': hospital_id, 'doctor_id': doc.doctor_id,
+                    'patient_ids': set(),
+                }
+            doctor_stats[dname]['revenue']       += _finance_safe_amount(p)
+            doctor_stats[dname]['patient_count'] += 1
+            if p.patient_id:
+                doctor_stats[dname]['patient_ids'].add(p.patient_id)
+
+        top_doctors_list = sorted(
+            [{'name': k, 'revenue': round(v['revenue'], 2),
+              'patient_count': v['patient_count'],
+              'unique_patients': len(v['patient_ids']),
+              'consultation_fee': v['consultation_fee'],
+              'report_fee': v['report_fee'],
+              'specialty': v['specialty'],
+              'hospital': v['hospital'],
+              'hospital_id': v['hospital_id'],
+              'doctor_id': v['doctor_id']}
+             for k, v in doctor_stats.items()],
+            key=lambda x: x['revenue'], reverse=True
+        )
+
+        # Branch stats (date-range scoped)
+        branch_data = {}
+        for p in filtered_valid:
+            if p.appointment and p.appointment.doctor and p.appointment.doctor.hospital_name:
+                bname = p.appointment.doctor.hospital_name.name or 'Unknown'
+                bid   = p.appointment.doctor.hospital_name_id
+            elif p.appointment and p.appointment.doctor:
+                bname, bid = 'Unassigned Branch', 0
+            else:
+                bname, bid = 'Other / Lab', 0
+            if bname not in branch_data:
+                branch_data[bname] = {'revenue': 0.0, 'count': 0, 'hospital_id': bid}
+            branch_data[bname]['revenue'] += _finance_safe_amount(p)
+            branch_data[bname]['count']   += 1
+
+        branch_stats = sorted(
+            [{'name': k, 'revenue': round(v['revenue'], 2), 'count': v['count'], 'hospital_id': v['hospital_id']}
+             for k, v in branch_data.items()],
             key=lambda x: x['revenue'], reverse=True,
         )
-        branch_doctor_matrix.append({
-            'branch_name':    bname,
-            'branch_revenue': branch['revenue'],
-            'branch_count':   branch['count'],
-            'hospital_id':    branch['hospital_id'],
-            'doctors':        docs_in_branch,
-        })
 
-    # ── Summary stats ─────────────────────────────────────────────────────────
-    period_total        = sum(_finance_safe_amount(p) for p in filtered_valid)
-    period_count        = len(filtered_valid)
-    period_consultation = sum(_finance_safe_amount(p) for p in filtered_valid if p.payment_type == 'appointment')
-    period_test         = sum(_finance_safe_amount(p) for p in filtered_valid if p.payment_type == 'test')
-    total_patients      = len(set(p.patient_id for p in filtered_valid if p.patient_id))
-    lifetime_revenue    = sum(_finance_safe_amount(p) for p in all_valid)
+        # Branch-Doctor matrix
+        seen_branches = set()
+        for branch in branch_stats:
+            bname = branch['name']
+            if bname in seen_branches:
+                continue
+            seen_branches.add(bname)
+            docs_in_branch = sorted(
+                [d for d in top_doctors_list if d['hospital'] == bname],
+                key=lambda x: x['revenue'], reverse=True,
+            )
+            branch_doctor_matrix.append({
+                'branch_name':    bname,
+                'branch_revenue': branch['revenue'],
+                'branch_count':   branch['count'],
+                'hospital_id':    branch['hospital_id'],
+                'doctors':        docs_in_branch,
+            })
 
-    # ── Growth for summary cards ──────────────────────────────────────────────
-    revenue_growth, growth_dir = None, None
-    if days and days > 0:
-        prev_end   = today - datetime.timedelta(days=days)
-        prev_start = prev_end - datetime.timedelta(days=days - 1)
-        prev_valid = [p for p in all_valid if _in_date_range(p, prev_start, prev_end)]
-        revenue_growth, growth_dir = _get_growth(period_total, sum(_finance_safe_amount(p) for p in prev_valid))
+        transactions_for_report = sorted(filtered_valid, key=lambda p: p.payment_id, reverse=True)
 
-    # ── Dropdown options ──────────────────────────────────────────────────────
-    all_hospitals = list(Hospital_Information.objects.order_by('name').values('hospital_id', 'name'))
-    doctors_list  = [
-        {'id': d.doctor_id, 'name': d.name or d.username or 'Doctor', 'hospital_id': d.hospital_name_id or 0}
-        for d in Doctor_Information.objects.select_related('hospital_name').order_by('name')
-    ]
+    try:
+        hospital_obj  = Hospital_Information.objects.first()
+        hospital_name = hospital_obj.name if hospital_obj else 'Diagnostic Centre'
+    except Exception:
+        hospital_name = 'Diagnostic Centre'
 
     context = {
         'admin': admin,
-        # Filter state
-        'days':         days,
-        'branch_id':    branch_id,
-        'doctor_id':    doctor_id,
-        'period_label': _get_period_label(days),
-        'day_options':  range(1, 31),
-        # Dropdown options
-        'all_hospitals': all_hospitals,
-        'doctors_list':  doctors_list,
-        # Charts (full history)
-        'monthly_summary': monthly_summary,
-        'bar_labels':      bar_labels,
-        'bar_data':        bar_data,
-        'daily_labels':    daily_labels,
-        'daily_values':    daily_values,
+        # Date range state
+        'start_date_str': start_date_str,
+        'end_date_str':   end_date_str,
+        'start_date':     start_date,
+        'end_date':       end_date,
+        'date_error':     date_error,
+        'has_filter':     has_filter,
+        'report_ready':   report_ready,
+        # Summary stats
+        'period_total':          round(period_total, 2),
+        'period_count':          period_count,
+        'period_consultation':   round(period_consultation, 2),
+        'period_test':           round(period_test, 2),
+        'total_patients_served': total_patients_served,
         # Doctor performance
-        'top_doctor_labels':  [d['name'] for d in top_doctors],
-        'top_doctor_data':    [d['revenue'] for d in top_doctors],
-        'top_doctors_list':   top_doctors_list,
+        'top_doctors_list': top_doctors_list,
         # Branch breakdown
-        'branch_stats':       branch_stats,
-        'branch_labels':      [b['name'] for b in branch_stats],
-        'branch_data_chart':  [b['revenue'] for b in branch_stats],
+        'branch_stats': branch_stats,
         # Branch-Doctor matrix
         'branch_doctor_matrix': branch_doctor_matrix,
-        # Summary stats
-        'total_revenue':        round(lifetime_revenue, 2),
-        'period_total':         round(period_total, 2),
-        'period_count':         period_count,
-        'period_consultation':  round(period_consultation, 2),
-        'period_test':          round(period_test, 2),
-        'total_patients_served':total_patients,
-        'current_month':        today.strftime('%B %Y'),
-        'revenue_growth':       revenue_growth,
-        'growth_dir':           growth_dir,
+        # Transaction list
+        'transactions_for_report': transactions_for_report,
+        # Hospital identity
+        'hospital_name': hospital_name,
     }
     return render(request, 'hospital_admin/revenue-reports.html', context)
+
+
+@login_required(login_url='admin_login')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def admin_revenue_report_pdf(request):
+    if not request.user.is_hospital_admin:
+        return redirect('admin-logout')
+
+    start_date_str = request.GET.get('rr_start', '').strip()
+    end_date_str   = request.GET.get('rr_end',   '').strip()
+
+    if not start_date_str or not end_date_str:
+        return HttpResponse('Start Date and End Date are required.', status=400)
+
+    try:
+        start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        end_date   = datetime.datetime.strptime(end_date_str,   '%Y-%m-%d').date()
+    except ValueError:
+        return HttpResponse('Invalid date format. Use YYYY-MM-DD.', status=400)
+
+    if start_date > end_date:
+        return HttpResponse('Start Date cannot be after End Date.', status=400)
+
+    # ── Fetch all VALID appointment payments in date range ────────────────────
+    appt_payments = list(
+        Payment.objects.select_related(
+            'patient',
+            'appointment',
+            'appointment__doctor',
+            'appointment__doctor__hospital_name',
+        ).filter(status='VALID', payment_type='appointment')
+    )
+    appt_payments = [p for p in appt_payments if _in_date_range(p, start_date, end_date)]
+
+    # ── Build per-doctor stats: doctor_id -> {appointments, amount, patient_ids}
+    doctor_stats_map = {}
+    for p in appt_payments:
+        if not (p.appointment and p.appointment.doctor):
+            continue
+        did = p.appointment.doctor.doctor_id
+        if did not in doctor_stats_map:
+            doctor_stats_map[did] = {'appointments': 0, 'amount': 0.0, 'patient_ids': set()}
+        doctor_stats_map[did]['appointments'] += 1
+        doctor_stats_map[did]['amount']       += _finance_safe_amount(p)
+        if p.patient_id:
+            doctor_stats_map[did]['patient_ids'].add(p.patient_id)
+
+    # ── Group all doctors by branch ───────────────────────────────────────────
+    from collections import defaultdict
+    doctors_by_branch = defaultdict(list)
+    for doc in Doctor_Information.objects.select_related('hospital_name').order_by('name'):
+        if doc.hospital_name_id:
+            doctors_by_branch[doc.hospital_name_id].append(doc)
+
+    # ── Build branch-wise report (ALL branches included) ─────────────────────
+    all_branches              = list(Hospital_Information.objects.order_by('name'))
+    branch_report             = []
+    grand_total_appointments  = 0
+    grand_total_amount        = 0.0
+
+    for branch in all_branches:
+        bid           = branch.hospital_id
+        branch_docs   = doctors_by_branch.get(bid, [])
+        doctor_rows   = []
+        branch_appts  = 0
+        branch_amount = 0.0
+
+        for doc in branch_docs:
+            stats = doctor_stats_map.get(doc.doctor_id)
+            if not stats:
+                continue
+            appts  = stats['appointments']
+            amount = round(stats['amount'], 2)
+            doctor_rows.append({
+                'name':         safe_pdf_text(doc.name or getattr(doc, 'username', None) or 'Unknown Doctor'),
+                'appointments': appts,
+                'amount':       amount,
+            })
+            branch_appts  += appts
+            branch_amount += amount
+
+        grand_total_appointments += branch_appts
+        grand_total_amount       += branch_amount
+
+        branch_report.append({
+            'name':               safe_pdf_text(branch.name),
+            'doctors':            doctor_rows,
+            'total_appointments': branch_appts,
+            'total_amount':       round(branch_amount, 2),
+        })
+
+    period_date_str = safe_pdf_text(
+        start_date.strftime('%d %b %Y') + ' - ' + end_date.strftime('%d %b %Y')
+    )
+
+    generated_at  = datetime.datetime.now()
+    total_doctors = sum(len(b['doctors']) for b in branch_report)
+
+    # ── Build PDF with ReportLab (landscape A4) ───────────────────────────────
+    from io import BytesIO
+    from xml.sax.saxutils import escape as _xe
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib import colors
+    from reportlab.lib.units import mm
+    from reportlab.platypus import (SimpleDocTemplate, Table, TableStyle,
+                                     Paragraph, Spacer, HRFlowable)
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
+
+    # Helper: Paragraph with XML-safe text
+    def _p(text, style):
+        return Paragraph(_xe(str(text)), style)
+
+    # Page geometry
+    L_MARGIN = R_MARGIN = 12 * mm
+    T_MARGIN = B_MARGIN = 15 * mm
+    PAGE_W   = landscape(A4)[0]               # ~841.89 pt (297 mm)
+    USABLE_W = PAGE_W - L_MARGIN - R_MARGIN   # ~773 pt  (~272 mm)
+
+    # Column widths: user-requested proportions 55:55:45:35:40 (= 230 units)
+    _raw = [55, 55, 45, 35, 40]
+    col_w = [r / sum(_raw) * USABLE_W for r in _raw]
+
+    # Colour palette
+    CP = {
+        'primary':  colors.HexColor('#0f6e8c'),
+        'br_bg':    colors.HexColor('#d6ecf5'),
+        'br_txt':   colors.HexColor('#0a4a5e'),
+        'alt':      colors.HexColor('#f2f8fc'),
+        'sub_bg':   colors.HexColor('#e3f0f7'),
+        'bdr':      colors.HexColor('#9dc8d8'),
+        'lbdr':     colors.HexColor('#cddde8'),
+        'txt':      colors.HexColor('#1a2e3b'),
+        'muted':    colors.HexColor('#4a6070'),
+        'empty':    colors.HexColor('#8aabb8'),
+        'white':    colors.white,
+        'sum_bg':   colors.HexColor('#f0f7fa'),
+        'sum_bdr':  colors.HexColor('#c0d8e4'),
+        'sum_row':  colors.HexColor('#fafcfe'),
+        'hdr_bdr':  colors.HexColor('#0a5570'),
+    }
+
+    # Paragraph style factory (all styles defined once, reused)
+    def _ps(name, font='Helvetica', size=9, col=None, align=TA_LEFT, lm=1.25):
+        return ParagraphStyle(
+            name, fontName=font, fontSize=size,
+            textColor=(col or CP['txt']),
+            alignment=align,
+            leading=round(size * lm, 1),
+            wordWrap='LTR',
+            leftIndent=0, rightIndent=0, spaceAfter=0, spaceBefore=0,
+        )
+
+    PS = {
+        # Table column headers
+        'th':   _ps('rr_th',  'Helvetica-Bold', 10,   CP['white'],  TA_LEFT),
+        'th_c': _ps('rr_thc', 'Helvetica-Bold', 10,   CP['white'],  TA_CENTER),
+        'th_r': _ps('rr_thr', 'Helvetica-Bold', 10,   CP['white'],  TA_RIGHT),
+        # Branch section header
+        'br':   _ps('rr_br',  'Helvetica-Bold', 10.5, CP['br_txt'], TA_LEFT),
+        # Doctor / data cells
+        'doc':  _ps('rr_doc', 'Helvetica',        9,  CP['txt'],    TA_LEFT),
+        'dt':   _ps('rr_dt',  'Helvetica',        8.5, CP['muted'], TA_LEFT),
+        'nc':   _ps('rr_nc',  'Helvetica-Bold',   9.5, CP['txt'],   TA_CENTER),
+        'nr':   _ps('rr_nr',  'Helvetica-Bold',   9.5, CP['txt'],   TA_RIGHT),
+        # Branch subtotal row
+        'sl':   _ps('rr_sl',  'Helvetica-Bold',   9,  CP['br_txt'], TA_LEFT),
+        'sc':   _ps('rr_sc',  'Helvetica-Bold',   9,  CP['br_txt'], TA_CENTER),
+        'sr':   _ps('rr_sr',  'Helvetica-Bold',   9,  CP['br_txt'], TA_RIGHT),
+        # Empty-branch row
+        'el':   _ps('rr_el',  'Helvetica-Oblique', 9, CP['empty'],  TA_LEFT),
+        'ec':   _ps('rr_ec',  'Helvetica-Oblique', 9, CP['empty'],  TA_CENTER),
+        'er':   _ps('rr_er',  'Helvetica-Oblique', 9, CP['empty'],  TA_RIGHT),
+        # Grand total row
+        'gl':   _ps('rr_gl',  'Helvetica-Bold',   10, CP['white'],  TA_LEFT),
+        'gc':   _ps('rr_gc',  'Helvetica-Bold',   10, CP['white'],  TA_CENTER),
+        'gr':   _ps('rr_gr',  'Helvetica-Bold',   10, CP['white'],  TA_RIGHT),
+        # Summary section
+        'stit': _ps('rr_stit','Helvetica-Bold',   10, CP['primary'],TA_LEFT),
+        'slbl': _ps('rr_slbl','Helvetica',          9, CP['muted'],  TA_LEFT),
+        'sval': _ps('rr_sval','Helvetica-Bold',    9, CP['txt'],    TA_LEFT),
+        'sbig': _ps('rr_sbig','Helvetica-Bold',   10, CP['primary'],TA_LEFT),
+        # Page header
+        'org':  _ps('rr_org', 'Helvetica-Bold',   16, CP['primary'],TA_CENTER, 1.3),
+        'sub':  _ps('rr_sub', 'Helvetica-Bold',   12, CP['txt'],    TA_CENTER, 1.3),
+        'per':  _ps('rr_per', 'Helvetica',        10, CP['muted'],  TA_CENTER, 1.3),
+        'gen':  _ps('rr_gen', 'Helvetica',          9, CP['muted'],  TA_RIGHT,  1.3),
+    }
+
+    # Reusable per-row standard padding command builder
+    def _pad(r, top=5, bot=5, lft=7, rgt=7):
+        return [
+            ('TOPPADDING',    (0, r), (4, r), top),
+            ('BOTTOMPADDING', (0, r), (4, r), bot),
+            ('LEFTPADDING',   (0, r), (4, r), lft),
+            ('RIGHTPADDING',  (0, r), (4, r), rgt),
+            ('VALIGN',        (0, r), (4, r), 'MIDDLE'),
+        ]
+
+    # ── Build table rows and style commands ──────────────────────────────────
+    rows  = [[
+        _p('Branch Name',        PS['th']),
+        _p('Doctor Name',        PS['th']),
+        _p('Date Range',         PS['th']),
+        _p('Total Appts.',       PS['th_c']),
+        _p('Total Amount (BDT)', PS['th_r']),
+    ]]
+    tcmds = [
+        ('BACKGROUND', (0, 0), (4, 0), CP['primary']),
+        ('LINEBELOW',  (0, 0), (4, 0), 1, CP['hdr_bdr']),
+    ] + _pad(0, top=7, bot=7)
+
+    ri = 1  # row index (0 = header)
+
+    for branch in branch_report:
+        # ── Branch section header row (spans all 5 columns) ──
+        rows.append([_p(branch['name'], PS['br']), '', '', '', ''])
+        tcmds += [
+            ('SPAN',       (0, ri), (4, ri)),
+            ('BACKGROUND', (0, ri), (4, ri), CP['br_bg']),
+            ('LINEABOVE',  (0, ri), (4, ri), 1.5, CP['primary']),
+            ('BOX',        (0, ri), (4, ri), 0.5, CP['bdr']),
+        ] + _pad(ri, top=6, bot=6)
+        ri += 1
+
+        if branch['doctors']:
+            for idx, doc in enumerate(branch['doctors']):
+                bg = CP['alt'] if (idx % 2 == 1) else CP['white']
+                rows.append([
+                    '',
+                    _p(doc['name'],             PS['doc']),
+                    _p(period_date_str,          PS['dt']),
+                    _p(doc['appointments'],      PS['nc']),
+                    _p(doc['amount'],            PS['nr']),
+                ])
+                tcmds += [
+                    ('BACKGROUND', (0, ri), (4, ri), bg),
+                    ('BOX',        (0, ri), (4, ri), 0.3, CP['lbdr']),
+                ] + _pad(ri)
+                ri += 1
+
+            # Branch subtotal row
+            rows.append([
+                '',
+                _p('Branch Total',              PS['sl']),
+                '',
+                _p(branch['total_appointments'], PS['sc']),
+                _p(branch['total_amount'],       PS['sr']),
+            ])
+            tcmds += [
+                ('BACKGROUND', (0, ri), (4, ri), CP['sub_bg']),
+                ('LINEABOVE',  (0, ri), (4, ri), 0.5, CP['bdr']),
+                ('LINEBELOW',  (0, ri), (4, ri), 1.5, CP['bdr']),
+                ('BOX',        (0, ri), (4, ri), 0.5, CP['bdr']),
+            ] + _pad(ri)
+            ri += 1
+
+        else:
+            # Empty branch: one clean row with zeros
+            rows.append([
+                '',
+                _p('No paid appointments in this period', PS['el']),
+                _p(period_date_str,                       PS['dt']),
+                _p('0',                                   PS['ec']),
+                _p('0.00',                                PS['er']),
+            ])
+            tcmds += [
+                ('BOX',       (0, ri), (4, ri), 0.3, CP['lbdr']),
+            ] + _pad(ri)
+            ri += 1
+
+    # Grand total row (cols 0-2 spanned)
+    rows.append([
+        _p('Grand Total', PS['gl']), '', '',
+        _p(str(grand_total_appointments),         PS['gc']),
+        _p(str(round(grand_total_amount, 2)),     PS['gr']),
+    ])
+    tcmds += [
+        ('SPAN',       (0, ri), (2, ri)),
+        ('BACKGROUND', (0, ri), (4, ri), CP['primary']),
+        ('LINEABOVE',  (0, ri), (4, ri), 2, CP['primary']),
+    ] + _pad(ri, top=8, bot=8)
+
+    main_table = Table(rows, colWidths=col_w, repeatRows=1)
+    main_table.setStyle(TableStyle(tcmds))
+
+    # ── Page header story ────────────────────────────────────────────────────
+    story = [
+        _p('Belayet Diagnostic Centre',          PS['org']),
+        Spacer(1, 3),
+        _p('Branch-wise Doctor Revenue Report',  PS['sub']),
+        Spacer(1, 3),
+        _p(f'Period: {period_date_str}',          PS['per']),
+        _p(f'Generated: {generated_at.strftime("%d %b %Y, %H:%M")}', PS['gen']),
+        Spacer(1, 6),
+        HRFlowable(width='100%', thickness=2, color=CP['primary'], spaceAfter=8),
+        main_table,
+        Spacer(1, 14),
+    ]
+
+    # ── Summary section ──────────────────────────────────────────────────────
+    sw = USABLE_W / 4
+    sum_rows = [
+        [_p('Report Summary', PS['stit']), '', '', ''],
+        [
+            _p('Total Branches',             PS['slbl']),
+            _p(str(len(branch_report)),      PS['sval']),
+            _p('Doctors with Revenue',       PS['slbl']),
+            _p(str(total_doctors),           PS['sval']),
+        ],
+        [
+            _p('Total Appointments',         PS['slbl']),
+            _p(str(grand_total_appointments),PS['sval']),
+            _p('Grand Total Revenue (BDT)',  PS['slbl']),
+            _p(str(round(grand_total_amount, 2)), PS['sbig']),
+        ],
+    ]
+    sum_table = Table(sum_rows, colWidths=[sw] * 4)
+    sum_table.setStyle(TableStyle([
+        ('SPAN',          (0, 0), (3, 0)),
+        ('BACKGROUND',    (0, 0), (3, 0), CP['sum_bg']),
+        ('BACKGROUND',    (0, 1), (3, 2), CP['sum_row']),
+        ('BOX',           (0, 0), (3, 2), 0.5, CP['sum_bdr']),
+        ('INNERGRID',     (0, 0), (3, 2), 0.3, CP['sum_bdr']),
+        ('TOPPADDING',    (0, 0), (3, 2), 6),
+        ('BOTTOMPADDING', (0, 0), (3, 2), 6),
+        ('LEFTPADDING',   (0, 0), (3, 2), 8),
+        ('RIGHTPADDING',  (0, 0), (3, 2), 8),
+        ('VALIGN',        (0, 0), (3, 2), 'MIDDLE'),
+    ]))
+    story.append(sum_table)
+
+    # ── Render and return ────────────────────────────────────────────────────
+    buf = BytesIO()
+    doc = SimpleDocTemplate(
+        buf,
+        pagesize=landscape(A4),
+        leftMargin=L_MARGIN, rightMargin=R_MARGIN,
+        topMargin=T_MARGIN,  bottomMargin=B_MARGIN,
+        title='Branch-wise Doctor Revenue Report',
+        author='HealthStack System',
+    )
+    doc.build(story)
+
+    pdf_bytes = buf.getvalue()
+    buf.close()
+
+    resp = HttpResponse(pdf_bytes, content_type='application/pdf')
+    resp['Content-Disposition'] = (
+        f'attachment; filename="revenue-report-{start_date_str}-to-{end_date_str}.pdf"'
+    )
+    return resp
 

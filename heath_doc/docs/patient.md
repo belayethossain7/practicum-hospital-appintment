@@ -178,7 +178,7 @@ def test_cart(request, pk):
         test_orders = testOrder.objects.filter(user=request.user, ordered=False)
         
         if test_carts.exists() and test_orders.exists():
-            test_order = test_orders[0]
+            test_order = test_orders[-0]
             
             context = {'test_carts': test_carts,'test_order': test_order, 'patient': patient, 'prescription_test':prescription_test, 'prescription_id':pk}
             return render(request, 'test-cart.html', context)
